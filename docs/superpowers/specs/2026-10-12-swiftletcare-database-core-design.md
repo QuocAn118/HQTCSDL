@@ -50,6 +50,7 @@ Cả 5 thành viên dùng Windows → chỉ cần `scripts/deploy.ps1`, không l
 3. Tạo login SQL `swiftlet_dev`, là `db_owner` của CSDL `SwiftletCare` và có server role **`dbcreator`** — `prisma migrate dev` cần tạo **shadow database**. (Thay thế: khai báo `shadowDatabaseUrl` trỏ tới một CSDL shadow tạo sẵn.)
 4. Sao chép `.env.example` → `.env`, điền mật khẩu.
 5. Kiểm tra: `sqlcmd -S localhost,1433 -U swiftlet_dev -Q "SELECT @@VERSION"` trả về phiên bản.
+6. Kiểm tra mức tương thích: `SELECT compatibility_level FROM sys.databases WHERE name = 'SwiftletCare'` phải **≥ 130** (`OPENJSON`); `deploy.ps1` dừng với thông báo lỗi nếu thấp hơn.
 
 **Vì sao dùng SQL login:** mỗi thành viên có máy và tài khoản Windows riêng; SQL login cho cả nhóm dùng chung một dạng chuỗi kết nối, đồng nhất giữa các máy. `swiftlet_dev` chỉ dùng khi phát triển; `database-advanced` thay bằng các login quyền tối thiểu.
 
@@ -119,7 +120,7 @@ Rà soát: chỉ **`SensorReadings.ReadingId`** là BIGINT, không lộ ra API (
 | **Houses** | HouseId INT, OwnerId→Users, Name NVARCHAR(100), Address NVARCHAR(255)?, IsActive, CreatedAt | UQ(OwnerId, Name) |
 | **Zones** | ZoneId INT, HouseId→Houses, Name NVARCHAR(50), FloorNo TINYINT | UQ(HouseId, Name); **UQ(ZoneId, HouseId)** (đích của khóa ngoại ghép từ Alerts); FloorNo 0 = lối vào (nơi đặt camera) |
 | **Devices** | DeviceId INT, ZoneId→Zones, Code VARCHAR(50), Name NVARCHAR(100), DeviceType VARCHAR(10), Status VARCHAR(10) (mặc định OFFLINE), LastSeenAt?, Mode VARCHAR(6)?, IsOn BIT?, Level TINYINT?, IsActive, CreatedAt | UQ Code (= MQTT client id, dạng `H1-F2-FAN`); CK DeviceType ∈ {SENSOR, MIST, FAN, HEATER, SPEAKER, CAMERA}; CK Status ∈ {ONLINE, OFFLINE, ERROR}; **CK Mode ∈ {AUTO, MANUAL}**; CK cơ cấu chấp hành (MIST/FAN/HEATER/SPEAKER) ⇒ Mode, IsOn NOT NULL; SENSOR/CAMERA ⇒ Mode, IsOn, Level đều NULL; CK Level 0–100 |
-| **Metrics** | MetricCode VARCHAR(10) PK, Name NVARCHAR(50), Unit NVARCHAR(10), ValidMin, ValidMax DECIMAL(9,2) | Bảng tra: TEMP, HUMID, CO2, LIGHT; CK ValidMin < ValidMax; khoảng hợp lệ dùng lọc dữ liệu hỏng khi thu nhận |
+| **Metrics** | MetricCode VARCHAR(10) PK, Name NVARCHAR(50), Unit NVARCHAR(10), ValidMin, ValidMax, Hysteresis DECIMAL(9,2) | Bảng tra: TEMP, HUMID, CO2, LIGHT; CK ValidMin < ValidMax; CK Hysteresis ≥ 0; khoảng hợp lệ dùng lọc dữ liệu hỏng khi thu nhận; Hysteresis là vùng đệm đóng cảnh báo (Phần 3) |
 | **Thresholds** | PK(ZoneId, MetricCode), MinValue?, MaxValue?, TargetValue? DECIMAL(9,2), UpdatedBy?→Users, UpdatedAt | CK có ít nhất Min hoặc Max; CK Min < Max; CK Target ∈ [Min, Max] |
 | **SensorReadings** | ReadingId BIGINT, DeviceId, MetricCode, Value DECIMAL(9,2), RecordedAt | **UQ(DeviceId, MetricCode, RecordedAt)** chống bản ghi trùng do MQTT giao lại (QoS 1 giao ít nhất một lần); `sp_IngestReadings` bỏ qua dòng trùng bằng `NOT EXISTS`, không báo lỗi. Clustered/nonclustered: Phần 4 |
 | **ControlLogs** | LogId INT, DeviceId, IsOn BIT, Level TINYINT?, Mode VARCHAR(6), Source VARCHAR(6), UserId?, Reason NVARCHAR(200)?, CreatedAt | **CK Mode ∈ {AUTO, MANUAL}**; CK Source ∈ {AUTO, MANUAL}; MANUAL ⇒ UserId NOT NULL |
@@ -174,11 +175,127 @@ Vai trò STAFF và bảng thành viên nhà; tọa độ nhà yến; bảng lưu
 3. **Khóa ngoại `NO ACTION`**: giữ lịch sử, tránh lỗi "multiple cascade paths".
 4. **Quyền sở hữu** theo chuỗi `Devices → Zones → Houses.OwnerId`; backend kiểm tra OWNER trước khi gọi SP, SP không kiểm tra quyền.
 
+## Phần 3 — Stored procedure, trigger, view (đã duyệt)
+
+### Quy ước chung
+
+- **Mỗi SP trả đúng 1 tập kết quả.** Danh sách lồng (VD cảnh báo mới) là một **cột** JSON của dòng tóm tắt.
+- **`FOR JSON` chỉ dùng trong truy vấn con** trả về như một cột: `(SELECT … FOR JSON PATH) AS NewAlertsJson`. Không đặt `FOR JSON` ở tầng ngoài cùng — SQL Server cắt kết quả thành nhiều dòng (~2033 ký tự/dòng), client chỉ đọc dòng đầu sẽ nhận JSON hỏng. Test phải kiểm với lô lớn (Phần 4).
+- Mỗi SP bắt đầu bằng `SET NOCOUNT ON; SET XACT_ABORT ON;`.
+- Mọi thay đổi trên `Alerts` chỉ qua SP/trigger; Prisma chỉ đọc bảng này.
+- SP không kiểm tra quyền sở hữu nhà; backend kiểm tra trước khi gọi.
+- Kết quả AI đi qua backend → mọi SP nhận dữ liệu AI do backend gọi.
+
+### Mã lỗi (`THROW`)
+
+Backend đổi thành HTTP 400/409.
+
+| Mã | Ý nghĩa |
+|---|---|
+| 50001 | `@Source` không phải AUTO/MANUAL |
+| 50002 | Điều khiển MANUAL thiếu `@UserId` |
+| 50003 | Thiết bị không tồn tại, ngừng dùng hoặc không phải cơ cấu chấp hành |
+| 50010 | Camera không tồn tại, ngừng dùng hoặc không phải CAMERA |
+| 50012 | Số đếm chim âm |
+| 50013 | Loài thiên địch không thuộc {rat, snake, owl} |
+| 50014 | `windowStart` không đúng mốc 5 phút |
+| 50020 | Cảnh báo không tồn tại |
+| 50021 | Chuyển trạng thái cảnh báo không hợp lệ |
+| 50030 | Chuỗi JSON không hợp lệ |
+| 50040 | `@BucketMinutes` ≤ 0 |
+| 50041 | Khoảng thời gian/ngày không hợp lệ (From ≥ To) |
+| 50042 | Tham số ngoài miền cho phép (kể cả vượt 2000 bucket) |
+
+### SP (theo thứ tự ưu tiên trong roadmap)
+
+**Mục 2 — `sp_IngestReadings(@Json NVARCHAR(MAX))`** — xong 20/10
+
+- Đầu vào: `[{"device":"H1-F1-SENSOR","metric":"TEMP","value":28.5,"at":"2026-10-12T10:40:00Z"}, ...]`. JSON sai → 50030.
+- **Khử trùng hai tầng:** trùng trong lô lọc bằng `ROW_NUMBER`; trùng với bảng lọc bằng `NOT EXISTS` trên UQ(DeviceId, MetricCode, RecordedAt). Dòng trùng tính vào `Duplicates`, không báo lỗi.
+- Loại bỏ (không lỗi), tính vào `Rejected`: thiết bị không tồn tại / không phải SENSOR / `IsActive = 0`; giá trị ngoài [ValidMin, ValidMax]; `at` lớn hơn hiện tại quá 5 phút.
+- Trong 1 transaction:
+  1. Chèn bản ghi hợp lệ.
+  2. Cập nhật `LastSeenAt`; đặt `Status = ONLINE` **chỉ khi đang khác ONLINE** (không kích hoạt trigger thừa).
+  3. Lấy giá trị mới nhất của mỗi (khu vực, chỉ số) trong lô, so với Thresholds. Đọc cảnh báo đang mở với `UPDLOCK, HOLDLOCK`, duyệt theo thứ tự (ZoneId, MetricCode).
+     - **Mở** khi giá trị ra ngoài [Min, Max] và chưa có THRESHOLD đang mở. Lệch > 10% so với ngưỡng bị vượt = CRITICAL, còn lại WARNING.
+     - **Đóng** (tự động, người thao tác = hệ thống) khi giá trị vào trong **[Min + h, Max − h]** với `h = MIN(Metrics.Hysteresis, (Max − Min) / 4)`. Ngưỡng chỉ có một phía thì chỉ áp dụng phía đó.
+     - Giá trị nằm giữa hai vùng: giữ nguyên trạng thái — **chống cảnh báo nhấp nháy** khi giá trị dao động quanh ngưỡng.
+- Trả 1 dòng: `Received, Accepted, Duplicates, Rejected, NewAlertsJson, ResolvedAlertIdsJson`.
+
+**Mục 3 — `sp_SetActuator(@DeviceId, @IsOn, @Level = NULL, @Source, @Mode = NULL, @UserId = NULL, @Reason = NULL)`** — xong 20/10
+
+- Khóa dòng thiết bị (`UPDLOCK`). Lệnh AUTO bị bỏ qua khi thiết bị đang MANUAL. MANUAL kèm `@Mode = 'AUTO'` = trả quyền cho bộ điều khiển.
+- Trạng thái không đổi → không ghi gì. Có thay đổi → cập nhật Devices + ghi ControlLogs trong 1 transaction.
+- Trả 1 dòng: `Changed, DeviceCode, Mode, IsOn, Level`. Backend dùng `DeviceCode` để publish MQTT, chỉ publish khi `Changed = 1`.
+- **Nếu còn thời gian:** ghi đè MANUAL tự hết hạn sau một khoảng cấu hình được (trả về AUTO).
+
+**Mục 4 — `sp_UpdateAlertStatus(@AlertId, @Status, @UserId, @Note = NULL)`**
+
+- Chỉ cho NEW → ACK, NEW → RESOLVED, ACK → RESOLVED; RESOLVED thì điền `ResolvedAt`, `ResolvedBy`.
+- Đặt `SESSION_CONTEXT` (UserId, Note) cho trigger rồi **xóa ngay sau đó, kể cả khi lỗi** — kết nối được dùng lại trong pool.
+- Trả: dòng cảnh báo sau cập nhật.
+
+**Mục 5 — `sp_GetReadingHistory(@ZoneId, @MetricCode, @FromUtc, @ToUtc, @BucketMinutes = 60)`**
+
+- Trả nhiều dòng: `BucketUtc, AvgValue, MinValue, MaxValue`. Điều kiện thời gian so trực tiếp với cột (SARGable).
+- Số bucket `(To − From) / BucketMinutes` **tối đa 2000**, vượt → 50042.
+
+**Mục 6 — `sp_RecordBirdCount(@Json)`**
+
+- Đầu vào: AI (qua backend) gửi **tổng của cả cửa sổ**: `[{"camera":"H1-F0-CAMERA","windowStart":"2026-10-12T10:00:00Z","in":5,"out":1}, ...]`. Được gửi tổng tạm khi cửa sổ chưa đóng; lần sau thay lần trước.
+- Upsert (`UPDLOCK, SERIALIZABLE`) theo (CameraId, WindowStart) với **`InCount = GREATEST(cũ, mới)`, `OutCount = GREATEST(cũ, mới)`**:
+  - **Idempotent:** gửi lại cùng tin bao nhiêu lần cũng đúng.
+  - Chặn giảm số khi MQTT giao lại tin tổng tạm cũ sau tin mới, hoặc AI khởi động lại giữa cửa sổ gửi tổng nhỏ hơn.
+  - **Giới hạn đã chấp nhận:** AI khởi động lại giữa cửa sổ → thiếu phần đếm trước khởi động lại của cửa sổ đó (≤ 1 cửa sổ 5 phút mỗi lần). AI không phải lưu trạng thái cửa sổ. Ghi rõ trong `integration-contract`.
+  - Không sửa giảm được số đã ghi — chấp nhận vì số đếm trong một cửa sổ chỉ tăng.
+- Cả lô nguyên tử: camera không hợp lệ → 50010, số âm → 50012, `windowStart` sai mốc → 50014.
+- Trả 1 dòng: `WindowsUpserted, WindowsUnchanged`.
+
+**Mục 7 — `sp_CreatePredatorAlert(@Json, @MinConfidence = 0.5, @CooldownMinutes = 5)`**
+
+- Đầu vào: `{"camera":"H1-F0-CAMERA","class":"snake","confidence":0.87,"snapshot":"snapshots/2026/10/12/H1-F0-CAMERA_104000.jpg","at":"2026-10-12T10:40:00Z"}`. Ảnh do backend lưu; SP chỉ giữ đường dẫn.
+- Bỏ qua nếu độ tin cậy < ngưỡng, hoặc cùng loài trên cùng camera đã báo trong `@CooldownMinutes` (kiểm tra với `UPDLOCK, HOLDLOCK` — hai phát hiện đồng thời không tạo hai cảnh báo).
+- ZoneId, HouseId lấy theo camera. Loài lạ → 50013, camera không hợp lệ → 50010.
+- Trả 1 dòng: `Created, AlertId, SkipReason` (`LOW_CONFIDENCE` / `COOLDOWN` / NULL).
+
+**Mục 8 (giảm đàn) và 11 (OFFLINE) — `sp_DetectAnomalies(@OfflineMinutes = 5, @DropPercent = 20, @CutoffHourVn = 20, @NowUtc = NULL)`** — backend gọi mỗi phút
+
+- **Giảm đàn (mục 8):**
+  - Chỉ đánh giá khi giờ Việt Nam hiện tại ≥ `@CutoffHourVn`; trước đó không đánh giá → không báo giả buổi sáng.
+  - **So cùng khung giờ:** tổng `InCount` hôm nay từ 00:00 đến giờ chốt (giờ Việt Nam) so với trung bình tổng cùng khung 00:00 → giờ chốt của 7 ngày trước. Thấp hơn quá `@DropPercent` → `POPULATION_DROP` (CRITICAL).
+  - Tối đa 1 cảnh báo/nhà/ngày. Bỏ qua nếu nhà có < 3 ngày dữ liệu trong 7 ngày trước.
+- **OFFLINE (mục 11, dưới ranh giới cắt):** thiết bị `IsActive = 1` có `LastSeenAt` quá `@OfflineMinutes` → đánh dấu OFFLINE.
+- `@NowUtc` (mặc định `SYSUTCDATETIME()`) để kiểm thử theo giờ. `@DropPercent` ngoài (0, 100) hoặc `@CutoffHourVn` ngoài [0, 23] → 50042.
+- Trả 1 dòng: `NewAlertsJson`.
+
+**Mục 10 (dưới ranh giới cắt) — `sp_Report_EnvStabilityVsYield(@HouseId, @FromVnDate, @ToVnDate)`**
+
+- Trả nhiều dòng theo khu vực × tháng: `AvgTemp, StdevTemp, AvgHumid, StdevHumid, PctInRange, NestCount, WeightGram`. From ≥ To → 50041.
+
+### Trigger
+
+| Tên | Mục | Hành vi |
+|---|---|---|
+| `trg_Alerts_History` | 4 | AFTER INSERT, UPDATE trên Alerts. Ghi AlertHistory khi cảnh báo được tạo hoặc đổi Status. **Viết theo tập hợp** (`inserted` ⋈ `deleted`). Người thao tác/ghi chú lấy từ `SESSION_CONTEXT('UserId'/'Note')`; NULL = hệ thống. |
+| `trg_Devices_Status` | 11 (dưới ranh giới cắt) | AFTER UPDATE trên Devices. Thoát ngay nếu `NOT UPDATE(Status)`. Theo tập hợp: chỉ xử lý dòng có `deleted.Status <> inserted.Status`. ONLINE → OFFLINE/ERROR: tạo `DEVICE_OFFLINE` (ERROR = CRITICAL, OFFLINE = WARNING). Về ONLINE: tự đóng `DEVICE_OFFLINE` đang mở. |
+
+**Dự phòng nếu R1 xảy ra:** bỏ `trg_Devices_Status`; `sp_DetectAnomalies` tạo cảnh báo khi đánh dấu OFFLINE, `sp_IngestReadings` tự đóng khi thiết bị gửi dữ liệu trở lại. `trg_Alerts_History` không bị ảnh hưởng vì Alerts chỉ ghi qua SP.
+
+### View
+
+| Tên | Mục | Nội dung |
+|---|---|---|
+| `vw_LatestReadings` | 5 | Giá trị mới nhất mỗi chỉ số × cảm biến, kèm tên nhà/khu vực, trạng thái thiết bị (`CROSS APPLY TOP 1`). Không chọn `ReadingId`. |
+| `vw_OpenAlerts` | 5 | Cảnh báo chưa đóng, kèm tên nhà/khu vực. |
+| `vw_DailyEnvStats` | 5 | Avg/Min/Max theo khu vực × chỉ số × ngày giờ Việt Nam. |
+| `vw_DailyBirdFlow` | 6 | Số chim ra/về/chênh lệch theo nhà × ngày giờ Việt Nam. |
+
 ## Rủi ro cần kiểm chứng
 
 Kiểm chứng ở bước lập kế hoạch, trước khi triển khai phần liên quan.
 
 | # | Rủi ro | Cách kiểm | Nếu xảy ra |
 |---|---|---|---|
+| R1 | Prisma `create`/`update` trên SQL Server sinh `OUTPUT INSERTED` không kèm `INTO`; SQL Server từ chối với bảng có trigger (`Alerts`, `Devices`). | Tạo bảng thử có trigger, gọi `prisma.x.create()` / `update()`. | Quy ước chỉ ghi các bảng có trigger qua SP; dự phòng của `trg_Devices_Status` ở Phần 3. |
 | R2 | Chỉ mục lọc (`UX_Alerts_OpenThreshold`) và SQL viết tay khác trong migration bị `prisma migrate dev` coi là lệch (drift) so với schema. | Thêm chỉ mục lọc vào migration, chạy lại `prisma migrate dev`, xem có đòi reset hoặc sinh lệnh xóa không. | Đưa phần đó ra file `.sql` chạy sau migrate, ghi rõ ngoại lệ. |
 | R5 | Prisma không chấp nhận quan hệ ghép `Alerts(ZoneId, HouseId) → Zones(ZoneId, HouseId)` có một cột tùy chọn (ZoneId) và một cột bắt buộc (HouseId), hoặc dùng chung cột HouseId với quan hệ tới Houses. | Khai báo quan hệ trong `schema.prisma`, chạy `prisma validate` và `prisma migrate dev --create-only`, xem SQL sinh ra. | Viết khóa ngoại ghép bằng SQL tay trong migration (theo cơ chế Phần 1); nếu tiếp tục lệch theo R2 thì xử lý như R2. |
