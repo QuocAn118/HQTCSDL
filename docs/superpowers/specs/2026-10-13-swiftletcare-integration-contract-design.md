@@ -1,7 +1,7 @@
 # SwiftletCare — integration-contract: hợp đồng tích hợp giữa các module
 
 - **Ngày:** 2026-10-13
-- **Trạng thái:** Đang thiết kế (duyệt từng phần)
+- **Trạng thái:** Đã duyệt
 - **Chủ module:** TV2 (TV1 cùng duyệt)
 - **Nguồn:** [Roadmap](2026-10-12-swiftletcare-roadmap.md) · [database-core](2026-10-12-swiftletcare-database-core-design.md)
 
@@ -85,7 +85,8 @@ Mỗi thành viên **chạy Mosquitto riêng trên máy mình** (cùng SQL Serve
    ```
    Mật khẩu ghi vào `.env` của backend và simulator.
 4. Chạy: `mosquitto -c infra/mosquitto/mosquitto.conf -v`.
-5. Kiểm tra: `mosquitto_sub -u backend -P <mật khẩu> -t 'swiftlet/#' -v` kết nối được; thử không tài khoản phải bị từ chối.
+5. Backend và simulator lấy địa chỉ broker từ `.env` (`MQTT_URL`, mặc định `mqtt://localhost:1883`). **Khi demo chung một mạng LAN, kiểm tra `MQTT_URL` trước khi chạy** — trỏ nhầm sang broker máy khác thì simulator của người này điều khiển nhầm backend của người kia.
+6. Kiểm tra: `mosquitto_sub -u backend -P <mật khẩu> -t 'swiftlet/#' -v` kết nối được; thử không tài khoản phải bị từ chối.
 
 ## Phần 2 — MQTT và kết quả AI (đã duyệt)
 
@@ -303,3 +304,84 @@ Database-core quy ước không ghi bảng có trigger bằng `prisma.<model>.cr
 3. App Expo lấy địa chỉ backend từ biến cấu hình **`EXPO_PUBLIC_API_URL`** = IP mạng LAN của máy chạy backend (VD `http://192.168.1.10:3000`), **không dùng `localhost`** (trên điện thoại `localhost` là chính điện thoại).
 4. **CORS:** biến `CORS_ORIGINS` liệt kê địa chỉ web (VD `http://localhost:3001`); áp dụng cho cả REST và Socket.IO.
 5. Kiểm tra: từ điện thoại mở `http://<IP LAN>:3000/api/health` thấy `{"status":"ok",…}`.
+
+## Phần 4 — Sự kiện WebSocket và fixture (đã duyệt)
+
+### 4.1 Kết nối và phòng
+
+- Client: `io(API_URL, { auth: { token } })`. Server kiểm JWT và đọc lại Users (`IsActive`, `Role`) như guard REST; sai → từ chối kết nối.
+- Phòng của mỗi kết nối:
+  - `user:{userId}`;
+  - `house:{houseId}` cho **mỗi nhà đang hoạt động mình sở hữu**; ADMIN vào **mọi** nhà và thêm `role:ADMIN`.
+- **Mọi sự kiện phát vào `house:{houseId}`** — OWNER không bao giờ nhận dữ liệu nhà người khác.
+- Thay đổi khi đang kết nối:
+  - Tạo nhà → server cho `user:{ownerId}` và `role:ADMIN` vào `house:{id}` (`socketsJoin`).
+  - Nhà ngừng dùng → `socketsLeave` khỏi `house:{id}`.
+  - Người dùng bị khóa → `disconnectSockets` phòng `user:{id}`.
+- **Token hết hạn:** khi kết nối, server hẹn giờ ngắt đúng lúc `exp`; client đăng nhập lại rồi kết nối lại.
+- **Client không gửi sự kiện nào lên server**; mọi thao tác qua REST.
+
+**Kết nối lại và ghép dữ liệu** — sự kiện bị lỡ không được gửi lại:
+
+1. Mỗi lần `connect` (kể cả lần đầu), client **bắt đầu nghe sự kiện trước**, rồi gọi REST lấy số đo mới nhất và cảnh báo đang mở.
+2. Ghép kết quả REST với sự kiện đến đồng thời theo quy tắc:
+   - **Cảnh báo ghép theo `alertId`:** dữ liệu đến sau thay dữ liệu đến trước; một cảnh báo đã `RESOLVED` không bị dữ liệu `NEW`/`ACK` cũ hơn ghi đè (thứ tự trạng thái chỉ tiến NEW → ACK → RESOLVED).
+   - **Số đo ghép theo `at`** cho mỗi (thiết bị, chỉ số): bỏ qua số đo có `at` cũ hơn hoặc bằng cái đang có.
+   - **Trạng thái cơ cấu chấp hành** (`device.state`) ghép theo `at` tương tự.
+3. Nhờ vậy kết quả REST tải chậm không ghi đè sự kiện mới hơn, và ngược lại.
+
+### 4.2 Sự kiện (server → client, camelCase, luôn có `houseId`)
+
+| Sự kiện | Phát khi | Payload |
+|---|---|---|
+| `readings.new` | Sau mỗi lần gọi `sp_IngestReadings` có `Accepted > 0`; mỗi nhà một sự kiện | `{houseId, readings:[{deviceId, deviceCode, zoneId, metric, value, at}]}` — từ cột `AcceptedJson` |
+| `alert.created` | Cảnh báo mới: `NewAlertsJson` của `sp_IngestReadings` / `sp_DetectAnomalies`, `AlertJson` của `sp_CreatePredatorAlert` | `{alert:{alertId, houseId, zoneId, deviceId, alertType, severity, metricCode, value, detectedClass, confidence, hasSnapshot, message, status, createdAt}}` |
+| `alert.updated` | Đổi trạng thái qua `sp_UpdateAlertStatus`; tự đóng (`ResolvedAlertIdsJson`, backend tra `houseId`) | `{alertId, houseId, status, resolvedAt, resolvedBy}` |
+| `device.state` | `sp_SetActuator` trả `Changed = 1` (cả vòng điều khiển tự động) | `{deviceId, deviceCode, houseId, zoneId, mode, isOn, level, source, at}` |
+| `birdcount.updated` | `POST /api/ai/bird-counts` có `windowsUpserted > 0` | `{houseId, cameraId}` — **tín hiệu để client tải lại** `bird-flow`, không mang số đếm (SP lấy giá trị lớn hơn, không trả số đếm) |
+
+- `snapshotPath` không có trong payload, chỉ `hasSnapshot`; ảnh lấy qua `GET /api/alerts/:alertId/snapshot` (Phần 3).
+- **Không có sự kiện trạng thái thiết bị riêng** (mục 11): mất/có lại kết nối thể hiện qua `alert.created` / `alert.updated` loại `DEVICE_OFFLINE` (YAGNI).
+- Đối chiếu trường với database-core:
+
+| Trường sự kiện | Cột JSON do SP trả |
+|---|---|
+| `readings[]`: `deviceId`, `deviceCode`, `zoneId`, `metric`, `value`, `at` (+ `houseId` để chọn phòng) | `AcceptedJson[]`: `DeviceId`, `DeviceCode`, `ZoneId`, `MetricCode`, `Value`, `RecordedAt`, `HouseId` |
+| `alert`: các trường trên | `NewAlertsJson[]` / `AlertJson`: `AlertId`, `HouseId`, `ZoneId`, `DeviceId`, `AlertType`, `Severity`, `MetricCode`, `Value`, `DetectedClass`, `Confidence`, `HasSnapshot`, `Message`, `Status`, `CreatedAt` |
+
+Backend đổi PascalCase → camelCase (và `MetricCode` → `metric`, `RecordedAt` → `at`) ở bộ tuần tự hóa chung (Phần 1).
+
+### 4.3 Fixture (`contracts/fixtures/`)
+
+**Quy ước — đọc trước khi viết fixture:**
+
+1. **Không dùng mốc thời gian cố định.** Seed có số đo mỗi 5 phút đến 20:00 giờ Việt Nam ngày neo (mốc cố định sẽ trùng → ra `duplicates`), và số đo cũ hơn `@StaleMinutes` không mở/đóng cảnh báo (fixture cảnh báo ngưỡng sẽ không bao giờ chạy). Fixture dùng **chỗ giữ chỗ**, bộ test thay khi chạy:
+
+   | Chỗ giữ chỗ | Thay bằng |
+   |---|---|
+   | `{{now}}` | Giờ hiện tại UTC, làm tròn xuống giây, **lệch khỏi lưới 5 phút** (nếu rơi đúng `mm:00` với `mm` chia hết cho 5 thì cộng 7 giây) |
+   | `{{now-30s}}`, `{{now-10m}}`, … | `{{now}}` trừ khoảng tương ứng (`s`, `m`, `h`) |
+   | `{{window}}`, `{{window-5m}}` | `{{now}}` làm tròn xuống mốc 5 phút (cho `windowStart` hợp lệ) |
+   | `{{window+1m}}` | Mốc lệch lưới (cho fixture `windowStart` không hợp lệ) |
+
+   Định dạng thay vào: `YYYY-MM-DDTHH:mm:ssZ`; fixture thời gian không hợp lệ ghi tay phần sai (VD `{{now}}` bỏ `Z`, hoặc `+07:00`) bằng chỗ giữ chỗ riêng `{{now:noZ}}`, `{{now:+07:00}}`.
+2. **Kết quả mong đợi không chứa id hay mốc thời gian cụ thể.** Dùng bộ so khớp:
+
+   | Bộ so khớp | Nghĩa |
+   |---|---|
+   | `"{{any:id}}"` | Số nguyên dương bất kỳ (`alertId`, `deviceId` mới tạo, …) |
+   | `"{{any:iso}}"` | Chuỗi ISO 8601 UTC có `Z` |
+   | `"{{any:string}}"` | Chuỗi khác rỗng (VD `message`, `accessToken`) |
+
+   Mọi giá trị khác so khớp đúng nguyên văn. **Tập khóa phải khớp chính xác** (thiếu hay thừa khóa đều là lỗi) — bắt được lệch hợp đồng.
+3. **Định dạng file:** mỗi file một ví dụ gồm đầu vào và kết quả mong đợi — MQTT: `{topic, payload}`; REST/AI: `{method, path, headers?, body, status, response}`; WebSocket: `{event, payload}`. Fixture cần trạng thái trước (VD `predator-detection.cooldown.json`, `bird-counts.resend-smaller.json`) có thêm khóa `"after": "<tên fixture chạy trước>"`; bộ test chạy fixture đó trước trong cùng ca test.
+4. **Giá trị khớp dữ liệu mẫu** (H1, H2, `H1-F1-SENSOR`, …) để backend chạy test tích hợp trên `SwiftletCare_Test`. Fixture cảnh báo ngưỡng mới dùng cặp (khu vực, chỉ số) **chưa có cảnh báo mở trong seed** (VD H1-F1 TEMP), không dùng H1-F3 HUMID.
+5. **Ảnh mẫu** (`snake.jpg`, `not-jpeg.png`) là **ảnh nhỏ tự tạo** (vài KB, VD sinh bằng script), không lấy từ internet.
+6. Fixture thuộc phần dưới ranh giới cắt có hậu tố `.cut` trong tên (VD `heartbeat.cut.json`) để bỏ được nếu cắt.
+
+| Thư mục | Hợp lệ | Không hợp lệ |
+|---|---|---|
+| `mqtt/` | `readings.json`, `heartbeat.cut.json`, `command.manual.json`, `command.auto.json` | `readings.invalid-missing-z.json`, `readings.invalid-offset.json` (`+07:00`), `readings.invalid-device-mismatch.json`, `readings.invalid-not-array.json` |
+| `ai/` | `bird-counts.json`, `bird-counts.resend-smaller.json` (giữ số lớn), `predator-detection.json` + `snake.jpg`, `predator-detection.cooldown.json`, `predator-detection.low-confidence.json`, `heartbeat.cut.json` | `bird-counts.invalid-window-not-aligned.json` (50014), `bird-counts.invalid-negative.json` (50012), `bird-counts.invalid-missing-z.json`, `predator-detection.invalid-class.json`, `predator-detection.invalid-offset.json`, `predator-detection.invalid-not-jpeg.json` + `not-jpeg.png` (415), `ai.invalid-service-key.json` (401) |
+| `rest/` | `auth-login.json`, `control.manual.json`, `control.auto-without-ison.json`, `alert-ack.json`, `alerts-list.page.json`, `readings-history.json`, `thresholds-put.json`, `health.json`, `harvests-post.cut.json`, `report-env-vs-yield.cut.json` | `auth-login.invalid-credentials.json`, `control.invalid-not-controllable.json` (409), `alert.invalid-transition.json` (409), `readings-history.invalid-range.json` (50041), `readings-history.invalid-missing-z.json`, `thresholds-put.invalid-min-max.json` (547), `house.invalid-not-owner.json` (404), `users.invalid-last-admin.json` (409) |
+| `ws/` | `readings.new.json`, `alert.created.threshold.json`, `alert.created.predator.json`, `alert.updated.json`, `device.state.json`, `birdcount.updated.json` | — |
