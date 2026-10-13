@@ -92,7 +92,7 @@ Mục Bắt buộc trên ranh giới không cắt; người hỗ trợ (Phần 2
 ### database-core (TV1)
 
 Bắt buộc:
-1. Migration các bảng lõi (người dùng, nhà, khu vực, thiết bị, chỉ số, ngưỡng, số đo, nhật ký điều khiển, cảnh báo, lịch sử cảnh báo) + chỉ mục `SensorReadings` — **xong 20/10**
+1. Migration các bảng lõi (người dùng, nhà, khu vực, thiết bị, chỉ số, ngưỡng, số đo, nhật ký điều khiển, cảnh báo, lịch sử cảnh báo) + chỉ mục `SensorReadings` + chỉ mục unique có lọc `UX_Alerts_OpenThreshold` (lưới an toàn chống mở trùng cảnh báo ngưỡng) — **xong 20/10**
 2. `sp_IngestReadings` (thu nhận + mở/đóng cảnh báo ngưỡng) — **xong 20/10**
 3. `sp_SetActuator` (điều khiển tự động/thủ công + nhật ký) — **xong 20/10**
 4. `trg_Alerts_History`, `sp_UpdateAlertStatus`
@@ -107,7 +107,7 @@ Bắt buộc:
 10. Harvests + `sp_Report_EnvStabilityVsYield`
 11. `trg_Devices_Status` + phần OFFLINE của `sp_DetectAnomalies`
 
-Nên có: NestLogs. Nếu còn thời gian: chỉ mục lọc.
+Nên có: NestLogs.
 
 ### integration-contract (TV2, TV1 cùng duyệt)
 
@@ -130,7 +130,7 @@ Bắt buộc:
 1. Phân quyền: login/user/role theo quyền tối thiểu (backend chỉ EXECUTE các SP cần thiết, tài khoản chỉ đọc cho báo cáo)
 2. Transaction và đồng thời: kịch bản 2 phiên minh họa lost update, deadlock và cách xử lý (isolation level, `UPDLOCK`)
 3. Sao lưu/phục hồi: full + differential + log, khôi phục về thời điểm
-4. Tối ưu: so sánh execution plan trước/sau chỉ mục trên vài triệu dòng `SensorReadings`
+4. Tối ưu: so sánh execution plan trước/sau chỉ mục trên vài triệu dòng `SensorReadings`, gồm bài thêm `INCLUDE (Value)` vào `UQ(DeviceId, MetricCode, RecordedAt)` (Key Lookup → biến mất)
 
 Nên có: lịch sao lưu bằng `sqlcmd` + Windows Task Scheduler (Express không có SQL Agent). Nếu còn thời gian: phân vùng `SensorReadings` theo tháng.
 
