@@ -1,7 +1,7 @@
 # SwiftletCare — database-core: thiết kế CSDL SQL Server
 
 - **Ngày:** 2026-10-12
-- **Trạng thái:** Đang thiết kế (duyệt từng phần)
+- **Trạng thái:** Đã duyệt
 - **Chủ module:** TV1
 - **Nguồn:** [Roadmap](2026-10-12-swiftletcare-roadmap.md) · [Project.md](../../../Project.md)
 
@@ -36,7 +36,7 @@ database/
 
 | Công cụ | Ghi chú |
 |---|---|
-| SQL Server 2025 Express | Bật Mixed Mode, TCP/IP cổng 1433 |
+| SQL Server Express, **tối thiểu 2016 SP1** (máy hiện có: 2025) | Bật Mixed Mode, TCP/IP cổng 1433 |
 | `sqlcmd` | Chạy script SQL và test |
 | Node.js 25 | Prisma CLI, `npm test` |
 | PowerShell | Chạy `scripts/deploy.ps1` |
@@ -47,10 +47,18 @@ Cả 5 thành viên dùng Windows → chỉ cần `scripts/deploy.ps1`, không l
 
 1. Bật **Mixed Mode** (SQL Server + Windows authentication), khởi động lại dịch vụ SQL Server.
 2. Bật **TCP/IP**, đặt cổng cố định **1433** trong SQL Server Configuration Manager (Express tắt TCP/IP mặc định), khởi động lại dịch vụ.
-3. Tạo login SQL `swiftlet_dev`, là `db_owner` của CSDL `SwiftletCare` và có server role **`dbcreator`** — `prisma migrate dev` cần tạo **shadow database**. (Thay thế: khai báo `shadowDatabaseUrl` trỏ tới một CSDL shadow tạo sẵn.)
+3. Tạo login SQL `swiftlet_dev`, là `db_owner` của CSDL phát triển **`SwiftletCare_Dev`** (và `SwiftletCare_Test` do test tạo) và có server role **`dbcreator`** — `prisma migrate dev` cần tạo **shadow database**. (Thay thế: khai báo `shadowDatabaseUrl` trỏ tới một CSDL shadow tạo sẵn.)
 4. Sao chép `.env.example` → `.env`, điền mật khẩu.
 5. Kiểm tra: `sqlcmd -S localhost,1433 -U swiftlet_dev -Q "SELECT @@VERSION"` trả về phiên bản.
-6. Kiểm tra mức tương thích: `SELECT compatibility_level FROM sys.databases WHERE name = 'SwiftletCare'` phải **≥ 130** (`OPENJSON`); `deploy.ps1` dừng với thông báo lỗi nếu thấp hơn.
+6. Kiểm tra phiên bản: `SELECT SERVERPROPERTY('ProductVersion')` phải **≥ 13.0.4001** (SQL Server 2016 SP1 — cần cho `CREATE OR ALTER`, `OPENJSON`, `SESSION_CONTEXT`, `AT TIME ZONE`).
+7. Kiểm tra mức tương thích: `SELECT compatibility_level FROM sys.databases WHERE name = 'SwiftletCare_Dev'` phải **≥ 130** (`OPENJSON`).
+8. `deploy.ps1` tự kiểm tra bước 6–7 và dừng với thông báo lỗi nếu không đạt.
+
+**Tên CSDL:** `SwiftletCare_Dev` (phát triển), `SwiftletCare_Test` (test, tạo lại mỗi lần chạy), `SwiftletCare` (bản demo, không bao giờ reset).
+
+**`deploy.ps1 -Reset`** (xóa và tạo lại CSDL) **chỉ chạy khi tên CSDL kết thúc bằng `_Test` hoặc `_Dev`** (không phân biệt hoa thường). Tên khác → từ chối, báo lỗi, thoát mã khác 0 **trước khi gửi bất kỳ lệnh SQL nào**. Không có cờ nào bỏ qua kiểm tra này.
+
+**Hàm T-SQL bị cấm** vì chỉ có từ SQL Server 2022 (máy thành viên có thể cũ hơn): `GREATEST`, `LEAST`, `DATE_BUCKET`, `DATETRUNC`, `GENERATE_SERIES`, `STRING_SPLIT(…, enable_ordinal)`. Dùng `CASE WHEN`, `DATEADD`/`DATEDIFF`, bảng số sinh bằng `CROSS JOIN` thay thế.
 
 **Vì sao dùng SQL login:** mỗi thành viên có máy và tài khoản Windows riêng; SQL login cho cả nhóm dùng chung một dạng chuỗi kết nối, đồng nhất giữa các máy. `swiftlet_dev` chỉ dùng khi phát triển; `database-advanced` thay bằng các login quyền tối thiểu.
 
@@ -58,8 +66,10 @@ Cả 5 thành viên dùng Windows → chỉ cần `scripts/deploy.ps1`, không l
 
 - Script T-SQL thuần, không dùng tSQLt (cần bật CLR, cài thêm framework).
 - Mỗi SP một file trong `tests/`: chuẩn bị dữ liệu → `EXEC` → so kết quả, sai thì `THROW`.
-- Mỗi file bắt đầu bằng `SET XACT_ABORT ON`, chạy trong `BEGIN TRAN … ROLLBACK`, bọc `TRY/CATCH` để **luôn ROLLBACK** kể cả khi test lỗi; không làm bẩn dữ liệu mẫu.
+- Test chạy trên `SwiftletCare_Test` (tạo lại mỗi lần), không đụng dữ liệu dev.
+- Mỗi file bắt đầu bằng `SET XACT_ABORT ON`; **mỗi ca test một transaction riêng** `BEGIN TRAN … ROLLBACK`, bọc `TRY/CATCH` để **luôn ROLLBACK** kể cả khi test lỗi. Ca mong đợi lỗi: `CATCH` kiểm `ERROR_NUMBER()`, `ROLLBACK` (transaction đã bị `XACT_ABORT` hủy), rồi mới kiểm trạng thái sau lỗi.
 - `npm test` gọi `sqlcmd -b` cho từng file: lỗi trả mã thoát khác 0, `npm test` thất bại.
+- Chi tiết bộ test: Phần 4.
 
 ### Dữ liệu mẫu
 
@@ -183,6 +193,7 @@ Vai trò STAFF và bảng thành viên nhà; tọa độ nhà yến; bảng lưu
 - **`FOR JSON` chỉ dùng trong truy vấn con** trả về như một cột: `(SELECT … FOR JSON PATH) AS NewAlertsJson`. Không đặt `FOR JSON` ở tầng ngoài cùng — SQL Server cắt kết quả thành nhiều dòng (~2033 ký tự/dòng), client chỉ đọc dòng đầu sẽ nhận JSON hỏng. Test phải kiểm với lô lớn (Phần 4).
 - Mỗi SP bắt đầu bằng `SET NOCOUNT ON; SET XACT_ABORT ON;`.
 - Mọi thay đổi trên `Alerts` chỉ qua SP/trigger; Prisma chỉ đọc bảng này.
+- **SP hệ thống** (`sp_IngestReadings`, `sp_CreatePredatorAlert`, `sp_DetectAnomalies`) đặt `SESSION_CONTEXT` UserId/Note = NULL trước khi ghi `Alerts`, để trigger không nhận nhầm người thao tác còn sót trên kết nối dùng lại trong pool.
 - SP không kiểm tra quyền sở hữu nhà; backend kiểm tra trước khi gọi.
 - Kết quả AI đi qua backend → mọi SP nhận dữ liệu AI do backend gọi.
 
@@ -218,8 +229,16 @@ Backend đổi thành HTTP 400/409.
   2. Cập nhật `LastSeenAt`; đặt `Status = ONLINE` **chỉ khi đang khác ONLINE** (không kích hoạt trigger thừa).
   3. Lấy giá trị mới nhất của mỗi (khu vực, chỉ số) trong lô, so với Thresholds. Đọc cảnh báo đang mở với `UPDLOCK, HOLDLOCK`, duyệt theo thứ tự (ZoneId, MetricCode).
      - **Mở** khi giá trị ra ngoài [Min, Max] và chưa có THRESHOLD đang mở. Lệch > 10% so với ngưỡng bị vượt = CRITICAL, còn lại WARNING.
-     - **Đóng** (tự động, người thao tác = hệ thống) khi giá trị vào trong **[Min + h, Max − h]** với `h = MIN(Metrics.Hysteresis, (Max − Min) / 4)`. Ngưỡng chỉ có một phía thì chỉ áp dụng phía đó.
-     - Giá trị nằm giữa hai vùng: giữ nguyên trạng thái — **chống cảnh báo nhấp nháy** khi giá trị dao động quanh ngưỡng.
+     - **Đóng** (tự động, người thao tác = hệ thống) khi giá trị vào **vùng đóng**:
+
+       | Ngưỡng có | h | Mở khi | Vùng đóng |
+       |---|---|---|---|
+       | Min và Max | `CASE WHEN Hysteresis < (Max − Min) / 4 THEN Hysteresis ELSE (Max − Min) / 4 END` | < Min hoặc > Max | [Min + h, Max − h] |
+       | Chỉ Max (VD CO2, LIGHT) | `Hysteresis` | > Max | ≤ Max − h |
+       | Chỉ Min | `Hysteresis` | < Min | ≥ Min + h |
+
+       Giới hạn h ≤ (Max − Min)/4 khi có cả hai đầu để vùng đóng không bao giờ rỗng.
+     - Giá trị nằm giữa ngưỡng và vùng đóng: giữ nguyên trạng thái — **chống cảnh báo nhấp nháy** khi giá trị dao động quanh ngưỡng.
 - Trả 1 dòng: `Received, Accepted, Duplicates, Rejected, NewAlertsJson, ResolvedAlertIdsJson`.
 
 **Mục 3 — `sp_SetActuator(@DeviceId, @IsOn, @Level = NULL, @Source, @Mode = NULL, @UserId = NULL, @Reason = NULL)`** — xong 20/10
@@ -243,7 +262,7 @@ Backend đổi thành HTTP 400/409.
 **Mục 6 — `sp_RecordBirdCount(@Json)`**
 
 - Đầu vào: AI (qua backend) gửi **tổng của cả cửa sổ**: `[{"camera":"H1-F0-CAMERA","windowStart":"2026-10-12T10:00:00Z","in":5,"out":1}, ...]`. Được gửi tổng tạm khi cửa sổ chưa đóng; lần sau thay lần trước.
-- Upsert (`UPDLOCK, SERIALIZABLE`) theo (CameraId, WindowStart) với **`InCount = GREATEST(cũ, mới)`, `OutCount = GREATEST(cũ, mới)`**:
+- Upsert (`UPDLOCK, SERIALIZABLE`) theo (CameraId, WindowStart), **lấy giá trị lớn hơn cho từng cột** bằng `CASE WHEN` (không dùng `GREATEST` — xem Phần 1): `InCount = CASE WHEN mới.InCount > cũ.InCount THEN mới.InCount ELSE cũ.InCount END`, tương tự `OutCount`:
   - **Idempotent:** gửi lại cùng tin bao nhiêu lần cũng đúng.
   - Chặn giảm số khi MQTT giao lại tin tổng tạm cũ sau tin mới, hoặc AI khởi động lại giữa cửa sổ gửi tổng nhỏ hơn.
   - **Giới hạn đã chấp nhận:** AI khởi động lại giữa cửa sổ → thiếu phần đếm trước khởi động lại của cửa sổ đó (≤ 1 cửa sổ 5 phút mỗi lần). AI không phải lưu trạng thái cửa sổ. Ghi rõ trong `integration-contract`.
@@ -277,7 +296,7 @@ Backend đổi thành HTTP 400/409.
 | Tên | Mục | Hành vi |
 |---|---|---|
 | `trg_Alerts_History` | 4 | AFTER INSERT, UPDATE trên Alerts. Ghi AlertHistory khi cảnh báo được tạo hoặc đổi Status. **Viết theo tập hợp** (`inserted` ⋈ `deleted`). Người thao tác/ghi chú lấy từ `SESSION_CONTEXT('UserId'/'Note')`; NULL = hệ thống. |
-| `trg_Devices_Status` | 11 (dưới ranh giới cắt) | AFTER UPDATE trên Devices. Thoát ngay nếu `NOT UPDATE(Status)`. Theo tập hợp: chỉ xử lý dòng có `deleted.Status <> inserted.Status`. ONLINE → OFFLINE/ERROR: tạo `DEVICE_OFFLINE` (ERROR = CRITICAL, OFFLINE = WARNING). Về ONLINE: tự đóng `DEVICE_OFFLINE` đang mở. |
+| `trg_Devices_Status` | 11 (dưới ranh giới cắt) | AFTER UPDATE trên Devices. Thoát ngay nếu `NOT UPDATE(Status)`. Theo tập hợp: chỉ xử lý dòng có `deleted.Status <> inserted.Status`. ONLINE → OFFLINE/ERROR: tạo `DEVICE_OFFLINE` (ERROR = CRITICAL, OFFLINE = WARNING), điền DeviceId, ZoneId, HouseId theo thiết bị. Về ONLINE: tự đóng `DEVICE_OFFLINE` đang mở. |
 
 **Dự phòng nếu R1 xảy ra:** bỏ `trg_Devices_Status`; `sp_DetectAnomalies` tạo cảnh báo khi đánh dấu OFFLINE, `sp_IngestReadings` tự đóng khi thiết bị gửi dữ liệu trở lại. `trg_Alerts_History` không bị ảnh hưởng vì Alerts chỉ ghi qua SP.
 
@@ -290,6 +309,65 @@ Backend đổi thành HTTP 400/409.
 | `vw_DailyEnvStats` | 5 | Avg/Min/Max theo khu vực × chỉ số × ngày giờ Việt Nam. |
 | `vw_DailyBirdFlow` | 6 | Số chim ra/về/chênh lệch theo nhà × ngày giờ Việt Nam. |
 
+## Phần 4 — Chỉ mục, dữ liệu mẫu, kiểm thử (đã duyệt)
+
+### 4.1 Chỉ mục
+
+**SensorReadings**
+
+- PK `ReadingId` **nonclustered**; **clustered index trên `RecordedAt`** — ghi nối đuôi theo thời gian, hợp truy vấn theo khoảng, dễ phân vùng sau này. Phụ thuộc R4.
+- `UQ(DeviceId, MetricCode, RecordedAt)` — chống trùng, phục vụ lịch sử và giá trị mới nhất.
+- **Không có `INCLUDE (Value)` trong core** (Prisma không biểu diễn được; viết tay vướng R2; lịch sử 24 giờ chỉ vài nghìn dòng nên key lookup chấp nhận được). Thêm `INCLUDE (Value)` là **bài demo trước/sau của `database-advanced`**: plan có Key Lookup → thêm INCLUDE → lookup biến mất, đo trên vài triệu dòng.
+
+**Bảng khác**
+
+| Chỉ mục | Khai báo | Phục vụ |
+|---|---|---|
+| `Alerts(HouseId, Status, CreatedAt DESC)` | Prisma | Danh sách cảnh báo theo nhà |
+| `UX_Alerts_OpenThreshold` (unique có lọc, Phần 2) | Viết tay trong migration (R2) | Chống mở trùng + dò cảnh báo đang mở trong `sp_IngestReadings` |
+| `Alerts(DeviceId, AlertType, DetectedClass, CreatedAt DESC)` | Prisma | Kiểm tra cooldown thiên địch |
+| `ControlLogs(DeviceId, CreatedAt DESC)` | Prisma | Lịch sử điều khiển |
+| `Devices(ZoneId)`, `AlertHistory(AlertId)` | Prisma | Khóa ngoại được join từ phía cha (Prisma không tự tạo trên SQL Server) |
+
+- Khóa ngoại tới bảng tra (`MetricCode`, `UserId` trong nhật ký) không đánh chỉ mục: không truy vấn/xóa từ phía cha.
+- `Houses(OwnerId)`, `Zones(HouseId)`, BirdCounts, Harvests đã có chỉ mục từ UQ.
+
+### 4.2 Dữ liệu mẫu
+
+- **Cố định:** sinh bằng công thức xác định (VD nhiệt độ = 28 + 1,5·sin(giờ)), không `RAND()`/`NEWID()`; theo tập hợp, không vòng lặp; bảng số sinh bằng `CROSS JOIN` (không `GENERATE_SERIES`).
+- **Neo theo `@AnchorDateVn`**, mặc định `2026-10-12`. Cùng ngày neo → mọi máy ra cùng dữ liệu; test luôn dùng mặc định. Dữ liệu kết thúc **20:00 ngày neo (giờ Việt Nam)**. Demo trực tiếp: neo = **hôm qua**, để mọi dữ liệu mẫu nằm trong quá khứ; simulator nối tiếp từ hôm nay.
+- **Mật khẩu:** seed chỉ chứa **hash bcrypt tính sẵn** của một mật khẩu dev tạm. README ghi mật khẩu dev đó và ghi rõ **chỉ dùng phát triển, không dùng mật khẩu thật**.
+
+| Nhóm | Nội dung |
+|---|---|
+| Người dùng | `admin` (ADMIN), `owner1`, `owner2` (OWNER — test cách ly giữa các chủ) |
+| Nhà, khu vực | **H1** (owner1): F0 lối vào + F1–F3 = **4 tầng**. **H2** (owner2): F0 + F1 = **2 tầng** |
+| Thiết bị | Mỗi tầng: SENSOR, MIST, FAN, HEATER; mỗi nhà: 1 SPEAKER, 1 CAMERA ở F0 → H1 18, H2 10, **tổng 28** |
+| Chỉ số | TEMP (Hysteresis 0,5 °C), HUMID (2 %), CO2 (50 ppm), LIGHT (2 lux) |
+| Ngưỡng (mọi khu vực) | TEMP 26–30, đích 28; HUMID 75–90, đích 82; CO2 chỉ Max 1000; LIGHT chỉ Max 10 |
+| Số đo | **6 cảm biến** × 4 chỉ số, mỗi 5 phút, từ 00:00 ngày neo−7 đến 20:00 ngày neo: 7 × 288 + 240 = 2256 mốc × 24 chuỗi = **54.144 dòng**. H1-F2 có đoạn nóng 13:00–15:00 ngày neo−2; H1-F3 HUMID giảm dần, cuối dữ liệu ở 72 % |
+| Đếm chim | 8 ngày, cửa sổ 5 phút; ra 05:00–07:00, về 17:00–19:30 (giờ Việt Nam). H1 bình thường; **H2 ngày neo về ít hơn 40 %** → `sp_DetectAnomalies @NowUtc = <ngày neo 20:30 VN>` tạo `POPULATION_DROP` |
+| Cảnh báo | H1-F2 TEMP THRESHOLD **RESOLVED** (đoạn nóng, đóng bởi hệ thống); H1-F3 HUMID THRESHOLD **NEW** (khớp số đo cuối 72 %); PREDATOR snake ở H1-F0 **ACK** bởi owner1 (đường dẫn ảnh mẫu); kèm AlertHistory. Hai cảnh báo THRESHOLD khác (khu vực, chỉ số) và chỉ một đang mở → **thỏa `UX_Alerts_OpenThreshold`** |
+| Thu hoạch (mục 10) | 3 tháng cho H1, **file seed riêng** để bỏ được nếu cắt |
+
+- Seed ghi `Alerts` qua SP khi có SP phù hợp (`sp_CreatePredatorAlert`, `sp_UpdateAlertStatus`); cảnh báo ngưỡng lịch sử được chèn trực tiếp (ngoại lệ có chủ ý của seed, chạy bằng `db_owner`; trigger vẫn sinh AlertHistory).
+
+### 4.3 Kiểm thử
+
+`npm test` = `deploy.ps1 -Database SwiftletCare_Test -Reset` → `sqlcmd -b` chạy lần lượt các file:
+
+| File | Kiểm |
+|---|---|
+| `tests/deploy-guard.ps1` | `deploy.ps1 -Database SwiftletCare -Reset` (và tên không kết thúc `_Test`/`_Dev`) thoát mã khác 0, CSDL không bị đụng tới |
+| `tests/constraints.test.sql` | Chèn dữ liệu vi phạm từng CHECK / UQ / khóa ngoại (kể cả khóa ngoại ghép Alerts → Zones, CHECK mốc 5 phút) → lỗi 547 / 2627 / 2601 |
+| `tests/seed.test.sql` | Không có hai cảnh báo THRESHOLD đang mở trùng (ZoneId, MetricCode); số dòng từng bảng đúng như 4.2 (VD 54.144 số đo, 28 thiết bị); cảnh báo NEW khớp số đo cuối ngoài ngưỡng |
+| `tests/sp_<tên>.test.sql` | Mỗi SP: ca đúng + từng mã lỗi của SP đó |
+| `tests/sp_IngestReadings.test.sql` (thêm) | Khử trùng trong lô và với bảng; **lô 1000 số đo** làm nhiều khu vực vượt ngưỡng → `NewAlertsJson` > 2033 ký tự, SP trả **đúng 1 dòng**, `ISJSON(NewAlertsJson) = 1`; **hysteresis**: TEMP 30,2 → 29,8 → 29,4 với Max 30, h 0,5 → mở, vẫn mở ở 29,8, đóng ở 29,4; ngưỡng chỉ Max (CO2 1050 → 980 → 940, h 50 → đóng ở 940) |
+| `tests/sp_RecordBirdCount.test.sql` (thêm) | Gửi lại cùng tin → không đổi; gửi tổng nhỏ hơn → giữ số lớn; mỗi cột lấy lớn hơn độc lập |
+| `tests/trg_Alerts_History.test.sql` | Tạo cảnh báo → đúng 1 dòng AlertHistory (OldStatus NULL, NewStatus NEW, UserId NULL); `sp_UpdateAlertStatus` ACK với UserId 2, Note `N'x'` → thêm đúng 1 dòng với UserId 2, Note `N'x'`; **sau đó `SESSION_CONTEXT(N'UserId')` và `(N'Note')` là NULL**; chuyển trạng thái sai → lỗi 50021, AlertHistory không thêm dòng, **SESSION_CONTEXT vẫn NULL**; một lệnh UPDATE đổi 2 cảnh báo → đúng 2 dòng (trigger theo tập hợp) |
+
+Khóa đồng thời (hai phiên) không test ở đây — `sqlcmd` chỉ có một phiên; kịch bản hai phiên thuộc `database-advanced`.
+
 ## Rủi ro cần kiểm chứng
 
 Kiểm chứng ở bước lập kế hoạch, trước khi triển khai phần liên quan.
@@ -298,4 +376,7 @@ Kiểm chứng ở bước lập kế hoạch, trước khi triển khai phần 
 |---|---|---|---|
 | R1 | Prisma `create`/`update` trên SQL Server sinh `OUTPUT INSERTED` không kèm `INTO`; SQL Server từ chối với bảng có trigger (`Alerts`, `Devices`). | Tạo bảng thử có trigger, gọi `prisma.x.create()` / `update()`. | Quy ước chỉ ghi các bảng có trigger qua SP; dự phòng của `trg_Devices_Status` ở Phần 3. |
 | R2 | Chỉ mục lọc (`UX_Alerts_OpenThreshold`) và SQL viết tay khác trong migration bị `prisma migrate dev` coi là lệch (drift) so với schema. | Thêm chỉ mục lọc vào migration, chạy lại `prisma migrate dev`, xem có đòi reset hoặc sinh lệnh xóa không. | Đưa phần đó ra file `.sql` chạy sau migrate, ghi rõ ngoại lệ. |
+| R3 | `$queryRaw` chỉ đọc tập kết quả đầu tiên của SP. | Gọi một SP thử trả 2 tập kết quả. | Đã phòng sẵn bằng quy ước một tập kết quả / SP. |
+| R4 | Prisma không hỗ trợ thuộc tính `clustered` cho `@id`/`@@index` trên SQL Server. | Khai báo `@id(clustered: false)` + `@@index([recordedAt], clustered: true)`, chạy `prisma migrate dev --create-only`, đọc SQL sinh ra. | Viết tay phần clustered/nonclustered vào migration (cơ chế Phần 1). |
 | R5 | Prisma không chấp nhận quan hệ ghép `Alerts(ZoneId, HouseId) → Zones(ZoneId, HouseId)` có một cột tùy chọn (ZoneId) và một cột bắt buộc (HouseId), hoặc dùng chung cột HouseId với quan hệ tới Houses. | Khai báo quan hệ trong `schema.prisma`, chạy `prisma validate` và `prisma migrate dev --create-only`, xem SQL sinh ra. | Viết khóa ngoại ghép bằng SQL tay trong migration (theo cơ chế Phần 1); nếu tiếp tục lệch theo R2 thì xử lý như R2. |
+| R6 | Giá trị `DATETIME2` (không mang múi giờ) bị đọc/ghi lệch 7 giờ theo giờ máy. Đã tra: Prisma 7 kết nối SQL Server qua driver adapter `@prisma/adapter-mssql`, adapter này bọc thư viện `mssql` (chạy trên `tedious`); tùy chọn `options.useUTC` của `mssql`/`tedious` quyết định cách hiểu `DATETIME2`. | Ghi `2026-10-12T10:00:00Z` qua `sp_IngestReadings`, đọc lại bằng Prisma và bằng `sqlcmd`: Prisma phải trả `2026-10-12T10:00:00.000Z`, `sqlcmd` phải hiện `2026-10-12 10:00:00`. Thêm thành test tích hợp ở backend. | Backend dùng `mssql` (qua adapter) → khai báo **`options.useUTC: true`** tường minh trong cấu hình adapter; `.env.example` ghi chú dòng này kèm lý do. Nếu nhóm dùng Prisma 6 (engine Rust, không có `useUTC`) thì chỉ giữ bước kiểm tra trên. **Chốt phiên bản Prisma 7** trong `package.json`. |
