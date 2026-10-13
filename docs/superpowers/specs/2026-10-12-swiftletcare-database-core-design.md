@@ -194,7 +194,7 @@ Vai trò STAFF và bảng thành viên nhà; tọa độ nhà yến; bảng lưu
 - **Cột JSON do SP trả** (hợp đồng với backend — integration-contract 4.2):
   - Luôn `FOR JSON PATH, INCLUDE_NULL_VALUES` — mặc định `FOR JSON` **bỏ khóa có giá trị NULL**, trái quy ước "không bỏ trường" của hợp đồng. Một đối tượng đơn (`AlertJson`) thêm `WITHOUT_ARRAY_WRAPPER`.
   - Cột thời gian trong JSON ghi **có hậu tố `Z`**: `CONCAT(CONVERT(CHAR(19), col, 126), 'Z')` — mặc định `FOR JSON` ghi `DATETIME2` không có `Z`, client sẽ hiểu là giờ địa phương.
-  - **Danh sách trường cảnh báo** (dùng chung cho `NewAlertsJson`, `AlertJson`): `AlertId, HouseId, ZoneId, DeviceId, AlertType, Severity, MetricCode, Value, DetectedClass, Confidence, HasSnapshot` (`CAST(CASE WHEN SnapshotPath IS NOT NULL THEN 1 ELSE 0 END AS BIT)`)`, Message, Status, CreatedAt`. Không có `SnapshotPath` (ảnh lấy qua endpoint riêng).
+  - **Danh sách trường cảnh báo** (dùng chung cho `NewAlertsJson`, `AlertJson`): `AlertId, HouseId, ZoneId, DeviceId, AlertType, Severity, MetricCode, Value, DetectedClass, Confidence, HasSnapshot, Message, Status, CreatedAt` (14 khóa; `HasSnapshot` = `CAST(CASE WHEN SnapshotPath IS NOT NULL THEN 1 ELSE 0 END AS BIT)`). Không có `SnapshotPath` (ảnh lấy qua endpoint riêng).
 - Mỗi SP bắt đầu bằng `SET NOCOUNT ON; SET XACT_ABORT ON;`.
 - Mọi thay đổi trên `Alerts` chỉ qua SP/trigger; Prisma chỉ đọc bảng này.
 - **SP hệ thống** (`sp_IngestReadings`, `sp_CreatePredatorAlert`, `sp_DetectAnomalies`, `sp_RecordHeartbeat`) đặt `SESSION_CONTEXT` UserId/Note = NULL trước khi ghi `Alerts`, để trigger không nhận nhầm người thao tác còn sót trên kết nối dùng lại trong pool.
