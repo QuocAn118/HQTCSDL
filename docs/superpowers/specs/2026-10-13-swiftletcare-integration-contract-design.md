@@ -190,3 +190,116 @@ Backend xử lý theo thứ tự:
 - AI khởi động lại giữa cửa sổ đếm → cửa sổ đó thiếu phần đếm trước khởi động lại (≤ 5 phút mỗi lần); AI không phải lưu trạng thái cửa sổ.
 
 **Nên có:** file ACL Mosquitto — `simulator` chỉ publish `readings`/`heartbeat`, chỉ subscribe `command`; `backend` ngược lại.
+
+## Phần 3 — REST API và bảng đổi mã lỗi (đã duyệt)
+
+### 3.1 Quy tắc chung
+
+- **Quyền sở hữu:** mọi route có `houseId` / `zoneId` / `deviceId` / `alertId` được backend truy ra nhà; OWNER không sở hữu → **404** (không 403, không lộ sự tồn tại). ADMIN thấy tất cả.
+- **Guard xác thực đọc lại Users mỗi request** (tra theo khóa chính, rẻ): `IsActive = 0` → 401; dùng `Role` trong CSDL, không tin `role` trong token. Tài khoản bị khóa hoặc đổi vai trò có hiệu lực ngay, không chờ token hết hạn.
+- **Không xóa cứng:** ngừng dùng bằng `PATCH {isActive:false}`; không có route DELETE.
+- **Phân trang theo con trỏ id:** `?limit=50&before=<id>` (`limit` ≤ 200), sắp xếp theo id giảm dần; phản hồi `{items:[...], nextBefore:<id>|null}`. Không dùng `createdAt` làm con trỏ: `DATETIME2(0)` chỉ chính xác đến giây, nhiều dòng cùng giây sẽ bị sót hoặc trùng.
+- **Kiểm tra đầu vào bằng DTO** (class-validator), gồm quy tắc mốc thời gian có `Z`.
+
+### 3.2 Ghi bảng Devices
+
+Database-core quy ước không ghi bảng có trigger bằng `prisma.<model>.create/update` (R1). Devices không có SP CRUD, nên:
+
+- **UPDATE Devices** (đổi tên, `isActive`): bắt buộc qua `$executeRaw` có tham số, **không có `OUTPUT`**.
+- **INSERT Devices** phụ thuộc kết quả kiểm chứng R1 (làm sớm, ngày đầu plan database-core): `trg_Devices_Status` chỉ là `AFTER UPDATE`.
+  - Nếu SQL Server cho phép `OUTPUT` không `INTO` khi bảng chỉ có trigger UPDATE → INSERT dùng `prisma.devices.create`.
+  - Nếu không → INSERT cũng qua `$executeRaw`, lấy id mới bằng `SCOPE_IDENTITY()` trong cùng câu lệnh.
+- Kết luận cuối ghi lại vào database-core sau khi kiểm chứng.
+
+### 3.3 Endpoint
+
+| Nhóm | Endpoint | Quyền | Gọi tới |
+|---|---|---|---|
+| Sức khỏe | `GET /api/health` → `{status, db, mqtt}`; 200 khi tất cả `ok`/`connected`, ngược lại 503 | Công khai | `SELECT 1`, trạng thái client MQTT. Không trả chi tiết khác |
+| Xác thực | `POST /api/auth/login` `{username,password}` → `{accessToken, expiresIn, user}` | Công khai | Prisma đọc Users, bcrypt |
+| | `GET /api/auth/me` | Đã đăng nhập | |
+| Người dùng | `GET/POST /api/users`, `GET/PATCH /api/users/:userId` (`fullName`, `email`, `phone`, `role`, `isActive`) | ADMIN | Prisma |
+| | `POST /api/users/:userId/reset-password` `{newPassword}` | ADMIN | bcrypt |
+| Nhà | `GET/POST /api/houses`, `GET/PATCH /api/houses/:houseId` | OWNER (nhà mình), ADMIN | Prisma |
+| Khu vực | `GET/POST /api/houses/:houseId/zones`, `PATCH /api/zones/:zoneId` | như trên | Prisma |
+| Thiết bị | `GET /api/houses/:houseId/devices`, `POST /api/zones/:zoneId/devices`, `PATCH /api/devices/:deviceId` (`name`, `isActive`) | như trên | Theo 3.2 |
+| Chỉ số | `GET /api/metrics` | Đã đăng nhập | Prisma |
+| Ngưỡng | `GET /api/zones/:zoneId/thresholds`, `PUT /api/zones/:zoneId/thresholds/:metricCode` `{minValue,maxValue,targetValue}` | như trên | Prisma; `UpdatedBy` từ JWT |
+| Số đo | `GET /api/houses/:houseId/latest-readings` | như trên | `vw_LatestReadings` |
+| | `GET /api/zones/:zoneId/readings?metric=&from=&to=&bucketMinutes=` | | `sp_GetReadingHistory` |
+| | `GET /api/zones/:zoneId/daily-stats?fromVnDate=&toVnDate=` | | `vw_DailyEnvStats` |
+| Điều khiển | `POST /api/devices/:deviceId/control` `{isOn?, level?, mode?, reason?}` → `{changed, deviceCode, mode, isOn, level}` | như trên | `sp_SetActuator` (`Source='MANUAL'`, `UserId` từ JWT) |
+| | `GET /api/devices/:deviceId/control-logs?limit=&before=` | | Prisma |
+| Cảnh báo | `GET /api/alerts?houseId=&status=NEW,ACK&type=&limit=&before=` | như trên | Prisma đọc / `vw_OpenAlerts` |
+| | `GET /api/alerts/:alertId` (kèm `history`) | | Prisma đọc |
+| | `PATCH /api/alerts/:alertId` `{status, note?}` | | `sp_UpdateAlertStatus` |
+| | `GET /api/alerts/:alertId/snapshot` → `image/jpeg` | | Kiểm quyền theo cảnh báo rồi đọc file; **không bao giờ nhận đường dẫn từ client** |
+| Đếm chim | `GET /api/houses/:houseId/bird-flow?fromVnDate=&toVnDate=` | như trên | `vw_DailyBirdFlow` |
+| | `GET /api/devices/:deviceId/bird-counts?from=&to=` | | Prisma đọc BirdCounts |
+| AI | `POST /api/ai/bird-counts`, `/predator-detections`, `/heartbeat` (Phần 2) | `X-Service-Key` | |
+| *Dưới ranh giới cắt* | `GET/POST /api/zones/:zoneId/harvests`; `GET /api/houses/:houseId/reports/env-vs-yield?fromVnDate=&toVnDate=` | như trên | Prisma; `sp_Report_EnvStabilityVsYield` |
+
+**Người dùng**
+
+- Mật khẩu do **backend băm bằng bcrypt**; `passwordHash` **không bao giờ** xuất hiện trong phản hồi hay log.
+- Mật khẩu mới tối thiểu 8 ký tự.
+- **Không cho ADMIN tự khóa mình** (`isActive:false` hoặc hạ vai trò chính mình) → 409 `CANNOT_MODIFY_SELF`.
+- **Không khóa hoặc hạ vai trò ADMIN đang hoạt động cuối cùng** → 409 `LAST_ADMIN`. Kiểm tra và cập nhật trong cùng một transaction, đếm ADMIN với `UPDLOCK, HOLDLOCK` — hai ADMIN hạ nhau cùng lúc không làm hệ thống mất hết ADMIN.
+- Đăng nhập sai mật khẩu và tài khoản bị khóa trả **cùng một lỗi 401** (không dò được tên tài khoản).
+- JWT hạn 8 giờ, **không có refresh token** (YAGNI).
+
+**Điều khiển**
+
+- `mode = 'AUTO'` (trả quyền cho bộ điều khiển): `isOn` **không bắt buộc**; backend tự điền giá trị hiện tại của thiết bị trước khi gọi SP. Các trường hợp khác `isOn` bắt buộc.
+- SP commit xong mới publish MQTT (`changed = true`). **Publish lỗi** → ghi log mức error, vẫn trả 200 với kết quả SP (CSDL là nguồn sự thật); trạng thái được đồng bộ lại lên broker ở lần khởi động backend kế tiếp (Phần 2).
+
+**Ảnh chụp** — thẻ `<img>` không gửi được header `Authorization`, nên:
+
+- **Web:** `fetch` kèm token → `blob` → `URL.createObjectURL(blob)` gán cho `<img>`; thu hồi bằng `URL.revokeObjectURL` khi component gỡ.
+- **Mobile:** `<Image source={{ uri, headers: { Authorization: 'Bearer …' } }} />` (React Native `Image` và `expo-image` đều hỗ trợ).
+- Backend không cần cơ chế riêng. Không dùng đường dẫn có chữ ký: tốn khóa HMAC, mốc hết hạn, endpoint cấp chữ ký chỉ để có cache trình duyệt — không cần với lượng ảnh nhỏ.
+
+### 3.4 Định dạng lỗi
+
+```json
+{"error":{"code":"ALERT_INVALID_TRANSITION","message":"…","sqlNumber":50021,"details":null}}
+```
+
+`sqlNumber` = `null` khi lỗi không đến từ SQL. **Không bao giờ trả nguyên văn thông báo lỗi SQL** cho client.
+
+### 3.5 Bảng đổi mã lỗi SQL → HTTP
+
+| Mã SQL | HTTP | `code` | Ghi chú |
+|---|---|---|---|
+| 50001, 50002 | 500 | `INTERNAL` | Backend tự đặt Source/UserId → gặp là **lỗi backend**, log mức error |
+| 50003 | 409 | `DEVICE_NOT_CONTROLLABLE` | Đã qua kiểm quyền nên thiết bị tồn tại → ngừng dùng hoặc không phải cơ cấu chấp hành |
+| 50010 | 404 | `CAMERA_NOT_FOUND` | Endpoint AI |
+| 50012, 50013, 50014 | 400 | `VALIDATION_ERROR` | `details` nêu trường sai |
+| 50020 | 404 | `ALERT_NOT_FOUND` | |
+| 50021 | 409 | `ALERT_INVALID_TRANSITION` | |
+| 50030 | 400 | `INVALID_JSON` | |
+| 50040, 50041, 50042 | 400 | `INVALID_PARAMETER` | |
+| 547 (vi phạm CHECK/khóa ngoại) | 400 | `CONSTRAINT_VIOLATION` | VD ngưỡng Min ≥ Max |
+| 2627, 2601 (trùng UQ) | 409 | `DUPLICATE` | VD trùng tên khu vực trong nhà |
+| 1205 (nạn nhân deadlock) | 503 | `RETRY_LATER` | Backend **tự thử lại 1 lần** rồi mới trả 503 |
+| Lỗi SQL khác | 500 | `INTERNAL` | |
+
+| HTTP | `code` | Khi nào |
+|---|---|---|
+| 400 | `VALIDATION_ERROR` | DTO sai, gồm mốc thời gian thiếu `Z` / sai múi giờ |
+| 401 | `UNAUTHENTICATED` | Thiếu/sai JWT, tài khoản bị khóa, sai `X-Service-Key`, đăng nhập sai |
+| 403 | `FORBIDDEN` | Sai vai trò (VD OWNER gọi `/api/users`) |
+| 404 | `NOT_FOUND` | Không tồn tại hoặc không thuộc quyền sở hữu |
+| 409 | `CANNOT_MODIFY_SELF`, `LAST_ADMIN` | Quy tắc người dùng ở 3.3 |
+| 413 | `PAYLOAD_TOO_LARGE` | Ảnh vượt `SNAPSHOT_MAX_BYTES`, lô AI vượt 500 phần tử |
+| 415 | `UNSUPPORTED_MEDIA_TYPE` | Ảnh không phải JPEG thật |
+
+**Nên có:** giới hạn tần suất `/api/auth/login`.
+
+### 3.6 Checklist thiết lập mạng
+
+1. Backend lắng nghe **`0.0.0.0`** (biến `HOST`, cổng `PORT` mặc định 3000), không chỉ `localhost` — điện thoại thật mới gọi được.
+2. Mở cổng backend trong **Windows Defender Firewall** (mạng Private).
+3. App Expo lấy địa chỉ backend từ biến cấu hình **`EXPO_PUBLIC_API_URL`** = IP mạng LAN của máy chạy backend (VD `http://192.168.1.10:3000`), **không dùng `localhost`** (trên điện thoại `localhost` là chính điện thoại).
+4. **CORS:** biến `CORS_ORIGINS` liệt kê địa chỉ web (VD `http://localhost:3001`); áp dụng cho cả REST và Socket.IO.
+5. Kiểm tra: từ điện thoại mở `http://<IP LAN>:3000/api/health` thấy `{"status":"ok",…}`.
