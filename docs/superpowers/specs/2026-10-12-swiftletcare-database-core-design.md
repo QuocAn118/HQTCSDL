@@ -191,6 +191,10 @@ Vai trò STAFF và bảng thành viên nhà; tọa độ nhà yến; bảng lưu
 
 - **Mỗi SP trả đúng 1 tập kết quả.** Danh sách lồng (VD cảnh báo mới) là một **cột** JSON của dòng tóm tắt.
 - **`FOR JSON` chỉ dùng trong truy vấn con** trả về như một cột: `(SELECT … FOR JSON PATH) AS NewAlertsJson`. Không đặt `FOR JSON` ở tầng ngoài cùng — SQL Server cắt kết quả thành nhiều dòng (~2033 ký tự/dòng), client chỉ đọc dòng đầu sẽ nhận JSON hỏng. Test phải kiểm với lô lớn (Phần 4).
+- **Cột JSON do SP trả** (hợp đồng với backend — integration-contract 4.2):
+  - Luôn `FOR JSON PATH, INCLUDE_NULL_VALUES` — mặc định `FOR JSON` **bỏ khóa có giá trị NULL**, trái quy ước "không bỏ trường" của hợp đồng. Một đối tượng đơn (`AlertJson`) thêm `WITHOUT_ARRAY_WRAPPER`.
+  - Cột thời gian trong JSON ghi **có hậu tố `Z`**: `CONCAT(CONVERT(CHAR(19), col, 126), 'Z')` — mặc định `FOR JSON` ghi `DATETIME2` không có `Z`, client sẽ hiểu là giờ địa phương.
+  - **Danh sách trường cảnh báo** (dùng chung cho `NewAlertsJson`, `AlertJson`): `AlertId, HouseId, ZoneId, DeviceId, AlertType, Severity, MetricCode, Value, DetectedClass, Confidence, HasSnapshot` (`CAST(CASE WHEN SnapshotPath IS NOT NULL THEN 1 ELSE 0 END AS BIT)`)`, Message, Status, CreatedAt`. Không có `SnapshotPath` (ảnh lấy qua endpoint riêng).
 - Mỗi SP bắt đầu bằng `SET NOCOUNT ON; SET XACT_ABORT ON;`.
 - Mọi thay đổi trên `Alerts` chỉ qua SP/trigger; Prisma chỉ đọc bảng này.
 - **SP hệ thống** (`sp_IngestReadings`, `sp_CreatePredatorAlert`, `sp_DetectAnomalies`, `sp_RecordHeartbeat`) đặt `SESSION_CONTEXT` UserId/Note = NULL trước khi ghi `Alerts`, để trigger không nhận nhầm người thao tác còn sót trên kết nối dùng lại trong pool.
@@ -240,7 +244,8 @@ Backend đổi thành HTTP 400/409.
 
        Giới hạn h ≤ (Max − Min)/4 khi có cả hai đầu để vùng đóng không bao giờ rỗng.
      - Giá trị nằm giữa ngưỡng và vùng đóng: giữ nguyên trạng thái — **chống cảnh báo nhấp nháy** khi giá trị dao động quanh ngưỡng.
-- Trả 1 dòng: `Received, Accepted, Duplicates, Rejected, NewAlertsJson, ResolvedAlertIdsJson`.
+- Trả 1 dòng: `Received, Accepted, Duplicates, Rejected, AcceptedJson, NewAlertsJson, ResolvedAlertIdsJson`.
+  - **`AcceptedJson`**: mảng các số đo **đã chèn** trong lần gọi này (không gồm dòng trùng/bị loại): `DeviceId, DeviceCode, HouseId, ZoneId, MetricCode, Value, RecordedAt` — backend dùng để phát `readings.new` vào đúng phòng nhà.
 
 **Mục 3 — `sp_SetActuator(@DeviceId, @IsOn, @Level = NULL, @Source, @Mode = NULL, @UserId = NULL, @Reason = NULL)`** — xong 20/10
 
@@ -276,7 +281,7 @@ Backend đổi thành HTTP 400/409.
 - Đầu vào: `{"camera":"H1-F0-CAMERA","class":"snake","confidence":0.87,"snapshot":"snapshots/2026/10/12/H1-F0-CAMERA_104000.jpg","at":"2026-10-12T10:40:00Z"}`. Ảnh do backend lưu; SP chỉ giữ đường dẫn.
 - Bỏ qua nếu độ tin cậy < ngưỡng, hoặc cùng loài trên cùng camera đã báo trong `@CooldownMinutes` (kiểm tra với `UPDLOCK, HOLDLOCK` — hai phát hiện đồng thời không tạo hai cảnh báo).
 - ZoneId, HouseId lấy theo camera. Loài lạ → 50013, camera không hợp lệ → 50010.
-- Trả 1 dòng: `Created, AlertId, SkipReason` (`LOW_CONFIDENCE` / `COOLDOWN` / NULL).
+- Trả 1 dòng: `Created, AlertId, SkipReason, AlertJson` (`SkipReason` ∈ `LOW_CONFIDENCE` / `COOLDOWN` / NULL). `AlertJson` = đối tượng cảnh báo vừa tạo theo danh sách trường chung (NULL khi `Created = 0`) — backend phát `alert.created` không phải đọc lại.
 
 **Mục 8 (giảm đàn) và 11 (OFFLINE) — `sp_DetectAnomalies(@OfflineMinutes = 5, @DropPercent = 20, @CutoffHourVn = 20, @NowUtc = NULL)`** — backend gọi mỗi phút
 
@@ -286,7 +291,7 @@ Backend đổi thành HTTP 400/409.
   - Tối đa 1 cảnh báo/nhà/ngày. Bỏ qua nếu nhà có < 3 ngày dữ liệu trong 7 ngày trước.
 - **OFFLINE (mục 11, dưới ranh giới cắt):** thiết bị `IsActive = 1` có `LastSeenAt` quá `@OfflineMinutes` → đánh dấu OFFLINE.
 - `@NowUtc` (mặc định `SYSUTCDATETIME()`) để kiểm thử theo giờ. `@DropPercent` ngoài (0, 100) hoặc `@CutoffHourVn` ngoài [0, 23] → 50042.
-- Trả 1 dòng: `NewAlertsJson`.
+- Trả 1 dòng: `NewAlertsJson` — gồm cả cảnh báo `DEVICE_OFFLINE` do `trg_Devices_Status` tạo khi SP đánh dấu OFFLINE (SP đọc lại các cảnh báo tạo trong lần gọi này của các thiết bị vừa đánh dấu).
 
 **Mục 11 (dưới ranh giới cắt) — `sp_RecordHeartbeat(@Json)`** — tín hiệu sống của thiết bị không phải cảm biến (cơ cấu chấp hành qua MQTT, camera qua AI); backend gọi.
 
@@ -372,6 +377,7 @@ Backend đổi thành HTTP 400/409.
 | `tests/constraints.test.sql` | Chèn dữ liệu vi phạm từng CHECK / UQ / khóa ngoại (kể cả khóa ngoại ghép Alerts → Zones, CHECK mốc 5 phút) → lỗi 547 / 2627 / 2601 |
 | `tests/seed.test.sql` | Không có hai cảnh báo THRESHOLD đang mở trùng (ZoneId, MetricCode); số dòng từng bảng đúng như 4.2 (VD 54.144 số đo, 28 thiết bị); cảnh báo NEW khớp số đo cuối ngoài ngưỡng |
 | `tests/sp_<tên>.test.sql` | Mỗi SP: ca đúng + từng mã lỗi của SP đó |
+| `tests/sp_json-columns.test.sql` | `AcceptedJson` chỉ chứa dòng đã chèn (lô có dòng trùng và dòng bị loại → không xuất hiện); `NewAlertsJson`, `AlertJson` có **đủ 14 khóa** của danh sách trường cảnh báo, **kể cả khóa giá trị NULL** (VD `DetectedClass` của THRESHOLD); mọi mốc thời gian trong JSON kết thúc bằng `Z`; `AlertJson` NULL khi `Created = 0` |
 | `tests/sp_IngestReadings.test.sql` (thêm) | Khử trùng trong lô và với bảng; **lô 1000 số đo** làm nhiều khu vực vượt ngưỡng → `NewAlertsJson` > 2033 ký tự, SP trả **đúng 1 dòng**, `ISJSON(NewAlertsJson) = 1`; **hysteresis**: TEMP 30,2 → 29,8 → 29,4 với Max 30, h 0,5 → mở, vẫn mở ở 29,8, đóng ở 29,4; ngưỡng chỉ Max (CO2 1050 → 980 → 940, h 50 → đóng ở 940) |
 | `tests/sp_IngestReadings.test.sql` (lô bù đến muộn) | Lô có `at` = hiện tại − 10 phút, TEMP 35 (ngoài ngưỡng) → `Accepted` đúng, số đo có trong bảng, **không mở cảnh báo**; khi đang có cảnh báo mở, lô cũ mang giá trị trong vùng đóng → **không đóng**; lô trộn số đo cũ (ngoài ngưỡng) và mới (trong ngưỡng) → chỉ số đo mới được xét; `@StaleMinutes = 0` → 50042 |
 | `tests/sp_RecordHeartbeat.test.sql` (mục 11) | Cập nhật `LastSeenAt`, `Status` OFFLINE → ONLINE; `at` cũ hơn `LastSeenAt` → giữ giá trị lớn hơn; thiết bị lạ / ngừng dùng → `Rejected`, không lỗi |
