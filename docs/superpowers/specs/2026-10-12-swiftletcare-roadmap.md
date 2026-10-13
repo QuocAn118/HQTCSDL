@@ -105,7 +105,7 @@ Bắt buộc:
 ─── ranh giới cắt ───
 
 10. Harvests + `sp_Report_EnvStabilityVsYield`
-11. `trg_Devices_Status` + phần OFFLINE của `sp_DetectAnomalies`
+11. `trg_Devices_Status` + phần OFFLINE của `sp_DetectAnomalies` + `sp_RecordHeartbeat` (tín hiệu sống của cơ cấu chấp hành và camera)
 
 Nên có: NestLogs.
 
@@ -120,7 +120,7 @@ Bắt buộc:
 ─── ranh giới cắt ───
 
 5. API báo cáo sản lượng và nhập thu hoạch
-6. Sự kiện thiết bị mất kết nối
+6. Sự kiện thiết bị mất kết nối; topic MQTT `heartbeat` và `POST /api/ai/heartbeat`
 
 Nên có: file JSON mẫu cho từng payload (dùng làm fixture test).
 
@@ -143,7 +143,7 @@ Bắt buộc:
 
 ─── ranh giới cắt ───
 
-4. Kịch bản mất kết nối
+4. Kịch bản mất kết nối; heartbeat của cơ cấu chấp hành
 
 Nên có: nhiễu và quán tính nhiệt. Nếu còn thời gian: giao diện chọn kịch bản.
 

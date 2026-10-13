@@ -193,7 +193,7 @@ Vai trò STAFF và bảng thành viên nhà; tọa độ nhà yến; bảng lưu
 - **`FOR JSON` chỉ dùng trong truy vấn con** trả về như một cột: `(SELECT … FOR JSON PATH) AS NewAlertsJson`. Không đặt `FOR JSON` ở tầng ngoài cùng — SQL Server cắt kết quả thành nhiều dòng (~2033 ký tự/dòng), client chỉ đọc dòng đầu sẽ nhận JSON hỏng. Test phải kiểm với lô lớn (Phần 4).
 - Mỗi SP bắt đầu bằng `SET NOCOUNT ON; SET XACT_ABORT ON;`.
 - Mọi thay đổi trên `Alerts` chỉ qua SP/trigger; Prisma chỉ đọc bảng này.
-- **SP hệ thống** (`sp_IngestReadings`, `sp_CreatePredatorAlert`, `sp_DetectAnomalies`) đặt `SESSION_CONTEXT` UserId/Note = NULL trước khi ghi `Alerts`, để trigger không nhận nhầm người thao tác còn sót trên kết nối dùng lại trong pool.
+- **SP hệ thống** (`sp_IngestReadings`, `sp_CreatePredatorAlert`, `sp_DetectAnomalies`, `sp_RecordHeartbeat`) đặt `SESSION_CONTEXT` UserId/Note = NULL trước khi ghi `Alerts`, để trigger không nhận nhầm người thao tác còn sót trên kết nối dùng lại trong pool.
 - SP không kiểm tra quyền sở hữu nhà; backend kiểm tra trước khi gọi.
 - Kết quả AI đi qua backend → mọi SP nhận dữ liệu AI do backend gọi.
 
@@ -219,7 +219,7 @@ Backend đổi thành HTTP 400/409.
 
 ### SP (theo thứ tự ưu tiên trong roadmap)
 
-**Mục 2 — `sp_IngestReadings(@Json NVARCHAR(MAX))`** — xong 20/10
+**Mục 2 — `sp_IngestReadings(@Json NVARCHAR(MAX), @StaleMinutes = 2)`** — xong 20/10
 
 - Đầu vào: `[{"device":"H1-F1-SENSOR","metric":"TEMP","value":28.5,"at":"2026-10-12T10:40:00Z"}, ...]`. JSON sai → 50030.
 - **Khử trùng hai tầng:** trùng trong lô lọc bằng `ROW_NUMBER`; trùng với bảng lọc bằng `NOT EXISTS` trên UQ(DeviceId, MetricCode, RecordedAt). Dòng trùng tính vào `Duplicates`, không báo lỗi.
@@ -227,7 +227,8 @@ Backend đổi thành HTTP 400/409.
 - Trong 1 transaction:
   1. Chèn bản ghi hợp lệ.
   2. Cập nhật `LastSeenAt`; đặt `Status = ONLINE` **chỉ khi đang khác ONLINE** (không kích hoạt trigger thừa).
-  3. Lấy giá trị mới nhất của mỗi (khu vực, chỉ số) trong lô, so với Thresholds. Đọc cảnh báo đang mở với `UPDLOCK, HOLDLOCK`, duyệt theo thứ tự (ZoneId, MetricCode).
+  3. **Bỏ qua số đo cũ khi xét cảnh báo:** số đo có `at` cũ hơn `@StaleMinutes` phút (mặc định 2, ≤ 0 → 50042) so với hiện tại **vẫn được lưu** ở bước 1 nhưng **không dùng để mở hoặc đóng cảnh báo ngưỡng** — lô bù đến muộn (simulator gửi lại sau mất kết nối) không mở/đóng cảnh báo theo trạng thái đã qua. Lô toàn số đo cũ → không xét cảnh báo.
+  4. Lấy giá trị mới nhất của mỗi (khu vực, chỉ số) **trong các số đo không cũ** của lô, so với Thresholds. Đọc cảnh báo đang mở với `UPDLOCK, HOLDLOCK`, duyệt theo thứ tự (ZoneId, MetricCode).
      - **Mở** khi giá trị ra ngoài [Min, Max] và chưa có THRESHOLD đang mở. Lệch > 10% so với ngưỡng bị vượt = CRITICAL, còn lại WARNING.
      - **Đóng** (tự động, người thao tác = hệ thống) khi giá trị vào **vùng đóng**:
 
@@ -287,6 +288,15 @@ Backend đổi thành HTTP 400/409.
 - `@NowUtc` (mặc định `SYSUTCDATETIME()`) để kiểm thử theo giờ. `@DropPercent` ngoài (0, 100) hoặc `@CutoffHourVn` ngoài [0, 23] → 50042.
 - Trả 1 dòng: `NewAlertsJson`.
 
+**Mục 11 (dưới ranh giới cắt) — `sp_RecordHeartbeat(@Json)`** — tín hiệu sống của thiết bị không phải cảm biến (cơ cấu chấp hành qua MQTT, camera qua AI); backend gọi.
+
+- Đầu vào: `[{"device":"H1-F1-FAN","at":"2026-10-12T10:40:00Z"}, ...]`. JSON sai → 50030.
+- `LastSeenAt` = giá trị lớn hơn giữa cũ và `at` (`CASE WHEN`, không `GREATEST`); `Status = ONLINE` chỉ khi đang khác ONLINE (trigger tự đóng `DEVICE_OFFLINE`).
+- Thiết bị không tồn tại / `IsActive = 0` / `at` lớn hơn hiện tại quá 5 phút → bỏ qua, tính vào `Rejected`, không lỗi.
+- Đặt `SESSION_CONTEXT` UserId/Note = NULL trước khi cập nhật (như các SP hệ thống khác).
+- Trả 1 dòng: `Accepted, Rejected`.
+- Nếu mục 11 bị cắt: không có SP này; web/mobile **ẩn trạng thái online** của cơ cấu chấp hành và camera thay vì hiện OFFLINE sai (cột Status mặc định OFFLINE).
+
 **Mục 10 (dưới ranh giới cắt) — `sp_Report_EnvStabilityVsYield(@HouseId, @FromVnDate, @ToVnDate)`**
 
 - Trả nhiều dòng theo khu vực × tháng: `AvgTemp, StdevTemp, AvgHumid, StdevHumid, PctInRange, NestCount, WeightGram`. From ≥ To → 50041.
@@ -298,7 +308,7 @@ Backend đổi thành HTTP 400/409.
 | `trg_Alerts_History` | 4 | AFTER INSERT, UPDATE trên Alerts. Ghi AlertHistory khi cảnh báo được tạo hoặc đổi Status. **Viết theo tập hợp** (`inserted` ⋈ `deleted`). Người thao tác/ghi chú lấy từ `SESSION_CONTEXT('UserId'/'Note')`; NULL = hệ thống. |
 | `trg_Devices_Status` | 11 (dưới ranh giới cắt) | AFTER UPDATE trên Devices. Thoát ngay nếu `NOT UPDATE(Status)`. Theo tập hợp: chỉ xử lý dòng có `deleted.Status <> inserted.Status`. ONLINE → OFFLINE/ERROR: tạo `DEVICE_OFFLINE` (ERROR = CRITICAL, OFFLINE = WARNING), điền DeviceId, ZoneId, HouseId theo thiết bị. Về ONLINE: tự đóng `DEVICE_OFFLINE` đang mở. |
 
-**Dự phòng nếu R1 xảy ra:** bỏ `trg_Devices_Status`; `sp_DetectAnomalies` tạo cảnh báo khi đánh dấu OFFLINE, `sp_IngestReadings` tự đóng khi thiết bị gửi dữ liệu trở lại. `trg_Alerts_History` không bị ảnh hưởng vì Alerts chỉ ghi qua SP.
+**Dự phòng nếu R1 xảy ra:** bỏ `trg_Devices_Status`; `sp_DetectAnomalies` tạo cảnh báo khi đánh dấu OFFLINE, `sp_IngestReadings` và `sp_RecordHeartbeat` tự đóng khi thiết bị gửi dữ liệu/tín hiệu sống trở lại. `trg_Alerts_History` không bị ảnh hưởng vì Alerts chỉ ghi qua SP.
 
 ### View
 
@@ -363,6 +373,8 @@ Backend đổi thành HTTP 400/409.
 | `tests/seed.test.sql` | Không có hai cảnh báo THRESHOLD đang mở trùng (ZoneId, MetricCode); số dòng từng bảng đúng như 4.2 (VD 54.144 số đo, 28 thiết bị); cảnh báo NEW khớp số đo cuối ngoài ngưỡng |
 | `tests/sp_<tên>.test.sql` | Mỗi SP: ca đúng + từng mã lỗi của SP đó |
 | `tests/sp_IngestReadings.test.sql` (thêm) | Khử trùng trong lô và với bảng; **lô 1000 số đo** làm nhiều khu vực vượt ngưỡng → `NewAlertsJson` > 2033 ký tự, SP trả **đúng 1 dòng**, `ISJSON(NewAlertsJson) = 1`; **hysteresis**: TEMP 30,2 → 29,8 → 29,4 với Max 30, h 0,5 → mở, vẫn mở ở 29,8, đóng ở 29,4; ngưỡng chỉ Max (CO2 1050 → 980 → 940, h 50 → đóng ở 940) |
+| `tests/sp_IngestReadings.test.sql` (lô bù đến muộn) | Lô có `at` = hiện tại − 10 phút, TEMP 35 (ngoài ngưỡng) → `Accepted` đúng, số đo có trong bảng, **không mở cảnh báo**; khi đang có cảnh báo mở, lô cũ mang giá trị trong vùng đóng → **không đóng**; lô trộn số đo cũ (ngoài ngưỡng) và mới (trong ngưỡng) → chỉ số đo mới được xét; `@StaleMinutes = 0` → 50042 |
+| `tests/sp_RecordHeartbeat.test.sql` (mục 11) | Cập nhật `LastSeenAt`, `Status` OFFLINE → ONLINE; `at` cũ hơn `LastSeenAt` → giữ giá trị lớn hơn; thiết bị lạ / ngừng dùng → `Rejected`, không lỗi |
 | `tests/sp_RecordBirdCount.test.sql` (thêm) | Gửi lại cùng tin → không đổi; gửi tổng nhỏ hơn → giữ số lớn; mỗi cột lấy lớn hơn độc lập |
 | `tests/trg_Alerts_History.test.sql` | Tạo cảnh báo → đúng 1 dòng AlertHistory (OldStatus NULL, NewStatus NEW, UserId NULL); `sp_UpdateAlertStatus` ACK với UserId 2, Note `N'x'` → thêm đúng 1 dòng với UserId 2, Note `N'x'`; **sau đó `SESSION_CONTEXT(N'UserId')` và `(N'Note')` là NULL**; chuyển trạng thái sai → lỗi 50021, AlertHistory không thêm dòng, **SESSION_CONTEXT vẫn NULL**; một lệnh UPDATE đổi 2 cảnh báo → đúng 2 dòng (trigger theo tập hợp) |
 
