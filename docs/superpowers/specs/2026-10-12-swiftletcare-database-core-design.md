@@ -82,7 +82,7 @@ Cả 5 thành viên dùng Windows → chỉ cần `scripts/deploy.ps1`, không l
 - SP nhận JSON qua `OPENJSON` (không TVP); backend gọi bằng `$queryRaw`/`$executeRaw` có tham số.
 - **Mỗi SP trả đúng 1 tập kết quả.**
 - Lỗi nghiệp vụ: `THROW` mã 5xxxx; backend đổi sang HTTP 400/409.
-- Bảng có trigger (`Alerts`, `Devices`) chỉ được **ghi** qua SP.
+- Không ghi bảng có trigger bằng `prisma.<model>.create/update` (R1): `Alerts` chỉ ghi qua SP; `Devices` ghi qua SP hoặc `$executeRaw` có tham số **không có `OUTPUT`** — UPDATE luôn theo cách này, INSERT được dùng `prisma.devices.create` nếu kiểm chứng R1 (ngày đầu plan) cho thấy trigger chỉ-`AFTER UPDATE` không chặn INSERT có `OUTPUT` (integration-contract 3.2).
 - Miền giá trị bằng ràng buộc `CHECK` viết tay trong file migration (`prisma migrate dev --create-only` → thêm SQL → áp dụng).
 - Khóa ngoại `NO ACTION`; ngừng dùng bằng `IsActive = 0`, không xóa.
 
