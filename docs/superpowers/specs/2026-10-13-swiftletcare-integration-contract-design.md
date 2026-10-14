@@ -111,6 +111,10 @@ Backend kiểm tra **`device` trùng `{code}` của topic** — một thiết b�
 
 **heartbeat** — mỗi 30 giây: `{"device":"H1-F1-FAN","at":"2026-10-12T10:40:00Z"}`. QoS 0 vì mất một nhịp vô hại (ngưỡng mất kết nối 5 phút ≈ 10 nhịp). Mục 11 (dưới ranh giới cắt).
 
+- Backend gọi `sp_RecordHeartbeat` với mảng `[{"device","at"}]` → 1 dòng `Accepted, Rejected, ResolvedAlertIdsJson`.
+- `ResolvedAlertIdsJson` (`[{"AlertId": n}]`, `[]` khi rỗng) chứa các `DEVICE_OFFLINE` tự đóng vì thiết bị về ONLINE. Backend xử lý giống `ResolvedAlertIdsJson` của `sp_IngestReadings`: tra `houseId`, phát `alert.updated` (Phần 4).
+- `sp_IngestReadings` cũng đưa `DEVICE_OFFLINE` tự đóng (cảm biến gửi số đo trở lại) vào `ResolvedAlertIdsJson` của nó, cùng với cảnh báo ngưỡng tự đóng.
+
 **command** — **trạng thái mong muốn**, không phải lệnh đảo trạng thái:
 
 ```json
@@ -180,7 +184,7 @@ Backend xử lý theo thứ tự:
 |---|---|---|
 | readings `device`, `metric`, `value`, `at` | `sp_IngestReadings`: cùng tên | Devices.Code → DeviceId; MetricCode; Value; RecordedAt |
 | command `isOn`, `level`, `mode` | Kết quả `sp_SetActuator`: `IsOn`, `Level`, `Mode`; topic từ `DeviceCode` | Devices.IsOn, Level, Mode |
-| heartbeat `device`, `at` | `sp_RecordHeartbeat`: cùng tên | Devices.LastSeenAt, Status |
+| heartbeat `device`, `at` | `sp_RecordHeartbeat`: cùng tên; kết quả `Accepted`, `Rejected`, `ResolvedAlertIdsJson` | Devices.LastSeenAt, Status; Alerts.Status (DEVICE_OFFLINE tự đóng) |
 | bird-counts `camera`, `windowStart`, `in`, `out` | `sp_RecordBirdCount`: cùng tên | BirdCounts.CameraId, WindowStart, InCount, OutCount |
 | predator `camera`, `class`, `confidence`, `at` + `snapshot` (**backend sinh**) | `sp_CreatePredatorAlert`: cùng tên | Alerts.DeviceId, DetectedClass, Confidence, SnapshotPath |
 | phản hồi `windowsUpserted`, `windowsUnchanged`, `created`, `alertId`, `skipReason` | Cột kết quả SP (PascalCase) | — |
@@ -336,7 +340,7 @@ Database-core quy ước không ghi bảng có trigger bằng `prisma.<model>.cr
 |---|---|---|
 | `readings.new` | Sau mỗi lần gọi `sp_IngestReadings` có `Accepted > 0`; mỗi nhà một sự kiện | `{houseId, readings:[{deviceId, deviceCode, zoneId, metric, value, at}]}` — từ cột `AcceptedJson` |
 | `alert.created` | Cảnh báo mới: `NewAlertsJson` của `sp_IngestReadings` / `sp_DetectAnomalies`, `AlertJson` của `sp_CreatePredatorAlert` | `{alert:{alertId, houseId, zoneId, deviceId, alertType, severity, metricCode, value, detectedClass, confidence, hasSnapshot, message, status, createdAt}}` |
-| `alert.updated` | Đổi trạng thái qua `sp_UpdateAlertStatus`; tự đóng (`ResolvedAlertIdsJson`, backend tra `houseId`) | `{alertId, houseId, status, resolvedAt, resolvedBy}` |
+| `alert.updated` | Đổi trạng thái qua `sp_UpdateAlertStatus`; tự đóng (`ResolvedAlertIdsJson` của `sp_IngestReadings` và `sp_RecordHeartbeat`, gồm cả `DEVICE_OFFLINE`; backend tra `houseId`) | `{alertId, houseId, status, resolvedAt, resolvedBy}` |
 | `device.state` | `sp_SetActuator` trả `Changed = 1` (cả vòng điều khiển tự động) | `{deviceId, deviceCode, houseId, zoneId, mode, isOn, level, source, at}` |
 | `birdcount.updated` | `POST /api/ai/bird-counts` có `windowsUpserted > 0` | `{houseId, cameraId}` — **tín hiệu để client tải lại** `bird-flow`, không mang số đếm (SP lấy giá trị lớn hơn, không trả số đếm) |
 
