@@ -244,7 +244,7 @@ Backend đổi thành HTTP 400/409.
 
        Giới hạn h ≤ (Max − Min)/4 khi có cả hai đầu để vùng đóng không bao giờ rỗng.
      - Giá trị nằm giữa ngưỡng và vùng đóng: giữ nguyên trạng thái — **chống cảnh báo nhấp nháy** khi giá trị dao động quanh ngưỡng.
-- Trả 1 dòng: `Received, Accepted, Duplicates, Rejected, AcceptedJson, NewAlertsJson, ResolvedAlertIdsJson`.
+- Trả 1 dòng: `Received, Accepted, Duplicates, Rejected, AcceptedJson, NewAlertsJson, ResolvedAlertIdsJson`. `ResolvedAlertIdsJson` gồm cảnh báo ngưỡng tự đóng và (mục 11) `DEVICE_OFFLINE` do trigger đóng khi thiết bị về ONLINE.
   - **`AcceptedJson`**: mảng các số đo **đã chèn** trong lần gọi này (không gồm dòng trùng/bị loại): `DeviceId, DeviceCode, HouseId, ZoneId, MetricCode, Value, RecordedAt` — backend dùng để phát `readings.new` vào đúng phòng nhà.
 
 **Mục 3 — `sp_SetActuator(@DeviceId, @IsOn, @Level = NULL, @Source, @Mode = NULL, @UserId = NULL, @Reason = NULL)`** — xong 20/10
@@ -299,7 +299,7 @@ Backend đổi thành HTTP 400/409.
 - `LastSeenAt` = giá trị lớn hơn giữa cũ và `at` (`CASE WHEN`, không `GREATEST`); `Status = ONLINE` chỉ khi đang khác ONLINE (trigger tự đóng `DEVICE_OFFLINE`).
 - Thiết bị không tồn tại / `IsActive = 0` / `at` lớn hơn hiện tại quá 5 phút → bỏ qua, tính vào `Rejected`, không lỗi.
 - Đặt `SESSION_CONTEXT` UserId/Note = NULL trước khi cập nhật (như các SP hệ thống khác).
-- Trả 1 dòng: `Accepted, Rejected`.
+- Trả 1 dòng: `Accepted, Rejected, ResolvedAlertIdsJson` — `ResolvedAlertIdsJson` chứa các `DEVICE_OFFLINE` trigger vừa tự đóng (cùng dạng với `sp_IngestReadings`), để backend phát `alert.updated`.
 - Nếu mục 11 bị cắt: không có SP này; web/mobile **ẩn trạng thái online** của cơ cấu chấp hành và camera thay vì hiện OFFLINE sai (cột Status mặc định OFFLINE).
 
 **Mục 10 (dưới ranh giới cắt) — `sp_Report_EnvStabilityVsYield(@HouseId, @FromVnDate, @ToVnDate)`**
@@ -360,9 +360,9 @@ Backend đổi thành HTTP 400/409.
 | Thiết bị | Mỗi tầng: SENSOR, MIST, FAN, HEATER; mỗi nhà: 1 SPEAKER, 1 CAMERA ở F0 → H1 18, H2 10, **tổng 28** |
 | Chỉ số | TEMP (Hysteresis 0,5 °C), HUMID (2 %), CO2 (50 ppm), LIGHT (2 lux) |
 | Ngưỡng (mọi khu vực) | TEMP 26–30, đích 28; HUMID 75–90, đích 82; CO2 chỉ Max 1000; LIGHT chỉ Max 10 |
-| Số đo | **6 cảm biến** × 4 chỉ số, mỗi 5 phút, từ 00:00 ngày neo−7 đến 20:00 ngày neo: 7 × 288 + 240 = 2256 mốc × 24 chuỗi = **54.144 dòng**. H1-F2 có đoạn nóng 13:00–15:00 ngày neo−2; H1-F3 HUMID giảm dần, cuối dữ liệu ở 72 % |
+| Số đo | **6 cảm biến** × 4 chỉ số, mỗi 5 phút, từ 00:00 ngày neo−7 đến 20:00 ngày neo: 7 × 288 + 240 = 2256 mốc × 24 chuỗi = **54.144 dòng**. H1-F2 có đoạn nóng 13:00–15:00 ngày neo−2; H1-F3 HUMID giảm dần, xuống dưới 75 lúc 14:00 ngày neo (74,97 %), cuối dữ liệu ở 72 % |
 | Đếm chim | 8 ngày, cửa sổ 5 phút; ra 05:00–07:00, về 17:00–19:30 (giờ Việt Nam). H1 bình thường; **H2 ngày neo về ít hơn 40 %** → `sp_DetectAnomalies @NowUtc = <ngày neo 20:30 VN>` tạo `POPULATION_DROP` |
-| Cảnh báo | H1-F2 TEMP THRESHOLD **RESOLVED** (đoạn nóng, đóng bởi hệ thống); H1-F3 HUMID THRESHOLD **NEW** (khớp số đo cuối 72 %); PREDATOR snake ở H1-F0 **ACK** bởi owner1 (đường dẫn ảnh mẫu); kèm AlertHistory. Hai cảnh báo THRESHOLD khác (khu vực, chỉ số) và chỉ một đang mở → **thỏa `UX_Alerts_OpenThreshold`** |
+| Cảnh báo | H1-F2 TEMP THRESHOLD **RESOLVED** (đoạn nóng, đóng bởi hệ thống); H1-F3 HUMID THRESHOLD **NEW** (tạo lúc 14:00 ngày neo, khớp số đo đầu tiên dưới ngưỡng 74,97 %; số đo cuối 72 % vẫn ngoài ngưỡng nên chưa đóng); PREDATOR snake ở H1-F0 **ACK** bởi owner1 (đường dẫn ảnh mẫu); kèm AlertHistory. Hai cảnh báo THRESHOLD khác (khu vực, chỉ số) và chỉ một đang mở → **thỏa `UX_Alerts_OpenThreshold`** |
 | Thu hoạch (mục 10) | 3 tháng cho H1, **file seed riêng** để bỏ được nếu cắt |
 
 - Seed ghi `Alerts` qua SP khi có SP phù hợp (`sp_CreatePredatorAlert`, `sp_UpdateAlertStatus`); cảnh báo ngưỡng lịch sử được chèn trực tiếp (ngoại lệ có chủ ý của seed, chạy bằng `db_owner`; trigger vẫn sinh AlertHistory).
@@ -380,7 +380,7 @@ Backend đổi thành HTTP 400/409.
 | `tests/sp_json-columns.test.sql` | `AcceptedJson` chỉ chứa dòng đã chèn (lô có dòng trùng và dòng bị loại → không xuất hiện); `NewAlertsJson`, `AlertJson` có **đủ 14 khóa** của danh sách trường cảnh báo, **kể cả khóa giá trị NULL** (VD `DetectedClass` của THRESHOLD); mọi mốc thời gian trong JSON kết thúc bằng `Z`; `AlertJson` NULL khi `Created = 0` |
 | `tests/sp_IngestReadings.test.sql` (thêm) | Khử trùng trong lô và với bảng; **lô 1000 số đo** làm nhiều khu vực vượt ngưỡng → `NewAlertsJson` > 2033 ký tự, SP trả **đúng 1 dòng**, `ISJSON(NewAlertsJson) = 1`; **hysteresis**: TEMP 30,2 → 29,8 → 29,4 với Max 30, h 0,5 → mở, vẫn mở ở 29,8, đóng ở 29,4; ngưỡng chỉ Max (CO2 1050 → 980 → 940, h 50 → đóng ở 940) |
 | `tests/sp_IngestReadings.test.sql` (lô bù đến muộn) | Lô có `at` = hiện tại − 10 phút, TEMP 35 (ngoài ngưỡng) → `Accepted` đúng, số đo có trong bảng, **không mở cảnh báo**; khi đang có cảnh báo mở, lô cũ mang giá trị trong vùng đóng → **không đóng**; lô trộn số đo cũ (ngoài ngưỡng) và mới (trong ngưỡng) → chỉ số đo mới được xét; `@StaleMinutes = 0` → 50042 |
-| `tests/sp_RecordHeartbeat.test.sql` (mục 11) | Cập nhật `LastSeenAt`, `Status` OFFLINE → ONLINE; `at` cũ hơn `LastSeenAt` → giữ giá trị lớn hơn; thiết bị lạ / ngừng dùng → `Rejected`, không lỗi |
+| `tests/sp_RecordHeartbeat.test.sql` (mục 11) | Cập nhật `LastSeenAt`, `Status` OFFLINE → ONLINE; `at` cũ hơn `LastSeenAt` → giữ giá trị lớn hơn; thiết bị lạ / ngừng dùng → `Rejected`, không lỗi; về ONLINE → `DEVICE_OFFLINE` vừa đóng nằm trong `ResolvedAlertIdsJson` |
 | `tests/sp_RecordBirdCount.test.sql` (thêm) | Gửi lại cùng tin → không đổi; gửi tổng nhỏ hơn → giữ số lớn; mỗi cột lấy lớn hơn độc lập |
 | `tests/trg_Alerts_History.test.sql` | Tạo cảnh báo → đúng 1 dòng AlertHistory (OldStatus NULL, NewStatus NEW, UserId NULL); `sp_UpdateAlertStatus` ACK với UserId 2, Note `N'x'` → thêm đúng 1 dòng với UserId 2, Note `N'x'`; **sau đó `SESSION_CONTEXT(N'UserId')` và `(N'Note')` là NULL**; chuyển trạng thái sai → lỗi 50021, AlertHistory không thêm dòng, **SESSION_CONTEXT vẫn NULL**; một lệnh UPDATE đổi 2 cảnh báo → đúng 2 dòng (trigger theo tập hợp) |
 
