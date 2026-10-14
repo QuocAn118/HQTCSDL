@@ -31,11 +31,12 @@
 
 ## Review Focus
 
-1. **Chuỗi `after` dùng nhiều `now` khác nhau** — fixture `rest/readings-history` chạy sau `mqtt/readings`; nếu bộ chạy thay `{{now}}` riêng cho từng file thì khoảng thời gian lệch, kết quả rỗng. Mong: cả chuỗi dùng một `now`. `loadChain` + test ở Task 1.
-2. **`{{now}}` rơi đúng lưới 5 phút** (VD 10:40:00) — trùng mốc số đo seed/ cửa sổ đếm chim, ra `duplicates`. Mong: cộng 7 giây. Test `baseNow` ở Task 1.
-3. **Backend trả `…:00.000Z` (`toISOString`) còn fixture ghi `…:00Z`** — so chuỗi sẽ báo lệch giả. Mong: so mốc thời gian theo thời điểm. Test `match` ở Task 1.
-4. **Dịch vụ Mosquitto do bộ cài Windows tạo đang giữ cổng 1883** — `mosquitto -c …` báo lỗi cổng bận hoặc client vào nhầm broker cho phép ẩn danh. Mong: README hướng dẫn dừng dịch vụ, bước kiểm tra ẩn danh bị từ chối. Ở Task 2.
-5. **File fixture có BOM hoặc tiếng Việt sai mã** (`Nhiệt độ`, `Đã kiểm tra`) — `JSON.parse` lỗi hoặc so khớp `message` sai. Mong: test báo rõ file có BOM, chuỗi tiếng Việt giữ nguyên. Kiểm ở Task 3 (áp cho mọi thư mục).
+1. **Các chuỗi fixture sửa trạng thái của nhau** — `rest/alert-ack` đổi cảnh báo seed sang ACK; `mqtt/readings.invalid-*` ghi thêm số đo H1-F1 làm lệch trung bình của `rest/readings-history`; chuỗi AI tạo thêm cảnh báo PREDATOR làm đổi `rest/alerts-list.page`. Mong: **mỗi chuỗi `after` bắt đầu từ CSDL vừa phục hồi về dữ liệu mẫu** (`BACKUP` một lần sau `deploy.ps1`, `RESTORE … WITH REPLACE` trước mỗi chuỗi). Quy tắc ghi vào spec 4.3 (quy tắc 12) và `contracts/README.md` ở Task 1; bộ chạy thật thuộc plan backend.
+2. **Chuỗi `after` dùng nhiều `now` khác nhau** — fixture `rest/readings-history` chạy sau `mqtt/readings`; nếu bộ chạy thay `{{now}}` riêng cho từng file thì khoảng thời gian lệch, kết quả rỗng. Mong: cả chuỗi dùng một `now`. `loadChain` + test ở Task 1.
+3. **`{{now}}` rơi đúng lưới 5 phút** (VD 10:40:00) — trùng mốc số đo seed/ cửa sổ đếm chim, ra `duplicates`. Mong: cộng 7 giây. Test `baseNow` ở Task 1.
+4. **Backend trả `…:00.000Z` (`toISOString`) còn fixture ghi `…:00Z`** — so chuỗi sẽ báo lệch giả. Mong: so mốc thời gian theo thời điểm. Test `match` ở Task 1.
+5. **Dịch vụ Mosquitto do bộ cài Windows tạo đang giữ cổng 1883** — `mosquitto -c …` báo lỗi cổng bận hoặc client vào nhầm broker cho phép ẩn danh. Mong: README hướng dẫn dừng dịch vụ, bước kiểm tra ẩn danh bị từ chối. Ở Task 2.
+6. **File fixture có BOM hoặc tiếng Việt sai mã** (`Nhiệt độ`, `Đã kiểm tra`) — `JSON.parse` lỗi hoặc so khớp `message` sai. Mong: test báo rõ file có BOM, chuỗi tiếng Việt giữ nguyên. Kiểm ở Task 3 (áp cho mọi thư mục).
 
 ## Cấu trúc file
 
@@ -372,6 +373,10 @@ Mã HTTP thành công: `POST` tạo tài nguyên (nhà, khu vực, thiết bị,
 9. **`after`** ghi `<thư mục>/<tên file không .json>` (VD `"rest/control.manual"`), được phép trỏ sang thư mục khác; cả chuỗi `after` chạy trong một ca test và dùng **một** `now`.
 10. **Thư viện:** `contracts/lib/fixtures.mjs` (`expand`, `match`, `loadChain`) là cách duy nhất để thay chỗ giữ chỗ và so khớp — backend, simulator, AI import thư viện này, không tự viết lại.
 11. Dạng phản hồi REST theo cột CSDL đổi camelCase: `user` = `{userId, username, fullName, email, phone, role, isActive}`; ngưỡng = `{zoneId, metricCode, minValue, maxValue, targetValue, updatedBy, updatedAt}`; lịch sử số đo = mảng `{bucketUtc, avgValue, minValue, maxValue}`; `PATCH /api/alerts/:id` = `{alertId, houseId, zoneId, alertType, status, resolvedAt, resolvedBy}`; `POST /api/ai/heartbeat` = `{accepted, rejected}`; thu hoạch = `{harvestId, zoneId, harvestDate, nestCount, weightGram, grade, recordedBy, createdAt}`; báo cáo = mảng cột `sp_Report_EnvStabilityVsYield` camelCase; mục trong danh sách cảnh báo = 14 khóa cảnh báo.
+12. **Mỗi chuỗi `after` chạy trên CSDL vừa phục hồi về dữ liệu mẫu** — các fixture sửa trạng thái của nhau (`rest/alert-ack` đổi cảnh báo seed, `mqtt/readings.invalid-*` thêm số đo cùng khu vực với `rest/readings-history`, chuỗi AI thêm cảnh báo làm đổi `rest/alerts-list.page`):
+    - Sau `deploy.ps1 -Database SwiftletCare_Test -Reset` (ngày neo mặc định), backup **một lần**: `BACKUP DATABASE SwiftletCare_Test TO DISK = N'SwiftletCare_Test_seed.bak' WITH INIT, COPY_ONLY;` (tên file không có đường dẫn → nằm trong thư mục backup mặc định của SQL Server, tài khoản dịch vụ SQL Server ghi được).
+    - **Trước mỗi chuỗi**: `ALTER DATABASE SwiftletCare_Test SET SINGLE_USER WITH ROLLBACK IMMEDIATE; RESTORE DATABASE SwiftletCare_Test FROM DISK = N'SwiftletCare_Test_seed.bak' WITH REPLACE; ALTER DATABASE SwiftletCare_Test SET MULTI_USER;` — chạy từ kết nối vào `master`. Kết nối cũ của backend bị ngắt; bộ chạy test mở lại pool (hoặc khởi động lại backend) sau khi phục hồi.
+    - Không chạy hai chuỗi song song trên cùng một CSDL.
 ````
 
 (c) Trong bảng fixture `rest/`, cột Không hợp lệ: thay `` `users.invalid-last-admin.json` (409) `` bằng `` `users.invalid-modify-self.json` (409 `CANNOT_MODIFY_SELF`) ``, và thêm ngay dưới bảng:
@@ -427,7 +432,20 @@ for (const { name, fixture } of loadChain('ws/alert.created.threshold')) {
 }
 ```
 
-- **Backend:** chạy từng chuỗi trên `SwiftletCare_Test` vừa nạp lại dữ liệu mẫu (ngày neo mặc định); fixture MQTT `readings` cần chờ backend gom lô (≤ 1 giây) trước khi kiểm.
+- **Backend — mỗi chuỗi bắt đầu từ dữ liệu mẫu** (spec 4.3 quy tắc 12), vì các fixture sửa trạng thái của nhau (`rest/alert-ack` đổi cảnh báo seed; `mqtt/readings.invalid-*` thêm số đo H1-F1 làm lệch `rest/readings-history`; chuỗi AI thêm cảnh báo làm đổi `rest/alerts-list.page`):
+
+  ```sql
+  -- Mot lan, sau deploy.ps1 -Database SwiftletCare_Test -Reset (ngay neo mac dinh):
+  BACKUP DATABASE SwiftletCare_Test TO DISK = N'SwiftletCare_Test_seed.bak' WITH INIT, COPY_ONLY;
+
+  -- Truoc MOI chuoi after (ket noi vao master):
+  ALTER DATABASE SwiftletCare_Test SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+  RESTORE DATABASE SwiftletCare_Test FROM DISK = N'SwiftletCare_Test_seed.bak' WITH REPLACE;
+  ALTER DATABASE SwiftletCare_Test SET MULTI_USER;
+  ```
+
+  Tên file không đường dẫn → thư mục backup mặc định của SQL Server. Kết nối cũ bị ngắt: mở lại pool Prisma/khởi động lại backend sau khi phục hồi. Không chạy hai chuỗi song song.
+- **Backend:** fixture MQTT `readings` cần chờ backend gom lô (≤ 1 giây) trước khi kiểm.
 - **Simulator / AI:** `expand` fixture hợp lệ rồi so payload tự tạo bằng `match` (cùng tập khóa, cùng kiểu).
 - **Web / mobile (tuần 1):** dùng `payload`/`response` đã `expand` làm dữ liệu giả.
 ````
@@ -446,6 +464,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Files:**
 - Create: `infra/mosquitto/mosquitto.conf`, `infra/mosquitto/README.md`, `contracts/test/mosquitto-conf.test.mjs`
 - Modify (hoặc Create nếu chưa có): `.gitignore` ở gốc repo
+- Modify: `docs/superpowers/specs/2026-10-13-swiftletcare-integration-contract-design.md` (1.7 mục 2 — `listener` mặc định `127.0.0.1`)
 
 **Interfaces:**
 - Produces: broker chạy bằng `mosquitto -c infra/mosquitto/mosquitto.conf -v` **từ gốc repo**, cổng 1883, hai tài khoản `backend`, `simulator`; `MQTT_URL` mặc định `mqtt://localhost:1883` (backend, simulator đọc từ `.env` của mình).
@@ -475,7 +494,7 @@ function directives(text) {
 
 test('mosquitto.conf: dung cac chi thi spec 1.7', () => {
   const d = directives(read('infra/mosquitto/mosquitto.conf'));
-  assert.equal(d.get('listener'), '1883');
+  assert.equal(d.get('listener'), '1883 127.0.0.1', 'mac dinh chi nghe tren may nay');
   assert.equal(d.get('allow_anonymous'), 'false');
   assert.equal(d.get('password_file'), 'infra/mosquitto/passwd');
   assert.equal(d.get('persistence'), 'true');
@@ -493,6 +512,7 @@ test('.gitignore: bo qua file mat khau va du lieu broker', () => {
   const lines = read('.gitignore').split(/\r?\n/).map((l) => l.trim());
   assert.ok(lines.includes('infra/mosquitto/passwd'));
   assert.ok(lines.includes('infra/mosquitto/data/'));
+  assert.ok(lines.includes('infra/mosquitto/*.local.conf'));
 });
 ```
 
@@ -508,7 +528,8 @@ Expected: FAIL — `ENOENT … infra/mosquitto/mosquitto.conf`.
 # File nay KHONG chua mat khau. Tai khoan nam trong infra/mosquitto/passwd (.gitignore),
 # tao bang mosquitto_passwd - xem infra/mosquitto/README.md.
 
-listener 1883
+# Mac dinh chi may nay ket noi duoc; demo LAN xem README muc 5 (mosquitto.local.conf, 0.0.0.0).
+listener 1883 127.0.0.1
 allow_anonymous false
 password_file infra/mosquitto/passwd
 
@@ -525,7 +546,7 @@ max_queued_messages 10000
 ```powershell
 if (-not (Test-Path .gitignore)) { New-Item -ItemType File .gitignore | Out-Null }
 $lines = Get-Content .gitignore
-foreach ($l in 'infra/mosquitto/passwd', 'infra/mosquitto/data/') {
+foreach ($l in 'infra/mosquitto/passwd', 'infra/mosquitto/data/', 'infra/mosquitto/*.local.conf') {
     if ($lines -notcontains $l) { Add-Content -Path .gitignore -Value $l -Encoding ascii }
 }
 ```
@@ -596,17 +617,37 @@ mosquitto_sub -t 'swiftlet/#' -v
 
 ## 5. Demo chung mạng LAN
 
-`MQTT_URL` trong `.env` (mặc định `mqtt://localhost:1883`). **Kiểm tra `MQTT_URL` trước khi chạy** — trỏ nhầm sang broker máy khác thì simulator của người này điều khiển nhầm backend của người kia. Máy làm broker cho người khác dùng thì mở cổng 1883 trong Windows Defender Firewall (mạng Private).
+Mặc định broker **chỉ nghe trên `127.0.0.1`** (máy khác trong mạng không kết nối được), đủ cho làm việc một mình. Khi demo cần thiết bị/máy khác kết nối vào broker của máy mình:
+
+1. Tạo bản cấu hình riêng (đã nằm trong `.gitignore`, **không sửa file mẫu** để khỏi commit nhầm):
+
+   ```powershell
+   (Get-Content infra/mosquitto/mosquitto.conf) -replace '^listener 1883 127\.0\.0\.1$', 'listener 1883 0.0.0.0' |
+       Set-Content infra/mosquitto/mosquitto.local.conf -Encoding ascii
+   mosquitto -c infra/mosquitto/mosquitto.local.conf -v
+   ```
+
+2. Mở cổng 1883 trong Windows Defender Firewall (chỉ mạng **Private**). `allow_anonymous false` vẫn giữ — máy khác phải có tài khoản.
+3. Máy khác đặt `MQTT_URL=mqtt://<IP LAN của máy này>:1883`. **Kiểm tra `MQTT_URL` trước khi chạy** — trỏ nhầm sang broker máy khác thì simulator của người này điều khiển nhầm backend của người kia.
+4. Demo xong quay lại chạy `infra/mosquitto/mosquitto.conf` (chỉ `127.0.0.1`).
 ````
 
 - [ ] **Step 6: Kiểm tra thủ công trên máy**
 
 Làm đúng mục 1–4 của README vừa viết. Expected: `mosquitto -v` in `Opening ipv4 listen socket on port 1883`; `mosquitto_sub` có tài khoản nhận được tin `[]` từ `mosquitto_pub`; không tài khoản bị từ chối `not authorised`; tắt broker (Ctrl+C) rồi chạy lại thấy file `infra/mosquitto/data/mosquitto.db`. `git status` **không** hiện `passwd` hay `data/`.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 7: Ghi vào spec 1.7**
+
+Trong spec integration-contract, mục 1.7 bước 2, thay `` `listener 1883`, `` bằng:
+
+```markdown
+`listener 1883 127.0.0.1` (mặc định chỉ máy mình kết nối được; demo qua LAN dùng bản sao `infra/mosquitto/mosquitto.local.conf` với `0.0.0.0`, nằm trong `.gitignore` — xem `infra/mosquitto/README.md` mục 5),
+```
+
+- [ ] **Step 8: Commit**
 
 ```bash
-git add infra/mosquitto/mosquitto.conf infra/mosquitto/README.md contracts/test/mosquitto-conf.test.mjs .gitignore
+git add infra/mosquitto/mosquitto.conf infra/mosquitto/README.md contracts/test/mosquitto-conf.test.mjs .gitignore docs/superpowers/specs/2026-10-13-swiftletcare-integration-contract-design.md
 git commit -m "feat(infra): cấu hình Mosquitto mẫu và hướng dẫn tạo tài khoản trên Windows
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -1798,9 +1839,19 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 - [ ] **Step 6: Mở PR hợp đồng**
 
+**Điều kiện tiên quyết** (kiểm trước khi chạy lệnh dưới):
+
+```powershell
+git remote -v        # phải có origin trỏ tới repo GitHub của nhóm
+gh auth status       # phải báo "Logged in to github.com"; chưa thì chạy: gh auth login
+```
+
+- **TV1 phải có quyền vào repo** (Collaborator, ít nhất quyền Write để Approve PR) — chủ repo mời qua GitHub > Settings > Collaborators trước khi mở PR.
+- Chưa có remote hoặc không dùng được `gh`: tạo repo / thêm remote (`git remote add origin <url>`), `git push -u origin contract/fixtures`, rồi **mở PR trên giao diện web GitHub** (nút *Compare & pull request*), dán cùng nội dung PR bên dưới, chọn TV1 ở mục *Reviewers*.
+
 ```bash
 git push -u origin contract/fixtures
-gh pr create --base main --title "Hợp đồng: fixture, thư viện so khớp, cấu hình Mosquitto" --body-file -
+gh pr create --base main --reviewer <tài-khoản-GitHub-của-TV1> --title "Hợp đồng: fixture, thư viện so khớp, cấu hình Mosquitto" --body-file -
 ```
 
 Nội dung PR (dán vào stdin):
