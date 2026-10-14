@@ -1,6 +1,26 @@
 # SwiftletCare database-core Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Người thực thi:** TV1, theo cách Native (`superpowers:executing-plans`) trên máy mình — không dùng subagent-driven.
+
+## Trước khi chạy
+
+Chạy trong PowerShell, mọi lệnh phải đạt trước khi bắt đầu Task 1:
+
+```powershell
+sqlcmd -?                 # có sẵn (bản 17 trở lên); không có -> cài "Microsoft Command Line Utilities for SQL Server"
+node -v                   # Prisma 7.10.0 yêu cầu ^20.19 || ^22.12 || >=24.0
+npm view prisma@7.10.0 version   # phải in 7.10.0
+```
+
+- Nếu Prisma báo lỗi về phiên bản Node (lúc `npm install` hoặc `npx prisma …`), cài Node **LTS** (hiện là 24.x) rồi chạy lại; không hạ Prisma.
+- Không cài Prisma không ghi phiên bản: `latest` trên npm đang là bản thử nghiệm 8.0.0-rc (kiểm ngày 14/10/2026).
+
+## Mốc 20/10
+
+- Mốc 20/10 gồm **Task 1–6**: backend (TV2) và simulator (TV5) nối được vào `sp_IngestReadings` và `sp_SetActuator`.
+- **Nếu hết 17/10 mà Task 4–5 chưa xong**, TV1 báo nhóm và chuyển phần còn lại cho người hỗ trợ làm tiếp (roadmap: người hỗ trợ chuyển sang giúp module đang chậm), để mốc 20/10 không trễ.
 
 **Goal:** Dựng package `database/` gồm schema SQL Server (Prisma 7 migrate), các SP/trigger/view nghiệp vụ, dữ liệu mẫu cố định và bộ test T-SQL chạy bằng `npm test`, đúng spec database-core.
 
@@ -3257,7 +3277,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: biến `sqlcmd` `$(AnchorDateVn)` (do `deploy.ps1` truyền, mặc định `2026-10-12`); `sp_CreatePredatorAlert`, `sp_UpdateAlertStatus`.
-- Produces (với ngày neo mặc định): 54.144 số đo từ `2026-10-04T17:00:00Z` (00:00 VN ngày neo−7) đến `2026-10-12T12:55:00Z` (19:55 VN ngày neo); 864 dòng BirdCounts; 3 cảnh báo (H1-F2 TEMP RESOLVED, H1-F3 HUMID NEW giá trị 72, PREDATOR snake H1-F0 ACK); 5 dòng AlertHistory; 6 cảm biến `ONLINE`, `LastSeenAt = 2026-10-12T12:55:00`.
+- Produces (với ngày neo mặc định): 54.144 số đo từ `2026-10-04T17:00:00Z` (00:00 VN ngày neo−7) đến `2026-10-12T12:55:00Z` (19:55 VN ngày neo); 864 dòng BirdCounts; 3 cảnh báo (H1-F2 TEMP RESOLVED, H1-F3 HUMID NEW tạo lúc 14:00 VN ngày neo giá trị 74.97 — số đo đầu tiên dưới 75, PREDATOR snake H1-F0 ACK); 5 dòng AlertHistory; 6 cảm biến `ONLINE`, `LastSeenAt = 2026-10-12T12:55:00`.
 
 Giờ Việt Nam = UTC+7 cố định (không có giờ mùa hè) nên seed đổi giờ bằng `DATEADD(HOUR, -7, …)`.
 
@@ -3285,15 +3305,28 @@ IF (SELECT COUNT(*) FROM dbo.AlertHistory) <> 5 THROW 59999, N'seed: AlertHistor
 IF EXISTS (SELECT ZoneId, MetricCode FROM dbo.Alerts WHERE AlertType = 'THRESHOLD' AND Status <> 'RESOLVED'
            GROUP BY ZoneId, MetricCode HAVING COUNT(*) > 1)
     THROW 59999, N'seed: khong duoc co hai THRESHOLD dang mo trung (ZoneId, MetricCode)', 1;
--- Moi THRESHOLD dang mo khop so do cuoi cung cua (khu vuc, chi so) va so do do nam ngoai nguong.
+-- Moi THRESHOLD dang mo: CreatedAt = so do dau tien vuot nguong (Value khop), so do lien truoc con trong nguong,
+-- so do cuoi van ngoai nguong (nhu sp_IngestReadings tao that).
 IF EXISTS (
     SELECT 1 FROM dbo.Alerts a
     JOIN dbo.Thresholds t ON t.ZoneId = a.ZoneId AND t.MetricCode = a.MetricCode
+    OUTER APPLY (SELECT TOP (1) s.Value FROM dbo.SensorReadings s JOIN dbo.Devices d ON d.DeviceId = s.DeviceId
+                 WHERE d.ZoneId = a.ZoneId AND s.MetricCode = a.MetricCode AND s.RecordedAt = a.CreatedAt) atOpen
+    OUTER APPLY (SELECT TOP (1) s.Value FROM dbo.SensorReadings s JOIN dbo.Devices d ON d.DeviceId = s.DeviceId
+                 WHERE d.ZoneId = a.ZoneId AND s.MetricCode = a.MetricCode AND s.RecordedAt < a.CreatedAt
+                 ORDER BY s.RecordedAt DESC) prev
     CROSS APPLY (SELECT TOP (1) s.Value FROM dbo.SensorReadings s JOIN dbo.Devices d ON d.DeviceId = s.DeviceId
                  WHERE d.ZoneId = a.ZoneId AND s.MetricCode = a.MetricCode ORDER BY s.RecordedAt DESC) last
     WHERE a.AlertType = 'THRESHOLD' AND a.Status = 'NEW'
-      AND (last.Value <> a.Value OR NOT (last.Value < t.MinValue OR last.Value > t.MaxValue)))
-    THROW 59999, N'seed: canh bao NEW phai khop so do cuoi ngoai nguong', 1;
+      AND (atOpen.Value IS NULL OR atOpen.Value <> a.Value
+           OR NOT (atOpen.Value < t.MinValue OR atOpen.Value > t.MaxValue)
+           OR prev.Value < t.MinValue OR prev.Value > t.MaxValue
+           OR NOT (last.Value < t.MinValue OR last.Value > t.MaxValue)))
+    THROW 59999, N'seed: canh bao NEW phai tao luc so do dau tien vuot nguong va van con mo', 1;
+IF NOT EXISTS (SELECT 1 FROM dbo.Alerts a JOIN dbo.Zones z ON z.ZoneId = a.ZoneId JOIN dbo.Houses h ON h.HouseId = z.HouseId
+               WHERE a.AlertType = 'THRESHOLD' AND a.MetricCode = 'HUMID' AND a.Status = 'NEW' AND h.Name = N'H1' AND z.Name = N'F3'
+                 AND a.Value = 74.97 AND a.CreatedAt = '2026-10-12T07:00:00')   -- 14:00 VN ngay neo
+    THROW 59999, N'seed: H1-F3 HUMID phai tao luc 14:00 VN ngay neo, gia tri 74.97', 1;
 IF NOT EXISTS (SELECT 1 FROM dbo.Alerts a JOIN dbo.Devices d ON d.DeviceId = a.DeviceId
                WHERE a.AlertType = 'PREDATOR' AND a.Status = 'ACK' AND a.DetectedClass = 'snake' AND d.Code = 'H1-F0-CAMERA')
     THROW 59999, N'seed: thieu PREDATOR snake ACK o H1-F0', 1;
@@ -3362,7 +3395,7 @@ SELECT p.DeviceId, m.MetricCode,
                 CASE WHEN p.Code = 'H1-F2-SENSOR' AND p.DayIdx = 5 AND p.HourVn >= 13 AND p.HourVn < 15 THEN 31.5   -- doan nong ngay neo - 2
                      ELSE 28 + 1.5 * SIN(2 * @Pi * (p.HourVn - 9) / 24) + 0.1 * p.FloorNo END
             WHEN 'HUMID' THEN
-                CASE WHEN p.Code = 'H1-F3-SENSOR' AND p.DayIdx = 7 THEN 82 - 10.0 * (p.i % 288) * 5 / 1195   -- giam dan, 19:55 = 72
+                CASE WHEN p.Code = 'H1-F3-SENSOR' AND p.DayIdx = 7 THEN 82 - 10.0 * (p.i % 288) * 5 / 1195   -- giam dan: 13:55 = 75.01, 14:00 = 74.97 (duoi nguong), 19:55 = 72
                      ELSE 82 + 4 * SIN(2 * @Pi * p.HourVn / 24) END
             WHEN 'CO2' THEN 600 + 150 * SIN(2 * @Pi * p.HourVn / 24)
             ELSE CASE WHEN p.HourVn >= 6 AND p.HourVn < 18 THEN 5 ELSE 1 END
@@ -3455,10 +3488,11 @@ VALUES (@h1, @f2, 'THRESHOLD', 'WARNING', 'TEMP', 31.5, N'Nhiệt độ vượt 
 SET @id = SCOPE_IDENTITY();
 UPDATE dbo.Alerts SET Status = 'RESOLVED', ResolvedAt = DATEADD(HOUR, 15, DATEADD(DAY, -2, @AnchorStartUtc)) WHERE AlertId = @id;
 
--- 2) H1-F3 HUMID: dang mo, khop so do cuoi (19:55 VN ngay neo, 72%).
+-- 2) H1-F3 HUMID: dang mo, tao luc so do dau tien duoi 75 (14:00 VN ngay neo, 74.97%);
+--    13:55 con 75.01 (trong nguong), cuoi du lieu 72% van ngoai nguong nen chua dong.
 INSERT dbo.Alerts (HouseId, ZoneId, AlertType, Severity, MetricCode, Value, Message, CreatedAt)
-VALUES (@h1, @f3, 'THRESHOLD', 'WARNING', 'HUMID', 72, N'Độ ẩm dưới ngưỡng dưới 75.00 %: 72.00 %',
-        DATEADD(MINUTE, 19 * 60 + 55, @AnchorStartUtc));
+VALUES (@h1, @f3, 'THRESHOLD', 'WARNING', 'HUMID', 74.97, N'Độ ẩm dưới ngưỡng dưới 75.00 %: 74.97 %',
+        DATEADD(HOUR, 14, @AnchorStartUtc));
 
 -- 3) PREDATOR qua SP (18:30 VN ngay neo), roi chu nha xac nhan.
 DECLARE @pj NVARCHAR(MAX) = CONCAT(N'{"camera":"H1-F0-CAMERA","class":"snake","confidence":0.91,',
@@ -3851,14 +3885,15 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `database/sql/03-triggers/trg_Devices_Status.sql`, `database/sql/02-functions-procs/sp_RecordHeartbeat.sql`, `database/tests/sp_RecordHeartbeat.test.sql`, `database/tests/trg_Devices_Status.test.sql`
-- Modify: `database/sql/02-functions-procs/sp_DetectAnomalies.sql` (thay dòng chú thích `-- ===== OFFLINE (muc 11): Task 15 bo sung tai day =====`)
+- Modify: `database/sql/02-functions-procs/sp_DetectAnomalies.sql` (thay dòng chú thích `-- ===== OFFLINE (muc 11): Task 15 bo sung tai day =====`), `database/sql/02-functions-procs/sp_IngestReadings.sql` (khối đổi `Status = 'ONLINE'`)
 
 **Interfaces:**
 - Consumes: `sp_DetectAnomalies` (Task 11), seed (6 cảm biến ONLINE, `LastSeenAt = 2026-10-12T12:55:00`; cơ cấu chấp hành và camera `OFFLINE`, `LastSeenAt` NULL).
 - Produces:
   - Trigger: `ONLINE → OFFLINE/ERROR` tạo `DEVICE_OFFLINE` (ERROR = CRITICAL, OFFLINE = WARNING) nếu thiết bị chưa có cảnh báo này đang mở; `* → ONLINE` tự đóng `DEVICE_OFFLINE` đang mở.
   - `sp_DetectAnomalies` đánh dấu OFFLINE thiết bị `IsActive = 1`, `Status = 'ONLINE'`, `LastSeenAt < @NowUtc − @OfflineMinutes`; `NewAlertsJson` gồm cả cảnh báo trigger vừa tạo.
-  - `EXEC dbo.sp_RecordHeartbeat @Json NVARCHAR(MAX)` — mảng `{device, at}` → 1 dòng `Accepted INT, Rejected INT`; nhận mọi thiết bị đang dùng; 50030 khi không phải mảng JSON.
+  - `EXEC dbo.sp_RecordHeartbeat @Json NVARCHAR(MAX)` — mảng `{device, at}` → 1 dòng `Accepted INT, Rejected INT, ResolvedAlertIdsJson NVARCHAR(MAX)`; nhận mọi thiết bị đang dùng; 50030 khi không phải mảng JSON.
+  - **Cảnh báo tự đóng tới được client:** `sp_IngestReadings` và `sp_RecordHeartbeat` đưa các `DEVICE_OFFLINE` mà trigger vừa đóng (thiết bị về ONLINE) vào `ResolvedAlertIdsJson` (cùng dạng `[{"AlertId": n}]`, `[]` khi rỗng); backend phát `alert.updated` như cảnh báo ngưỡng tự đóng. Đọc cảnh báo đang mở bằng `UPDLOCK, HOLDLOCK` trước khi đổi Status để hai lô đồng thời không cùng báo một cảnh báo.
 - Ghi chú R1: trigger này chỉ `AFTER UPDATE`; backend chỉ UPDATE Devices bằng `$executeRaw` không `OUTPUT` (Task 3), nên trigger giữ được.
 
 - [ ] **Step 1: Viết test `database/tests/sp_RecordHeartbeat.test.sql` (phải fail)**
@@ -3867,7 +3902,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 GO
-CREATE TABLE #r (Accepted INT, Rejected INT);
+CREATE TABLE #r (Accepted INT, Rejected INT, ResolvedAlertIdsJson NVARCHAR(MAX));
 GO
 
 PRINT N'heartbeat: cap nhat LastSeenAt, OFFLINE -> ONLINE, giu gia tri lon hon, loai phan tu sai';
@@ -3876,7 +3911,8 @@ BEGIN TRY
     DECLARE @t DATETIME2(0) = CAST(SYSUTCDATETIME() AS DATETIME2(0));
     DECLARE @j NVARCHAR(MAX) = CONCAT(N'[{"device":"H1-F1-FAN","at":"', CONVERT(CHAR(19), @t, 126), N'Z"}]');
     INSERT #r EXEC dbo.sp_RecordHeartbeat @j;
-    IF NOT EXISTS (SELECT 1 FROM #r WHERE Accepted = 1 AND Rejected = 0) THROW 59999, N'heartbeat: dem sai', 1;
+    IF NOT EXISTS (SELECT 1 FROM #r WHERE Accepted = 1 AND Rejected = 0 AND ResolvedAlertIdsJson = N'[]')
+        THROW 59999, N'heartbeat: dem sai / khong co canh bao nao de dong', 1;
     IF NOT EXISTS (SELECT 1 FROM dbo.Devices WHERE Code = 'H1-F1-FAN' AND Status = 'ONLINE' AND LastSeenAt = @t)
         THROW 59999, N'heartbeat: phai ONLINE, LastSeenAt = at', 1;
     DELETE #r;
@@ -3894,6 +3930,35 @@ BEGIN TRY
     INSERT #r EXEC dbo.sp_RecordHeartbeat @j;
     IF NOT EXISTS (SELECT 1 FROM #r WHERE Accepted = 0 AND Rejected = 3)
         THROW 59999, N'heartbeat: thiet bi la / ngung dung / thieu Z phai bi loai, khong loi', 1;
+    ROLLBACK;
+END TRY
+BEGIN CATCH
+    IF XACT_STATE() <> 0 ROLLBACK;
+    THROW;
+END CATCH
+GO
+
+PRINT N'heartbeat: ve ONLINE -> DEVICE_OFFLINE trigger dong nam trong ResolvedAlertIdsJson';
+BEGIN TRY
+    BEGIN TRAN;
+    UPDATE dbo.Devices SET Status = 'ONLINE' WHERE Code = 'H1-F1-FAN';
+    UPDATE dbo.Devices SET Status = 'OFFLINE' WHERE Code = 'H1-F1-FAN';   -- trigger mo DEVICE_OFFLINE
+    DECLARE @off INT = (SELECT a.AlertId FROM dbo.Alerts a JOIN dbo.Devices d ON d.DeviceId = a.DeviceId
+                        WHERE d.Code = 'H1-F1-FAN' AND a.AlertType = 'DEVICE_OFFLINE' AND a.Status = 'NEW');
+    IF @off IS NULL THROW 59999, N'heartbeat: chuan bi - trigger phai mo DEVICE_OFFLINE', 1;
+    DECLARE @j NVARCHAR(MAX) = CONCAT(N'[{"device":"H1-F1-FAN","at":"',
+                                      CONVERT(CHAR(19), CAST(SYSUTCDATETIME() AS DATETIME2(0)), 126), N'Z"}]');
+    INSERT #r EXEC dbo.sp_RecordHeartbeat @j;
+    IF NOT EXISTS (SELECT 1 FROM dbo.Alerts WHERE AlertId = @off AND Status = 'RESOLVED' AND ResolvedBy IS NULL)
+        THROW 59999, N'heartbeat: DEVICE_OFFLINE phai tu dong', 1;
+    IF (SELECT COUNT(*) FROM OPENJSON((SELECT ResolvedAlertIdsJson FROM #r))) <> 1
+       OR (SELECT CAST(JSON_VALUE(ResolvedAlertIdsJson, '$[0].AlertId') AS INT) FROM #r) <> @off
+        THROW 59999, N'heartbeat: ResolvedAlertIdsJson phai chua dung AlertId vua dong', 1;
+    DELETE #r;
+
+    -- Gui lai: da ONLINE, khong dong gi them.
+    INSERT #r EXEC dbo.sp_RecordHeartbeat @j;
+    IF (SELECT ResolvedAlertIdsJson FROM #r) <> N'[]' THROW 59999, N'heartbeat: gui lai khong duoc bao dong lan nua', 1;
     ROLLBACK;
 END TRY
 BEGIN CATCH
@@ -3953,6 +4018,12 @@ BEGIN TRY
     IF NOT EXISTS (SELECT 1 FROM dbo.AlertHistory h JOIN dbo.Alerts a ON a.AlertId = h.AlertId JOIN dbo.Devices d ON d.DeviceId = a.DeviceId
                    WHERE d.Code = 'H1-F1-SENSOR' AND a.AlertType = 'DEVICE_OFFLINE' AND h.NewStatus = 'RESOLVED' AND h.UserId IS NULL)
         THROW 59999, N'offline: lich su dong phai ghi nguoi thao tac = he thong', 1;
+    -- Canh bao tu dong phai toi duoc client: chi dung 1 AlertId cua H1-F1-SENSOR (5 cam bien kia van OFFLINE).
+    IF (SELECT COUNT(*) FROM OPENJSON((SELECT ResolvedAlertIdsJson FROM #ing))) <> 1
+       OR (SELECT CAST(JSON_VALUE(ResolvedAlertIdsJson, '$[0].AlertId') AS INT) FROM #ing)
+          <> (SELECT a.AlertId FROM dbo.Alerts a JOIN dbo.Devices d ON d.DeviceId = a.DeviceId
+              WHERE d.Code = 'H1-F1-SENSOR' AND a.AlertType = 'DEVICE_OFFLINE')
+        THROW 59999, N'offline: sp_IngestReadings phai dua DEVICE_OFFLINE vua dong vao ResolvedAlertIdsJson', 1;
     ROLLBACK;
 END TRY
 BEGIN CATCH
@@ -4043,7 +4114,41 @@ Thay dòng `    -- ===== OFFLINE (muc 11): Task 15 bo sung tai day =====` bằng
     WHERE a.AlertType = 'DEVICE_OFFLINE' AND a.AlertId > @MaxAlertBefore;
 ```
 
-- [ ] **Step 5: Viết `database/sql/02-functions-procs/sp_RecordHeartbeat.sql`**
+- [ ] **Step 5: Sửa `sp_IngestReadings.sql` — báo DEVICE_OFFLINE tự đóng**
+
+Thay khối:
+
+```sql
+    -- Tach rieng: chi dong nao dang khac ONLINE moi bi doi Status (trigger khong chay thua).
+    UPDATE d SET Status = 'ONLINE'
+    FROM dbo.Devices d
+    WHERE d.Status <> 'ONLINE' AND d.DeviceId IN (SELECT DeviceId FROM #In WHERE Status = 'ACCEPTED');
+```
+
+bằng:
+
+```sql
+    -- DEVICE_OFFLINE dang mo cua thiet bi trong lo; khoa de hai lo dong thoi khong cung bao mot canh bao.
+    DECLARE @OfflineOpen TABLE (AlertId INT NOT NULL);
+    INSERT @OfflineOpen (AlertId)
+    SELECT a.AlertId FROM dbo.Alerts a WITH (UPDLOCK, HOLDLOCK)
+    WHERE a.AlertType = 'DEVICE_OFFLINE' AND a.Status <> 'RESOLVED'
+      AND a.DeviceId IN (SELECT DeviceId FROM #In WHERE Status = 'ACCEPTED');
+
+    -- Tach rieng: chi dong nao dang khac ONLINE moi bi doi Status (trigger khong chay thua).
+    UPDATE d SET Status = 'ONLINE'
+    FROM dbo.Devices d
+    WHERE d.Status <> 'ONLINE' AND d.DeviceId IN (SELECT DeviceId FROM #In WHERE Status = 'ACCEPTED');
+
+    -- Cai nao trg_Devices_Status vua dong -> ResolvedAlertIdsJson (backend phat alert.updated).
+    INSERT @Resolved (AlertId)
+    SELECT a.AlertId FROM dbo.Alerts a JOIN @OfflineOpen o ON o.AlertId = a.AlertId
+    WHERE a.Status = 'RESOLVED';
+```
+
+Nếu R1 buộc bỏ trigger (Task 3), SP tự `UPDATE … SET Status = 'RESOLVED'` các dòng `@OfflineOpen` với `OUTPUT inserted.AlertId INTO @Resolved` thay cho câu `INSERT @Resolved` trên.
+
+- [ ] **Step 6: Viết `database/sql/02-functions-procs/sp_RecordHeartbeat.sql`**
 
 ```sql
 CREATE OR ALTER PROCEDURE dbo.sp_RecordHeartbeat
@@ -4083,26 +4188,40 @@ BEGIN
     FROM dbo.Devices d
     JOIN (SELECT DeviceId, MaxAt = MAX(At) FROM #In WHERE DeviceId IS NOT NULL GROUP BY DeviceId) x ON x.DeviceId = d.DeviceId;
 
+    -- Nhu sp_IngestReadings: khoa DEVICE_OFFLINE dang mo, doi Status, lay cai trigger vua dong.
+    DECLARE @OfflineOpen TABLE (AlertId INT NOT NULL);
+    DECLARE @Resolved TABLE (AlertId INT NOT NULL);
+    INSERT @OfflineOpen (AlertId)
+    SELECT a.AlertId FROM dbo.Alerts a WITH (UPDLOCK, HOLDLOCK)
+    WHERE a.AlertType = 'DEVICE_OFFLINE' AND a.Status <> 'RESOLVED'
+      AND a.DeviceId IN (SELECT DeviceId FROM #In WHERE DeviceId IS NOT NULL);
+
     -- Chi doi Status khi dang khac ONLINE (trigger tu dong DEVICE_OFFLINE).
     UPDATE dbo.Devices SET Status = 'ONLINE'
     WHERE Status <> 'ONLINE' AND DeviceId IN (SELECT DeviceId FROM #In WHERE DeviceId IS NOT NULL);
+
+    INSERT @Resolved (AlertId)
+    SELECT a.AlertId FROM dbo.Alerts a JOIN @OfflineOpen o ON o.AlertId = a.AlertId
+    WHERE a.Status = 'RESOLVED';
     COMMIT;
 
     SELECT Accepted = (SELECT COUNT(*) FROM #In WHERE DeviceId IS NOT NULL),
-           Rejected = (SELECT COUNT(*) FROM #In WHERE DeviceId IS NULL);
+           Rejected = (SELECT COUNT(*) FROM #In WHERE DeviceId IS NULL),
+           ResolvedAlertIdsJson = ISNULL((
+               SELECT AlertId FROM @Resolved ORDER BY AlertId FOR JSON PATH), N'[]');
 END
 GO
 ```
 
-- [ ] **Step 6: Chạy test**
+- [ ] **Step 7: Chạy test**
 
 Run: `npm test`
 Expected: `sp_RecordHeartbeat: PASS`, `trg_Devices_Status: PASS`, và **mọi file cũ vẫn đạt** (`seed.test.sql` ca demo giảm đàn nay cũng sinh 6 DEVICE_OFFLINE nhưng chỉ kiểm POPULATION_DROP; `sp_json-columns` vẫn tìm được POPULATION_DROP).
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add database/sql/03-triggers/trg_Devices_Status.sql database/sql/02-functions-procs/sp_RecordHeartbeat.sql database/sql/02-functions-procs/sp_DetectAnomalies.sql database/tests/sp_RecordHeartbeat.test.sql database/tests/trg_Devices_Status.test.sql
+git add database/sql/03-triggers/trg_Devices_Status.sql database/sql/02-functions-procs/sp_RecordHeartbeat.sql database/sql/02-functions-procs/sp_DetectAnomalies.sql database/sql/02-functions-procs/sp_IngestReadings.sql database/tests/sp_RecordHeartbeat.test.sql database/tests/trg_Devices_Status.test.sql
 git commit -m "feat(database): phát hiện thiết bị mất kết nối, heartbeat, trigger trạng thái (mục 11)
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
