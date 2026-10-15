@@ -1,0 +1,24 @@
+# database-core
+database/.env
+database/node_modules/
+database/generated/
+# integration-contract (Mosquitto)
+infra/mosquitto/passwd
+infra/mosquitto/data/
+infra/mosquitto/*.local.conf
+# backend
+backend/.env
+backend/.env.test
+backend/node_modules/
+backend/dist/
+backend/storage/
+# ai-vision
+ai-vision/.env
+ai-vision/.venv/
+ai-vision/data/
+*.pt
+# simulator
+simulator/.env
+simulator/node_modules/
+# cong cu
+.playwright-mcp/
