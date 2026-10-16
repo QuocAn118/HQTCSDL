@@ -29,6 +29,7 @@ Trạng thái cơ cấu chấp hành **tác động lên số đo**. Nhờ vậy
 - **Node.js, ESM thuần (`.mjs`), không TypeScript.** Phiên bản Node theo CLAUDE.md. Lý do: import thẳng được `contracts/lib/seed-refs.mjs` và `contracts/lib/fixtures.mjs`.
 - Phụ thuộc duy nhất: **`mqtt` 5.16.1**, ghim chính xác (giống backend).
 - Đọc `.env` bằng cờ có sẵn `node --env-file=.env`; không cần `dotenv`.
+- **README simulator dặn chép `.env.example` thành `.env` trước khi chạy.** `node --env-file` báo lỗi khó hiểu khi thiếu file, nên `npm start` chạy qua một bước kiểm trước: thiếu `.env` thì dừng với câu "Chưa có simulator/.env, chép từ .env.example". `main.mjs` cũng dừng với thông báo rõ nếu `MQTT_PASSWORD` rỗng. Thông báo không in giá trị mật khẩu.
 - Test chạy bằng `node --test`.
 
 ### 1.3 Cấu trúc
@@ -132,7 +133,8 @@ Nếu chọn MIST chỉ +3 %/phút thì cân bằng là 79 < 82, phun sương b�
 
 - Mỗi cơ cấu chấp hành subscribe `swiftlet/devices/{code}/command`, QoS 1.
 - **Trạng thái ban đầu là tắt**, cho tới khi tin retained đến.
-- Chỉ áp dụng tin có **`issuedAt` mới hơn** tin đã áp dụng gần nhất; tin cũ hơn hoặc bằng thì bỏ qua (hợp đồng 2.1).
+- Chỉ bỏ tin có **`issuedAt` cũ hơn hẳn** tin đã áp dụng gần nhất (hợp đồng 2.1). **Bằng nhau thì vẫn áp dụng**: tin trùng do QoS 1 gửi lại có cùng nội dung nên vô hại.
+- So bằng **thời điểm đã parse** (`Date.parse`), không so chuỗi.
 - Payload sai (không phải JSON, thiếu trường, `issuedAt` thiếu `Z`) → log cảnh báo, bỏ qua.
 
 ### 2.5 Heartbeat (dưới ranh giới cắt)
@@ -185,8 +187,8 @@ Gửi bù trùng vô hại: SP khử trùng theo (thiết bị, chỉ số, `at`
 | Kẹp, làm tròn | Giá trị gửi đi luôn trong [ValidMin, ValidMax], 2 chữ số thập phân; trạng thái bên trong không bị làm tròn |
 | Nhiễu (Nên có) | Cùng hạt giống → cùng dãy |
 | Level FAN | FAN **Level 50, `mode: "MANUAL"`** (điều khiển tay; vòng tự động chỉ gửi 100) → tác động bằng một nửa Level 100 |
-| Payload | Tin số đo khớp fixture `mqtt/readings.json` khi so bằng `expand` + `match` của `contracts/lib/fixtures.mjs`; 4 chỉ số cùng `at`; `at` có `Z`, tăng dần kể cả khi đồng hồ lùi |
-| Lệnh | `issuedAt` cũ hơn hoặc bằng → bỏ qua; chưa có tin retained → tắt; payload sai → bỏ qua, không dừng chương trình |
+| Payload | **Chỉ so hình dạng**, không so giá trị với fixture `mqtt/readings.json` (fixture ghi sẵn giá trị cụ thể nên không bao giờ khớp): mảng đúng **4 phần tử**, mỗi phần tử có đúng các khóa `device` (chuỗi), `metric` (TEMP/HUMID/CO2/LIGHT, mỗi chỉ số một lần), `value` (number), `at` (chuỗi ISO có `Z`); 4 phần tử **cùng `at`**; `device` **khớp `{code}` của topic**; `at` tăng dần kể cả khi đồng hồ lùi |
+| Lệnh | `issuedAt` cũ hơn **hẳn** → bỏ qua; **bằng nhau → vẫn áp dụng**; so bằng thời điểm đã parse, không so chuỗi; chưa có tin retained → tắt; payload sai → bỏ qua, không dừng chương trình |
 
 ### 3.2 Test bất đẳng thức với bản sao công thức
 
@@ -212,6 +214,11 @@ Chạy cùng Mosquitto và backend thật:
 Thêm vào cùng PR hợp đồng ở backend 7.6:
 - Hợp đồng 2.1 ghi "28 kết nối với dữ liệu mẫu" → sửa thành **26** (không có CAMERA).
 - Kiểm tra tài khoản `simulator` và ACL (Nên có) không giới hạn số kết nối.
+- **ACL xung đột với test của backend.** ACL (plan hợp đồng Task 7, Nên có) dùng `pattern write swiftlet/devices/%c/readings`, tức client id chỉ ghi được topic của chính mình. Nhưng test hợp đồng của backend (client id `contract-test`, backend 7.2) và script đo độ trễ (client id `latency-probe`, backend 7.3) đều publish số đo vào topic của cảm biến bằng tài khoản `simulator`, nên sẽ **bị từ chối khi bật ACL**. Hai cách:
+  - Không bật ACL trên máy dev/test.
+  - Thêm tài khoản riêng cho hai việc đó, kèm dòng ACL `user` cho phép ghi `swiftlet/devices/+/readings`.
+
+  Bước 1 của plan (hợp đồng hoặc backend, ai làm ACL trước) thử hành vi thật của Mosquitto, rồi PR hợp đồng chốt cách.
 
 ### 3.5 Chưa kiểm chứng
 
