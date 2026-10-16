@@ -670,6 +670,8 @@ Sự kiện phát trong lúc nhà bị ngừng dùng **không được phát bù
 - **Kết quả:** CSV từng mẫu + p50, p95, max, số mẫu, tỷ lệ vượt chỉ tiêu; commit vào **`backend/results/`** (nhỏ, không bí mật) để TV5 đưa vào báo cáo (NV6).
 - **Hạn chế:** chưa đo mobile và thông báo đẩy (hạn chế 10).
 
+> **Ghi chú thêm 16/10/2026 (ACL, áp cho 7.2 và 7.3):** ACL Mosquitto (plan hợp đồng Task 7, Nên có) dùng `pattern write swiftlet/devices/%c/readings`, nên client id `contract-test` (7.2) và `latency-probe` (7.3) publish vào topic của cảm biến sẽ **bị từ chối khi bật ACL**. Hai cách: không bật ACL trên máy dev/test, hoặc thêm tài khoản riêng cho hai việc này. Bước 1 của plan thử hành vi thật; cách chốt đi qua PR hợp đồng (spec simulator 3.4).
+
 ### 7.4 Checklist demo
 
 **Trả lời câu hỏi mở 1.5:** **một máy demo** chạy SQL Server, Mosquitto, simulator, backend, AI; web chạy cùng máy; mobile qua LAN. Đo độ trễ (7.3) trên chính máy này.
