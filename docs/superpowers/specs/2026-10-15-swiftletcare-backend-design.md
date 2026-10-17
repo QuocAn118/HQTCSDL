@@ -174,7 +174,7 @@ ANOMALY_SCHEDULER=on
 - `SNAPSHOT_MAX_BYTES=2097152` phải bằng giá trị của ai-vision (spec ai-vision 3.3).
 - **`INGEST_RETRY_MAX_ITEMS`** là giới hạn **bộ nhớ của backend, tính theo phần tử số đo**; khác đơn vị với `max_queued_messages` của Mosquitto (tính theo tin).
 
-**`.env.test.example`:** giống trên, khác `DB_NAME=SwiftletCare_Test`, `DEMO_TOOLS=true`, `PORT=3100`, `ANOMALY_SCHEDULER=off`, thêm `DEV_SEED_PASSWORD=` (mật khẩu dev của seed, để đăng nhập tài khoản seed trong test; cùng tên biến plan hợp đồng dùng). Ghi kèm cách tạo `JWT_SECRET` và `AI_SERVICE_KEY`:
+**`.env.test.example`:** giống trên, khác `DB_NAME=SwiftletCare_Test`, `DEMO_TOOLS=true`, `PORT=3100`, `ANOMALY_SCHEDULER=off`, thêm `DEV_SEED_PASSWORD=` (mật khẩu dev của seed, để đăng nhập tài khoản seed trong test; cùng tên biến plan hợp đồng dùng), `SIM_MQTT_USERNAME=simulator` và `SIM_MQTT_PASSWORD=` (tài khoản MQTT `simulator` cho test hợp đồng 7.2 và đo độ trễ 7.3). Ghi kèm cách tạo `JWT_SECRET` và `AI_SERVICE_KEY`:
 
 ```
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
@@ -662,7 +662,7 @@ Sự kiện phát trong lúc nhà bị ngừng dùng **không được phát bù
 
 ### 7.3 Đo độ trễ (câu 7): `backend/scripts/measure-latency.mjs`
 
-- **Chỉ chạy trên `SwiftletCare_Dev`** (từ chối nếu `DB_NAME` khác); đọc `.env` dev.
+- **Chỉ chạy trên `SwiftletCare_Dev`** (từ chối nếu `DB_NAME` khác); đọc `.env` và `.env.test` (`.env` cho CSDL, MQTT, cổng; `.env.test` cho `DEV_SEED_PASSWORD`, `SIM_MQTT_USERNAME`, `SIM_MQTT_PASSWORD`).
 - Simulator, backend, Mosquitto, SQL Server, script **cùng một máy**; ghi cấu hình máy (CPU, RAM, Windows, Node).
 - **Số đo:** đăng nhập ADMIN, nghe `readings.new`, ghi `thời điểm nhận − at`. `at` do simulator gán nên **gồm cả 1 giây gom lô**; báo cáo nói rõ khi so với chỉ tiêu 2 giây.
 - **Cảnh báo:** script **tự publish** số đo vượt ngưỡng qua MQTT (tài khoản `simulator`, client id **`latency-probe`**), nhớ `at` của mình, ghép với `alert.created` cùng khu vực + chỉ số.
