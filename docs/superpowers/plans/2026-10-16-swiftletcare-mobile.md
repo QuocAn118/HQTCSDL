@@ -33,7 +33,7 @@ Roadmap: TV5 hỗ trợ mobile tuần 3 nếu TV4 trễ.
 
 **Goal:** Dựng `mobile/` — app Expo SDK 58 chạy bằng Expo Go cho chủ nhà yến: đăng nhập (giữ phiên qua `expo-secure-store`), tổng quan số đo trực tiếp, cảnh báo kèm ACK/RESOLVED và ảnh thiên địch, điều khiển tay, banner cảnh báo trong app; đúng hợp đồng REST và sự kiện như web.
 
-**Architecture:** Expo Router: lớp gốc `app/_layout.tsx` giữ màn hình chờ tới khi đọc xong phiên, chọn nhóm màn hình bằng `Stack.Protected`, mở **một** socket cho cả app (đóng khi app vào nền) và đặt banner cảnh báo; ba tab dùng chung "nhà đang chọn" (`lib/house.tsx`). Bốn file hàm thuần (`time`, `merge`, `errors`, `types`) và ba file test **chép nguyên văn từ `web/`**, `scripts/check-copies.mjs` cảnh báo khi lệch. `lib/socket.ts` cũng chép từ web nhưng không kiểm băm (spec 3.2: mobile được phép sửa khác web).
+**Architecture:** Expo Router: lớp gốc `app/_layout.tsx` giữ màn hình chờ tới khi đọc xong phiên, chọn nhóm màn hình bằng `Stack.Protected`, mở **một** socket cho cả app (đóng khi app vào nền) và đặt banner cảnh báo; ba tab dùng chung "nhà đang chọn" (`lib/house.tsx`). Bốn file hàm thuần (`time`, `merge`, `errors`, `types`) và ba file test **chép nguyên văn từ `web/`**, `scripts/check-copies.mjs` cảnh báo khi lệch. `lib/socket.ts` cũng chép nguyên văn từ web và **cũng kiểm băm** (AppState nằm ở `lib/live.tsx`, `lib/auth.tsx`, không ở `socket.ts`; spec 3.2).
 
 **Tech Stack (bản thật do `npx expo install` chọn cho SDK 58 ngày 17/10/2026, ghim chính xác):** `expo` 58.0.14, `expo-router` 58.0.23, `expo-secure-store` 58.0.2, `expo-splash-screen` 58.0.10, `expo-constants` 58.0.12, `expo-linking` 58.0.13, `expo-status-bar` 58.0.3, `react` 19.3.0, `react-dom` 19.3.0, `react-native` 0.88.0, `react-native-safe-area-context` 5.10.1, `react-native-screens` 4.30.0, `socket.io-client` 4.8.3; dev: `typescript` 6.0.3, `@types/react` 19.3.0, `@types/node` 24.19.2, `vitest` 5.0.5. Task 1 cài lại thật trên máy TV4 và **ghi số thật** nếu khác.
 
@@ -80,8 +80,7 @@ mobile/
     ui.tsx                        ErrorBox, Empty, Loading, Button, Card, Badge, màu, style
     AlertBanner.tsx               banner + rung khi alert.created
   lib/
-    time.ts merge.ts errors.ts types.ts   CHÉP từ web/lib (kiểm băm)
-    socket.ts                     CHÉP từ web/lib/socket.ts
+    time.ts merge.ts errors.ts types.ts socket.ts   CHÉP từ web/lib (kiểm băm)
     session.ts                    phiên trong expo-secure-store
     api.ts                        fetch kèm token, 401 → đăng xuất, snapshotSource, qs
     auth.tsx                      AuthProvider, useAuth
@@ -92,11 +91,11 @@ mobile/
   test/
     time.test.ts merge.test.ts errors.test.ts   CHÉP từ web/test
     check-copies.test.ts control.test.ts repo.test.ts
-  scripts/check-copies.mjs        so băm 7 file với web/ (CRLF → LF), chỉ cảnh báo
+  scripts/check-copies.mjs        so băm 8 file với web/ (CRLF → LF), chỉ cảnh báo
   spikes/RESULTS.md
 ```
 
-Trùng sơ đồ spec 1.4 (đã cập nhật 17/10/2026). `lib/types.ts` phải chép theo vì `merge.ts` của web import nó — `check-copies` kiểm **7** file (spec 3.2). Không có `app/index.tsx` ở gốc (route `/` là tab Tổng quan).
+Trùng sơ đồ spec 1.4 (đã cập nhật 17/10/2026). `lib/types.ts` phải chép theo vì `merge.ts` của web import nó — `check-copies` kiểm **8** file (spec 3.2, gồm `socket.ts`). Không có `app/index.tsx` ở gốc (route `/` là tab Tổng quan).
 
 ## Phụ thuộc vào module khác và cách làm khi chưa có
 
@@ -397,11 +396,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 2: Chép hàm thuần từ web và kiểm lệch bản sao
 
 **Files:**
-- Create: `mobile/lib/time.ts`, `mobile/lib/merge.ts`, `mobile/lib/errors.ts`, `mobile/lib/types.ts`, `mobile/test/time.test.ts`, `mobile/test/merge.test.ts`, `mobile/test/errors.test.ts` (chép), `mobile/scripts/check-copies.mjs`, `mobile/test/check-copies.test.ts`
+- Create: `mobile/lib/time.ts`, `mobile/lib/merge.ts`, `mobile/lib/errors.ts`, `mobile/lib/types.ts`, `mobile/lib/socket.ts`, `mobile/test/time.test.ts`, `mobile/test/merge.test.ts`, `mobile/test/errors.test.ts` (chép), `mobile/scripts/check-copies.mjs`, `mobile/test/check-copies.test.ts`
 
 **Interfaces:**
-- Consumes: plan web Task 2–4 (nội dung bốn file `lib` và ba file test).
-- Produces: như plan web Task 2–4; `check-copies.mjs` xuất `PAIRS` (7 đường dẫn), `hashText(text)`, `diffCopies(mobileDir, webDir): string[] | null` (`null` = chưa có `web/`).
+- Consumes: plan web Task 2–5 (nội dung năm file `lib` và ba file test).
+- Produces: như plan web Task 2–4; `check-copies.mjs` xuất `PAIRS` (8 đường dẫn), `hashText(text)`, `diffCopies(mobileDir, webDir): string[] | null` (`null` = chưa có `web/`).
 
 - [ ] **Step 1: Viết test của `check-copies` (phải fail)**
 
@@ -454,7 +453,7 @@ import { join } from 'node:path';
 const MOBILE = fileURLToPath(new URL('..', import.meta.url));
 const WEB = join(MOBILE, '..', 'web');
 export const PAIRS = [
-  'lib/time.ts', 'lib/merge.ts', 'lib/errors.ts', 'lib/types.ts',
+  'lib/time.ts', 'lib/merge.ts', 'lib/errors.ts', 'lib/types.ts', 'lib/socket.ts',
   'test/time.test.ts', 'test/merge.test.ts', 'test/errors.test.ts',
 ];
 
@@ -479,15 +478,15 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
 }
 ```
 
-- [ ] **Step 3: Chép bảy file từ web**
+- [ ] **Step 3: Chép tám file từ web**
 
 ```powershell
-foreach ($f in 'lib/time.ts','lib/merge.ts','lib/errors.ts','lib/types.ts','test/time.test.ts','test/merge.test.ts','test/errors.test.ts') {
+foreach ($f in 'lib/time.ts','lib/merge.ts','lib/errors.ts','lib/types.ts','lib/socket.ts','test/time.test.ts','test/merge.test.ts','test/errors.test.ts') {
   Copy-Item "web/$f" "mobile/$f"
 }
 ```
 
-Chưa có `web/` (mobile làm trước): tạo bảy file bằng **đúng khối code** trong plan web Task 2 (`time`), Task 3 (`errors`), Task 4 (`types`, `merge`) — không sửa chữ nào.
+Chưa có `web/` (mobile làm trước): tạo tám file bằng **đúng khối code** trong plan web Task 2 (`time`), Task 3 (`errors`), Task 4 (`types`, `merge`), Task 5 (`socket`) — không sửa chữ nào.
 
 - [ ] **Step 4: Chạy test**
 
@@ -496,7 +495,7 @@ cd mobile
 npm test
 ```
 
-Expected: dòng đầu `Ban sao khop web/ (7 file)` (hoặc `Chua co thu muc web/: bo qua kiem ban sao`); Vitest PASS 40 test (repo 4, check-copies 2, time 13, errors 13, merge 8).
+Expected: dòng đầu `Ban sao khop web/ (8 file)` (hoặc `Chua co thu muc web/: bo qua kiem ban sao`); Vitest PASS 40 test (repo 4, check-copies 2, time 13, errors 13, merge 8).
 
 - [ ] **Step 5: Commit**
 
@@ -596,11 +595,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 4: Phiên, socket theo vòng đời app, đăng nhập, Tổng quan, banner (Bắt buộc 1)
 
 **Files:**
-- Create: `mobile/lib/socket.ts` (chép từ web), `mobile/lib/session.ts`, `mobile/lib/api.ts`, `mobile/lib/auth.tsx`, `mobile/lib/live.tsx`, `mobile/lib/house.tsx`, `mobile/lib/config.ts`, `mobile/components/ui.tsx`, `mobile/components/AlertBanner.tsx`, `mobile/app/_layout.tsx`, `mobile/app/login.tsx`, `mobile/app/(tabs)/_layout.tsx`, `mobile/app/(tabs)/index.tsx`, `mobile/app/(tabs)/alerts.tsx` (Task 5 viết đủ; ở task này là bản Task 5 luôn, vì `Tabs` cần đủ ba route), `mobile/app/(tabs)/devices.tsx` (như trên), `mobile/app/alerts/[alertId].tsx` (như trên)
+- Create: `mobile/lib/session.ts`, `mobile/lib/api.ts`, `mobile/lib/auth.tsx`, `mobile/lib/live.tsx`, `mobile/lib/house.tsx`, `mobile/lib/config.ts`, `mobile/components/ui.tsx`, `mobile/components/AlertBanner.tsx`, `mobile/app/_layout.tsx`, `mobile/app/login.tsx`, `mobile/app/(tabs)/_layout.tsx`, `mobile/app/(tabs)/index.tsx`, `mobile/app/(tabs)/alerts.tsx` (Task 5 viết đủ; ở task này là bản Task 5 luôn, vì `Tabs` cần đủ ba route), `mobile/app/(tabs)/devices.tsx` (như trên), `mobile/app/alerts/[alertId].tsx` (như trên)
 - Delete: `mobile/app/index.tsx` (màn hình tạm Task 1 — trùng route `/` với `(tabs)/index.tsx`)
 
 **Interfaces:**
-- Consumes: `createLiveSocket`, `LiveStatus` (bản chép `socket.ts`); `ApiError`, `toApiError`, `messageFor`, `GENERIC_MESSAGE` (Task 2); `mergeLatest`, `applyDeviceState`, `replayDeviceStates`, `latestKey` (Task 2); `formatVn` (Task 2).
+- Consumes: `createLiveSocket`, `LiveStatus` (bản chép `socket.ts`, Task 2); `ApiError`, `toApiError`, `messageFor`, `GENERIC_MESSAGE` (Task 2); `mergeLatest`, `applyDeviceState`, `replayDeviceStates`, `latestKey` (Task 2); `formatVn` (Task 2).
 - Produces:
   - `session.ts`: `Session`, `sessionFromLogin`, `saveSession`, `loadSession(nowMs?)` (hết hạn → xóa, `null`), `clearSession` — đều async.
   - `api.ts`: `API_URL`, `setApiToken`, `getApiToken`, `setOnUnauthorized`, `api<T>(path, method?, body?)`, `snapshotSource(alertId) -> {uri, headers}`, `qs`.
@@ -611,10 +610,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 `app/(tabs)/_layout.tsx` khai báo ba tab nên ba file tab và màn chi tiết phải có cùng lúc; code của `alerts.tsx`, `devices.tsx`, `alerts/[alertId].tsx` nằm ở Task 5–6 — **tạo luôn ở task này bằng đúng code Task 5–6**, rồi kiểm hành vi của chúng ở Task 5–6.
 
-- [ ] **Step 1: Chép `socket.ts` từ web, viết `session.ts`, `api.ts`, `auth.tsx`**
+- [ ] **Step 1: Viết `session.ts`, `api.ts`, `auth.tsx`** (`socket.ts` đã chép ở Task 2)
 
 ```powershell
-Copy-Item web/lib/socket.ts mobile/lib/socket.ts   # chua co web/: dung khoi code plan web Task 5
 Remove-Item mobile/app/index.tsx
 ```
 
@@ -1779,7 +1777,7 @@ Các mục (tiếng Việt có dấu): cài đặt; `.env` = IP LAN máy backend
 
 - [ ] **Step 5: Kiểm tra cuối và commit**
 
-- `npm run typecheck; npm test` → sạch, PASS, dòng đầu `Ban sao khop web/ (7 file)`.
+- `npm run typecheck; npm test` → sạch, PASS, dòng đầu `Ban sao khop web/ (8 file)`.
 - `git status --short` không có `.env`, `.expo`, `node_modules`.
 - `spikes/RESULTS.md` không còn dòng trống.
 - Rà nhánh bằng `superpowers:requesting-code-review`; sửa vấn đề nghiêm trọng; mở PR `mobile` → `main`, ít nhất một người duyệt.

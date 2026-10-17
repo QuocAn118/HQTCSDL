@@ -68,8 +68,7 @@ mobile/
     ui.tsx                        ErrorBox, Empty, Loading, Button, Card, Badge, màu, style
     AlertBanner.tsx               banner + rung khi alert.created
   lib/
-    time.ts merge.ts errors.ts types.ts   CHÉP từ web/lib (kiểm băm)
-    socket.ts                     CHÉP từ web/lib/socket.ts
+    time.ts merge.ts errors.ts types.ts socket.ts   CHÉP từ web/lib (kiểm băm)
     session.ts                    phiên trong expo-secure-store
     api.ts                        fetch kèm token, 401 → đăng xuất, snapshotSource, qs
     auth.tsx                      AuthProvider, useAuth
@@ -80,7 +79,7 @@ mobile/
   test/
     time.test.ts merge.test.ts errors.test.ts   CHÉP từ web/test
     check-copies.test.ts control.test.ts repo.test.ts
-  scripts/check-copies.mjs        so băm 7 file với web/ (CRLF → LF), chỉ cảnh báo
+  scripts/check-copies.mjs        so băm 8 file với web/ (CRLF → LF), chỉ cảnh báo
   spikes/RESULTS.md
 ```
 
@@ -184,8 +183,8 @@ Không có test component.
 
 ### 3.2 Chống lệch bản sao (`scripts/check-copies.mjs`)
 
-- So **băm SHA-256** của **bảy cặp file**: `lib/{time,merge,errors,types}.ts` và `test/{time,merge,errors}.test.ts` giữa `mobile/` và `web/` (`types.ts` vì `merge.ts` import nó). Chỉ băm file hàm thuần.
-- **Không băm `lib/socket.ts`**: mobile được phép sửa khác web có chủ ý (vòng đời theo AppState). Trong plan hiện tại `socket.ts` chép từ web, phần AppState nằm ở `lib/live.tsx`. Trước khi băm, đổi `CRLF` thành `LF` để Git trên Windows không gây báo sai.
+- So **băm SHA-256** của **tám cặp file**: `lib/{time,merge,errors,types,socket}.ts` và `test/{time,merge,errors}.test.ts` giữa `mobile/` và `web/` (`types.ts` vì `merge.ts` import nó).
+- **`socket.ts` cũng băm** (kiểm 17/10/2026 trên bản dựng thử của hai plan): bản mobile giống hệt web; AppState nằm ở `lib/live.tsx`, `lib/auth.tsx`, không ở `socket.ts`. Lệch nghĩa là ai đó sửa một bên. Chỉ bỏ băm một file khi mobile **cố ý** sửa khác web, và phải ghi lý do vào mục này. Trước khi băm, đổi `CRLF` thành `LF` để Git trên Windows không gây báo sai.
 - Khác nhau → **in cảnh báo** nêu tên file; **không làm fail** `npm test`.
 - Chưa có thư mục `web/` (VD mobile làm trước) → in "bỏ qua kiểm bản sao", tiếp tục chạy test.
 - Dùng `node:crypto` và `node:fs` có sẵn, không thêm thư viện.
@@ -203,7 +202,7 @@ Không có test component.
 1. **Không có thông báo đẩy**; banner chỉ hiện khi app đang mở.
 2. Phụ thuộc Expo Go: SDK mới có thể làm app không mở được nếu Expo Go tự cập nhật.
 3. iOS chưa kiểm chứng (mục 1.2).
-4. Ba file hàm thuần chép từ web có thể lệch nhau; `check-copies` chỉ cảnh báo.
+4. Năm file `lib` và ba file test chép từ web có thể lệch nhau; `check-copies` chỉ cảnh báo.
 5. Không có quản lý nhà, khu vực, thiết bị, ngưỡng, người dùng; không có biểu đồ.
 6. Số đo độ trễ có độ phân giải khoảng 1 giây; chỉ mang tính tham khảo nếu phải đo bằng quay màn hình.
 7. Huy hiệu `OFFLINE` chỉ cho SENSOR nếu chưa làm heartbeat.
