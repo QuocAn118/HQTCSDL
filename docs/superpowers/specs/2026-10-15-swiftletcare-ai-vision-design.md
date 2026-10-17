@@ -125,7 +125,7 @@ Tên lớp trên Roboflow viết **đúng chữ thường như trên**, để AI
 ### 2.6 Trọng số và metadata
 
 - `best.pt` **không vào git**; tải lên **GitHub Release** của repo nhóm. Repo không ở GitHub thì dùng kho lưu trữ khác có link tải.
-- Mỗi lần export kèm `ai-vision/weights.json` (commit vào git): URL tải, SHA-256 của `best.pt`, phiên bản dataset Roboflow, số epoch, kích thước ảnh, seed, tỷ lệ ảnh nền thực tế, phiên bản Ultralytics và torch trên Colab.
+- Mỗi lần export kèm `ai-vision/weights.json` (commit vào git): URL tải, SHA-256 của `best.pt`, phiên bản dataset Roboflow, số epoch, kích thước ảnh, seed, tỷ lệ ảnh nền thực tế, phiên bản Ultralytics và torch trên Colab, bản Python máy nhóm đã chốt (`localPython`, mục 3.1).
 - Script tải (Python, chạy bằng `.\.venv\Scripts\python`):
   - Tải `best.pt` theo URL trong `weights.json`, **so SHA-256**; lệch thì xóa file vừa tải và báo lỗi.
   - Nạp thử trọng số bằng Ultralytics trên máy nhóm. Bản Ultralytics trên Colab khác máy nhóm thì ghi chênh lệch vào spec.
@@ -145,10 +145,10 @@ Tên lớp trên Roboflow viết **đúng chữ thường như trên**, để AI
 
 ### 3.1 Môi trường
 
-Python **3.12** trên Windows, môi trường ảo `ai-vision\.venv` (không vào git). Mọi lệnh gọi thẳng `.\.venv\Scripts\python`, không dùng `Activate.ps1`. Chạy trong `ai-vision\`:
+Python **3.12 hoặc 3.13** trên Windows (bản nào cài được torch, ultralytics, supervision; bước 1 của plan kiểm trên máy TV3; **ghim bản đã dùng** và ghi vào `weights.json`, khóa `localPython`), môi trường ảo `ai-vision\.venv` (không vào git). Mọi lệnh gọi thẳng `.\.venv\Scripts\python`, không dùng `Activate.ps1`. Chạy trong `ai-vision\`:
 
 ```
-py -3.12 -m venv .venv
+py -3.12 -m venv .venv      # hoặc py -3.13, theo bản đã chốt ở bước 1
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -c "import ultralytics, supervision"
 ```
@@ -157,7 +157,7 @@ py -3.12 -m venv .venv
 - `torch`, `torchvision` lấy từ PyPI: trang cài đặt PyTorch (kiểm tra 15/10/2026, bản ổn định 2.14.1) cho Windows + Pip + CPU ghi lệnh `pip3 install torch torchvision`, không có index-url, nên bản PyPI trên Windows là bản CPU. Trang ghi PyTorch trên Windows hỗ trợ Python 3.10–3.14.
 - Notebook Colab chỉ cài `ultralytics==…` và `supervision==…`, dùng torch có sẵn. Một test kiểm tra hai bản ghim trong notebook trùng `requirements.txt`.
 - Không làm file khóa phụ thuộc đầy đủ (`pip freeze`); gói phụ thuộc gián tiếp có thể khác giữa các máy. Máy nào cho kết quả khác thì mới thêm.
-- Không dùng được 3.12 thì chuyển 3.11 và ghi lý do vào spec.
+- Ưu tiên 3.12; 3.12 không cài được gói nào trong ba gói trên thì dùng 3.13 (máy viết plan có 3.13.9, đã chạy thử supervision, OpenCV, NumPy; torch, ultralytics trên 3.13 chưa kiểm chứng). Cả hai không được thì lùi 3.11 và ghi lý do vào spec.
 
 ### 3.2 Cấu trúc thư mục
 
@@ -282,8 +282,8 @@ Mỗi camera **một tiến trình**; **không bao giờ chạy hai tiến trìn
 **File khóa chống chạy trùng:** `live` tạo `data\run\<mã camera>.lock` khi khởi động (chỉ tạo nếu chưa có) và xóa khi thoát bình thường hoặc Ctrl+C. File đã tồn tại thì **dừng**, báo thời điểm file được tạo và hướng dẫn: kiểm tra không còn cửa sổ nào đang chạy camera này, rồi xóa tay file đó. Không tự dò tiến trình còn sống. Máy tắt đột ngột thì file còn lại, người chạy xóa tay theo hướng dẫn.
 
 **Chưa kiểm chứng:**
-- `py -3.12` cần Python Launcher; bộ cài python.org thường có, máy nhóm chưa kiểm tra.
-- torch CPU, Ultralytics, supervision có cài được trên Python 3.12 Windows không; số phiên bản cụ thể.
+- `py -3.12`/`py -3.13` cần Python Launcher; bộ cài python.org thường có, máy nhóm chưa kiểm tra.
+- torch CPU, Ultralytics, supervision có cài được trên Python 3.12 hay 3.13 Windows không; số phiên bản cụ thể.
 - Tên lớp, tham số và quy ước chiều của supervision.
 - Số 30/5 khung khi đo fps là đề xuất, chưa thử; tốc độ nhảy khung của OpenCV trên video thật chưa đo.
 - Mức `swiftlet.confidence` hợp lý: chưa đo.

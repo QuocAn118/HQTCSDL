@@ -14,7 +14,7 @@ git status                      # sạch, đang ở nhánh ai-vision (git switch
 w32tm /query /status            # đồng hồ máy có đồng bộ (spec 4.6 "chưa kiểm chứng")
 ```
 
-- **Máy viết plan (16/10/2026) chỉ có Python 3.13.9, không có 3.12.** Spec 3.1 chốt 3.12, lùi 3.11 nếu không được. Task 1 Step 1 xử lý: cài 3.12 trước; **không tự dùng 3.13** khi chưa sửa spec (TV3 là chủ spec, sửa thì ghi lý do vào spec 3.1 và báo nhóm).
+- **Máy viết plan (16/10/2026) chỉ có Python 3.13.9, không có 3.12.** Spec 3.1 (sửa 17/10/2026): Python 3.12 hoặc 3.13, bản nào cài được torch, ultralytics, supervision; ghim bản đã dùng và ghi vào `weights.json` (`localPython`). Task 1 Step 1–2 kiểm trên máy TV3.
 - Video, ảnh, dataset, `best.pt` đặt trong `ai-vision/data/` (đã gitignore). **Chạy `git status` trước mỗi lần commit**, không có video, ảnh, trọng số, `.env` trong thay đổi.
 - Lúc viết plan (17/10/2026), code và test của Task 2–15 đã được chạy thử **ngoài repo** trên Python 3.13 với supervision 0.30.9, OpenCV 5.0.0, NumPy 2.5.4, không có torch/Ultralytics, cùng bộ fixture AI dựng theo plan hợp đồng: 239 test đạt, 1 bỏ qua (mô hình thật). Phần gọi Ultralytics (`Detector`, `measure_speed.py`, `eval_detector.py`, notebook) **chưa chạy thử**.
 - Không cần CSDL, Mosquitto hay backend cho Task 1–14. Task 16 (kiểm tay đầu-cuối) cần backend thật đã xong Task 19 của plan backend (mốc trước 29/10).
@@ -37,13 +37,13 @@ Hết 25/10 mà chưa có `best.pt` nạp được trên máy nhóm thì TV3 bá
 
 **Architecture:** Gói `swiftletcare_ai/` chia theo trách nhiệm: hàm thuần (thời gian, cấu hình, cửa sổ, xác nhận thiên địch, payload, chỉ số đo) test không cần mô hình; `counting.py` là chỗ **duy nhất** nói chuyện với vạch đếm supervision; `sender.py` là luồng gửi riêng có hàng đợi, là chỗ **duy nhất** gọi HTTP; `app.py` ráp lại thành hai lệnh `live` và `offline`. Phụ thuộc bên ngoài (mô hình, video, đồng hồ, HTTP) đưa vào qua tham số để test thay bằng bản giả.
 
-**Tech Stack:** Python 3.12 (Windows, `ai-vision\.venv`), torch 2.14.1 + torchvision 0.29.1 (CPU, PyPI), ultralytics 8.4.178, supervision 0.30.9, requests 2.34.2, PyYAML 6.0.3, pytest 9.1.1, opencv-python 5.0.0.93, numpy 2.5.4 (hai gói cuối là bản đã dùng khi chạy thử 239 test). Số phiên bản là bản mới nhất trên PyPI ngày 16/10/2026 (`pip index versions`); torch, torchvision, ultralytics **chưa cài thử** — Task 1 chốt.
+**Tech Stack:** Python 3.12 hoặc 3.13 (Windows, `ai-vision\.venv`; chốt ở Task 1), torch 2.14.1 + torchvision 0.29.1 (CPU, PyPI), ultralytics 8.4.178, supervision 0.30.9, requests 2.34.2, PyYAML 6.0.3, pytest 9.1.1, opencv-python 5.0.0.93, numpy 2.5.4 (hai gói cuối là bản đã dùng khi chạy thử 239 test). Số phiên bản là bản mới nhất trên PyPI ngày 16/10/2026 (`pip index versions`); torch, torchvision, ultralytics **chưa cài thử** — Task 1 chốt.
 
 **Spec:** [docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md](../specs/2026-10-15-swiftletcare-ai-vision-design.md) · hợp đồng: [integration-contract](../specs/2026-10-13-swiftletcare-integration-contract-design.md) mục 2.4 · fixture AI: [plan hợp đồng](2026-10-14-swiftletcare-integration-contract.md) Task 4 · endpoint: [plan backend](2026-10-16-swiftletcare-backend.md) Task 19 (Task 26 cho heartbeat)
 
 ## Global Constraints
 
-- Python 3.12, môi trường ảo `ai-vision\.venv`; mọi lệnh gọi `.\.venv\Scripts\python`, không dùng `Activate.ps1`. Lệnh chạy trong thư mục `ai-vision\`.
+- Python 3.12 hoặc 3.13 (bản chốt ở Task 1 S1, ghi `localPython` trong `weights.json`), môi trường ảo `ai-vision\.venv`; mọi lệnh gọi `.\.venv\Scripts\python`, không dùng `Activate.ps1`. Lệnh chạy trong thư mục `ai-vision\`.
 - `requirements.txt` ghim `==` đúng chín gói: `torch`, `torchvision`, `ultralytics`, `supervision`, `requests`, `PyYAML`, `pytest`, `opencv-python`, `numpy` (code import thẳng `cv2`, `numpy`). Không `pip freeze`. Notebook Colab chỉ cài `ultralytics==…` và `supervision==…`, trùng `requirements.txt`.
 - Lớp: `swiftlet`, `rat`, `snake`, `owl` — chữ thường, gửi thẳng tên lớp thiên địch sang backend.
 - Danh sách camera cố định trong code: `H1-F0-CAMERA`, `H2-F0-CAMERA`.
@@ -146,11 +146,12 @@ ai-vision/
 ```powershell
 py -0p
 py -3.12 --version
+py -3.13 --version
 ```
 
-Expected: có dòng `-V:3.12` và `Python 3.12.x`.
+Expected: có ít nhất một trong hai dòng `-V:3.12`, `-V:3.13`.
 
-Không có 3.12: tải bộ cài **Windows installer (64-bit)** của bản 3.12 mới nhất từ `https://www.python.org/downloads/windows/`, cài với tùy chọn "py launcher", rồi chạy lại hai lệnh trên. Không cài được 3.12 (máy không cho cài, bộ cài lỗi) thì thử 3.11 bằng cùng cách và **ghi lý do vào spec 3.1** (TV3 là chủ spec) và `RESULTS.md`. **Không dùng 3.13** (bản có sẵn trên máy viết plan) khi chưa sửa spec 3.1 và báo nhóm. Ghi S1 vào `RESULTS.md` (Step 7): bản Python, cách cài.
+Spec 3.1: dùng **3.12 hoặc 3.13**, bản nào cài được torch, ultralytics, supervision (Step 2). Ưu tiên 3.12: chưa có thì tải bộ cài **Windows installer (64-bit)** của bản 3.12 mới nhất từ `https://www.python.org/downloads/windows/`, cài với tùy chọn "py launcher". Không cài được 3.12, hoặc Step 2 trên 3.12 báo không có bản cho một trong ba gói, thì dùng 3.13. Cả hai không được thì thử 3.11 và **ghi lý do vào spec 3.1** (TV3 là chủ spec). Ghi S1 vào `RESULTS.md` (Step 7): bản Python **đầy đủ** (`3.x.y`), cách cài; ghi cùng số đó vào khóa `localPython` của `weights.json` (Task 13). Các lệnh `py -3.12` dưới đây đổi thành `py -3.13` nếu chốt 3.13.
 
 - [ ] **Step 2: Viết `ai-vision/requirements.txt` và cài (S2)**
 
@@ -168,14 +169,14 @@ numpy==2.5.4
 
 ```powershell
 cd ai-vision
-py -3.12 -m venv .venv
+py -3.12 -m venv .venv      # hoặc py -3.13 theo S1
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -c "import sys, torch, torchvision, ultralytics, supervision, requests, yaml, pytest, cv2, numpy; print(sys.version); print(torch.__version__, torchvision.__version__, ultralytics.__version__, supervision.__version__, requests.__version__, yaml.__version__, pytest.__version__, cv2.__version__, numpy.__version__, torch.cuda.is_available())"
 ```
 
 Expected: cài không lỗi; dòng cuối in chín phiên bản trùng `requirements.txt` (`cv2.__version__` là `5.0.0` ứng với `opencv-python==5.0.0.93`) và `False` (CPU). Ultralytics 8.4.178 có nhận `opencv-python` 5 và `numpy` 2.5 không: **chưa kiểm chứng** (lần chạy thử không có Ultralytics); pip báo xung đột thì lùi hai gói này về bản Ultralytics kéo về, ghi S2.
 
-Pip báo xung đột hoặc không có bản cho Python 3.12 Windows: lùi gói gây lỗi về bản mới nhất cài được (`py -3.12 -m pip index versions <gói>`), sửa `requirements.txt`, cài lại. Ghi S2: số phiên bản thật, gói nào phải lùi, vì sao; **cập nhật dòng Tech Stack của plan này và spec 3.1** bằng số thật.
+Pip báo không có bản của torch, ultralytics hoặc supervision cho Python 3.12 Windows: xóa `.venv`, tạo lại bằng `py -3.13` (S1). Gói khác xung đột: lùi gói gây lỗi về bản mới nhất cài được (`.\.venv\Scripts\python -m pip index versions <gói>`), sửa `requirements.txt`, cài lại. Ghi S2: số phiên bản thật, gói nào phải lùi, vì sao; **cập nhật dòng Tech Stack của plan này và spec 3.1** bằng số thật.
 
 - [ ] **Step 3: Kiểm API supervision (S3, S4) — quyết định cách viết Task 2, 11, 12**
 
@@ -332,7 +333,7 @@ Tạo `ai-vision/spikes/RESULTS.md` theo khung dưới, điền cột "Kết qu�
 
 | Mã | Mục (spec) | Cách kiểm | Kết quả | Ngày |
 |---|---|---|---|---|
-| S1 | Python 3.12 + Python Launcher (3.1, 3.5) | `py -0p`, `py -3.12 --version` | | |
+| S1 | Python 3.12 hoặc 3.13 + Python Launcher (3.1, 3.5); bản đầy đủ → `localPython` | `py -0p`, `py -3.12 --version`, `py -3.13 --version` | | |
 | S2 | Cài được chín gói trên Windows, số phiên bản thật (3.1) | Task 1 Step 2 | | |
 | S3 | `sv.LineZone`: tham số, chiều khi bay lên (3.4, 4.2) | `spikes/check_supervision.py` | | |
 | S4 | `sv.ByteTrack`, `Detections.from_ultralytics` (3.4) | như trên | | |
@@ -448,7 +449,7 @@ Spec: `docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md`. Plan
 
 ## Cài đặt
 
-    py -3.12 -m venv .venv
+    py -3.12 -m venv .venv      # hoặc py -3.13 (bản ghi ở localPython trong weights.json)
     .\.venv\Scripts\python -m pip install -r requirements.txt
     copy .env.example .env      # điền AI_SERVICE_KEY lấy từ người chạy backend
     .\.venv\Scripts\python -m pytest
@@ -4472,7 +4473,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces:
   - `scripts/split_dataset.py`: `SPLITS = ('train', 'val', 'test')`; `source_of(name: str) -> str`; `read_splits(path: Path) -> dict[str, str]`; `assign(images: list[Path], splits: dict[str, str]) -> dict[Path, str]` (nguồn lạ → `ValueError`); `label_for(image: Path) -> Path`; `background_ratio(labels: list[Path]) -> float`; `main(argv: list[str] | None = None) -> int` (`--export DIR --out DIR [--splits splits.csv]`).
   - `scripts/download_weights.py`: `sha256_file(path: Path) -> str`; `download(url: str, dest: Path, expected_sha256: str) -> None` (lệch → xóa file, `ValueError`); `main(argv: list[str] | None = None) -> int` (`[--verify-only]`).
-  - `weights.json` khóa: `url, sha256, roboflowVersion, epochs, imgsz, seed, backgroundRatio, ultralytics, torch`.
+  - `weights.json` khóa: `url, sha256, roboflowVersion, epochs, imgsz, seed, backgroundRatio, ultralytics, torch, localPython` (`ultralytics`, `torch`: bản trên Colab; `localPython`: bản Python máy nhóm, Task 1 S1).
 
 - [ ] **Step 1: Viết test (phải fail)**
 
@@ -4601,7 +4602,7 @@ def test_download_lech_sha_thi_xoa_va_bao_loi(tmp_path, file_server):
 
 def test_weights_json_du_khoa():
     data = json.loads((AI_DIR / 'weights.json').read_text(encoding='utf-8'))
-    assert list(data) == ['url', 'sha256', 'roboflowVersion', 'epochs', 'imgsz', 'seed', 'backgroundRatio', 'ultralytics', 'torch']
+    assert list(data) == ['url', 'sha256', 'roboflowVersion', 'epochs', 'imgsz', 'seed', 'backgroundRatio', 'ultralytics', 'torch', 'localPython']
 
 
 def test_notebook_ghim_trung_requirements():
@@ -4830,7 +4831,8 @@ nguon,tap
   "seed": null,
   "backgroundRatio": null,
   "ultralytics": null,
-  "torch": null
+  "torch": null,
+  "localPython": null
 }
 ```
 
@@ -4890,7 +4892,8 @@ Notebook JSON (nbformat 4). Số phiên bản trong ô 2 phải trùng `requirem
    "sha = hashlib.sha256(BEST.read_bytes()).hexdigest()\n",
    "shutil.copy(BEST, '/content/drive/MyDrive/swiftletcare/best.pt')\n",
    "print(json.dumps({'url': '', 'sha256': sha, 'roboflowVersion': None, 'epochs': EPOCHS, 'imgsz': IMGSZ, 'seed': SEED,\n",
-   "                  'backgroundRatio': None, 'ultralytics': ultralytics.__version__, 'torch': torch.__version__}, indent=2))"
+   "                  'backgroundRatio': None, 'ultralytics': ultralytics.__version__, 'torch': torch.__version__,\n",
+   "                  'localPython': None}, indent=2))  # localPython: dien tay ban Python may nhom (Task 1 S1)"
   ]}
  ]
 }
@@ -5123,7 +5126,7 @@ foreach ($cam in $Cameras) {
 Thay khung của Task 1 bằng đủ các mục (tiếng Việt có dấu):
 
 1. **Đọc trước**: spec, plan; chạy `git status` trước mỗi lần commit (không video, ảnh, `*.pt`, `.env`).
-2. **Cài đặt**: Python 3.12 (`py -0p`), lệnh tạo `.venv`, cài `requirements.txt`, chép `.env.example` → `.env`; `AI_SERVICE_KEY` xin người chạy backend, **không gửi khóa qua kênh công khai, không commit**. Tải trọng số: `.\.venv\Scripts\python scripts\download_weights.py` (repo private: `gh release download` + `--verify-only`, xem Task 13).
+2. **Cài đặt**: Python 3.12 hoặc 3.13 theo `localPython` trong `weights.json` (`py -0p`), lệnh tạo `.venv`, cài `requirements.txt`, chép `.env.example` → `.env`; `AI_SERVICE_KEY` xin người chạy backend, **không gửi khóa qua kênh công khai, không commit**. Tải trọng số: `.\.venv\Scripts\python scripts\download_weights.py` (repo private: `gh release download` + `--verify-only`, xem Task 13).
 3. **Cấu hình camera**: giải thích từng trường `cameras/*.yaml` (bảng spec 3.4); **đảo chiều ra/vào bằng cách hoán đổi `start` và `end`**; playlist chỉ ký tự ASCII.
 4. **Lệnh chạy**: `live`, `offline` (kèm `--t0`, `--playlist`, `--imgsz`, `--annotated-video`), `pytest`, `scripts\start-cameras.ps1`. `--heartbeat` chỉ bật khi backend đã có `/api/ai/heartbeat` (plan backend Task 26); bật sớm sẽ nhận 404 và AI dừng.
 5. **Mã thoát**: 0 bình thường/Ctrl+C, 1 lỗi không lường trước, 2 cấu hình/khởi động/401/404/file khóa, 130 Ctrl+C lần hai.
