@@ -1800,13 +1800,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `useLiveDevices` (Task 7), `api` (Task 6), `ACTUATORS`, `DEVICE_LABELS`, `showOffline` (Task 7), `ControlResult`, `ControlLog`, `Page` (Task 4), `formatVn` (Task 2).
 - Produces: trang `/houses/[houseId]/devices` — gửi `{mode:'MANUAL', isOn, level?}` hoặc `{mode:'AUTO'}` tới `POST /api/devices/:id/control`, cập nhật **từ phản hồi**; nhật ký `GET …/control-logs?limit=20&before=`.
 
-Thanh Level FAN 0–100 theo spec web 2.2 (bước 10). Spec mobile coi Level 0 là tắt — xem mục mâu thuẫn trong `plans/README.md`; không đổi ở đây khi spec web chưa sửa.
+Thanh Level FAN 0–100 theo spec web 2.2 (bước 10). Level 0 là tắt, giống mobile: nút "Bật" của FAN ở Level 0 gửi `{mode:'MANUAL', isOn:false}` (không gửi `level`); Level khác 0 gửi `isOn: true` kèm `level`.
 
 - [ ] **Step 1: Viết `web/app/houses/[houseId]/devices/page.tsx`**
 
 ```tsx
 'use client';
-// Dieu khien tay: bat/tat, Level FAN 0-100, MANUAL/AUTO; cap nhat tu PHAN HOI, khong doan truoc; nhat ky phan trang (spec web 2.2).
+// Dieu khien tay: bat/tat, Level FAN 0-100 (0 = tat, giong mobile), MANUAL/AUTO; cap nhat tu PHAN HOI, khong doan truoc; nhat ky phan trang (spec web 2.2).
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Banner, btnCls, btnGhostCls, Card, Empty, Loading } from '@/components/ui';
@@ -1844,7 +1844,7 @@ function ControlRow({ device, onResult, onShowLogs }: {
           {device.isOn ? 'Đang bật' : 'Đang tắt'}{isFan && device.isOn ? ` ${device.level ?? 0}%` : ''} · {device.mode === 'MANUAL' ? 'Điều khiển tay' : 'Tự động'}
           {showOffline(device.deviceType, device.status) ? <span className="ml-1 rounded bg-stone-700 px-1 text-xs text-white">OFFLINE</span> : null}
         </span>
-        <button className={btnCls} disabled={busy} onClick={() => send({ mode: 'MANUAL', isOn: true, ...(isFan ? { level } : {}) })}>Bật</button>
+        <button className={btnCls} disabled={busy} onClick={() => send(isFan && level === 0 ? { mode: 'MANUAL', isOn: false } : { mode: 'MANUAL', isOn: true, ...(isFan ? { level } : {}) })}>Bật</button>
         <button className={btnGhostCls} disabled={busy} onClick={() => send({ mode: 'MANUAL', isOn: false })}>Tắt</button>
         {isFan ? (
           <label className="flex items-center gap-2 text-sm">Level
@@ -1929,7 +1929,7 @@ export default function DevicesPage() {
 - [ ] **Step 2: Build và kiểm tay (checklist 3.2 bước 4–5)**
 
 Run: `npm run build` → đạt.
-Kiểm tay: simulator `--scenario hot` → trên trang Thiết bị/dashboard FAN H1-F2 bật rồi tắt. Bật FAN Level 50 → dòng trạng thái hiện "Đang bật 50% · Điều khiển tay" (theo phản hồi); "Nhật ký" có dòng mới; "Trả về tự động" → "Tự động". Thiết bị đã ngừng dùng (đặt ở Cài đặt) gửi lệnh qua API → câu "Thiết bị đã ngừng dùng…".
+Kiểm tay: simulator `--scenario hot` → trên trang Thiết bị/dashboard FAN H1-F2 bật rồi tắt. Bật FAN Level 50 → dòng trạng thái hiện "Đang bật 50% · Điều khiển tay" (theo phản hồi); kéo Level về 0 rồi bấm "Bật" → "Đang tắt · Điều khiển tay" (DevTools: body chỉ có `mode`, `isOn: false`); "Nhật ký" có dòng mới; "Trả về tự động" → "Tự động". Thiết bị đã ngừng dùng (đặt ở Cài đặt) gửi lệnh qua API → câu "Thiết bị đã ngừng dùng…".
 
 - [ ] **Step 3: Commit**
 
@@ -2833,7 +2833,7 @@ Chạy bằng `npm run build; npm start` (bước 15 yêu cầu). Mỗi bước:
 | 2 | `owner2` gõ URL nhà H1 → "Không tìm thấy" | | |
 | 3 | Dashboard cập nhật mỗi 10–15 giây; ngoài ngưỡng đổi màu | | |
 | 4 | `--scenario hot` → FAN H1-F2 bật rồi tắt | | |
-| 5 | FAN Level 50 theo phản hồi; nhật ký; trả về tự động | | |
+| 5 | FAN Level 50 theo phản hồi; Level 0 → tắt (`isOn: false`); nhật ký; trả về tự động | | |
 | 6 | ACK, RESOLVED; ACK lại → đã đổi trạng thái | | |
 | 7 | Ảnh seed 404 → "Không có ảnh"; ảnh AI hiện; không còn object URL cũ | | |
 | 8 | Min ≥ Max → lỗi ngưỡng | | |

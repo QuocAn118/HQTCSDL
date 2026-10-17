@@ -137,6 +137,7 @@ web/
 
 **Điều khiển tay:**
 - Thao tác gửi `mode: "MANUAL"` kèm `isOn` (và `level` cho FAN).
+- **FAN (giống mobile):** Level 0 → gửi `isOn: false` (không gửi `level`); Level khác 0 → gửi `isOn: true` kèm `level`. Không có trạng thái "bật, Level 0".
 - Nút "Trả về tự động" gửi `{mode: "AUTO"}`; hợp đồng cho phép bỏ `isOn`.
 - Cập nhật giao diện **từ phản hồi** `{changed, deviceCode, mode, isOn, level}`, không đoán trước.
 
