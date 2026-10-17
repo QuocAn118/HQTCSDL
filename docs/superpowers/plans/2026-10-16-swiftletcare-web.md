@@ -91,7 +91,7 @@ web/
   test/*.test.ts
 ```
 
-So với spec 1.4: thêm `components/`, `lib/types.ts`, `lib/auth.tsx`, `lib/live.tsx`, `lib/hooks.ts`, `lib/config.ts` (tách trách nhiệm cho file nhỏ); `app/houses/layout.tsx`, `app/houses/[houseId]/layout.tsx`, `app/page.tsx`. Không đổi màn hình hay luồng dữ liệu của spec.
+Trùng sơ đồ spec 1.4 (đã cập nhật 17/10/2026). Không đổi màn hình hay luồng dữ liệu của spec.
 
 ## Phụ thuộc vào module khác và cách làm khi chưa có
 

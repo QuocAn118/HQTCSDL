@@ -96,7 +96,7 @@ mobile/
   spikes/RESULTS.md
 ```
 
-So với spec 1.4: thêm `components/`, `lib/{types,auth,live,house,control,config}`, `test/{check-copies,control,repo}.test.ts`, `tsconfig.json`. `lib/types.ts` phải chép theo vì `merge.ts` của web import nó — `check-copies` kiểm **7** file (spec 3.2). Không có `app/index.tsx` ở gốc (route `/` là tab Tổng quan).
+Trùng sơ đồ spec 1.4 (đã cập nhật 17/10/2026). `lib/types.ts` phải chép theo vì `merge.ts` của web import nó — `check-copies` kiểm **7** file (spec 3.2). Không có `app/index.tsx` ở gốc (route `/` là tab Tổng quan).
 
 ## Phụ thuộc vào module khác và cách làm khi chưa có
 

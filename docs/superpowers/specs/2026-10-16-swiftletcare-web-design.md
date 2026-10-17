@@ -72,27 +72,39 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 ```
 web/
-  package.json  package-lock.json  .env.example  README.md  next.config.ts  postcss.config.mjs
+  package.json  package-lock.json  .env.example  README.md  next.config.ts  postcss.config.mjs  tsconfig.json
   app/
-    layout.tsx  globals.css
+    layout.tsx  globals.css  page.tsx (chuyển về /houses)
     login/page.tsx
+    houses/layout.tsx                   AuthGate cho mọi trang /houses
     houses/page.tsx                     danh sách nhà, tạo nhà
+    houses/[houseId]/layout.tsx         menu, thanh kết nối, LiveProvider (một socket cho cả nhà)
     houses/[houseId]/page.tsx           dashboard
-    houses/[houseId]/devices/page.tsx   điều khiển tay, nhật ký điều khiển
+    houses/[houseId]/devices/page.tsx   điều khiển tay, nhật ký
     houses/[houseId]/alerts/page.tsx    danh sách, chi tiết, ACK/RESOLVED, ảnh
-    houses/[houseId]/history/page.tsx   biểu đồ môi trường, đếm chim
+    houses/[houseId]/history/page.tsx   biểu đồ môi trường, thống kê ngày, đếm chim
     houses/[houseId]/settings/page.tsx  nhà, khu vực, thiết bị, ngưỡng
     houses/[houseId]/harvests/page.tsx  dưới ranh giới cắt
     admin/tools/page.tsx                dưới ranh giới cắt, không có liên kết trên menu
+  components/
+    ui.tsx            Banner, Empty, Loading, Card, lớp CSS dùng chung, fieldError
+    SnapshotImage.tsx ảnh thiên địch qua blob
   lib/
-    api.ts      fetch kèm token; đọc định dạng lỗi hợp đồng 3.4; 401 → đăng xuất
+    types.ts    dạng dữ liệu REST và sự kiện
+    time.ts     hàm thuần thời gian (mục 2.3)
+    errors.ts   mã lỗi → câu tiếng Việt, ApiError, toApiError
+    merge.ts    hàm thuần ghép REST với sự kiện (mục 2.4)
+    socket.ts   phân loại lỗi, giãn cách, createLiveSocket
     session.ts  token trong sessionStorage
-    socket.ts   vòng đời Socket.IO (mục 2.4)
-    time.ts     hàm thuần: đọc, so sánh, hiển thị thời gian (mục 2.3)
-    merge.ts    hàm thuần: ghép REST với sự kiện (mục 2.4)
-    errors.ts   mã lỗi → câu tiếng Việt
+    api.ts      fetch kèm token, 401 → đăng xuất, fetchBlob, qs
+    auth.tsx    AuthGate, useAuth
+    live.tsx    LiveProvider, useLive, useReloadOnConnect
+    hooks.ts    useLiveDevices, useLiveLatest, useLiveOpenAlerts
+    config.ts   HEARTBEAT_ENABLED, nhãn tiếng Việt
   test/*.test.ts
 ```
+
+Cập nhật 17/10/2026 theo plan (thêm `components/` và các file `lib/` tách trách nhiệm); không đổi màn hình hay luồng dữ liệu.
 
 - Giao diện bằng **tiếng Việt**.
 - Khi thiết kế màn hình: phác bằng `stitch`, làm theo `frontend-design` và `taste-skill`. Kiểm thử bằng `playwright` (CLAUDE.md).

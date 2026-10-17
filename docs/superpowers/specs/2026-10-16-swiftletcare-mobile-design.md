@@ -54,26 +54,37 @@ EXPO_PUBLIC_API_URL=http://192.168.1.10:3000
 
 ```
 mobile/
-  package.json  package-lock.json  app.json  .env.example  README.md
+  package.json  package-lock.json  app.json  tsconfig.json  .env.example  .gitignore (của template)  README.md
+  assets/                         icon, splash của template
   app/
-    _layout.tsx               đọc token rồi mới chọn màn hình đầu (mục 2.1); hẹn giờ hết hạn; banner (mục 2.4)
+    _layout.tsx                   AuthProvider, màn hình chờ, Stack.Protected, LiveProvider + AlertBanner
     login.tsx
-    (tabs)/_layout.tsx        ba tab
-    (tabs)/index.tsx          Tổng quan: chọn nhà, thẻ khu vực
-    (tabs)/alerts.tsx         danh sách cảnh báo
-    (tabs)/devices.tsx        điều khiển tay
-    alerts/[alertId].tsx      chi tiết, ACK/RESOLVED, ảnh
+    (tabs)/_layout.tsx            ba tab, thanh kết nối, đăng xuất, HouseProvider
+    (tabs)/index.tsx              Tổng quan
+    (tabs)/alerts.tsx             danh sách cảnh báo
+    (tabs)/devices.tsx            điều khiển tay
+    alerts/[alertId].tsx          chi tiết, ACK/RESOLVED, ảnh
+  components/
+    ui.tsx                        ErrorBox, Empty, Loading, Button, Card, Badge, màu, style
+    AlertBanner.tsx               banner + rung khi alert.created
   lib/
-    api.ts       fetch kèm token; định dạng lỗi hợp đồng 3.4; 401 → đăng xuất
-    session.ts   token trong expo-secure-store
-    socket.ts    vòng đời Socket.IO + AppState (mục 2.3)
-    time.ts      CHÉP từ web/lib/time.ts
-    merge.ts     CHÉP từ web/lib/merge.ts
-    errors.ts    CHÉP từ web/lib/errors.ts
+    time.ts merge.ts errors.ts types.ts   CHÉP từ web/lib (kiểm băm)
+    socket.ts                     CHÉP từ web/lib/socket.ts
+    session.ts                    phiên trong expo-secure-store
+    api.ts                        fetch kèm token, 401 → đăng xuất, snapshotSource, qs
+    auth.tsx                      AuthProvider, useAuth
+    live.tsx                      LiveProvider (đóng/mở theo AppState), useLive, useReloadOnConnect
+    house.tsx                     HouseProvider, useHouse, useLiveDevices, useLiveLatest
+    control.ts                    thân lệnh điều khiển (FAN Level 0 = tắt)
+    config.ts                     HEARTBEAT_ENABLED, nhãn tiếng Việt, showOffline
   test/
-    time.test.ts  merge.test.ts  errors.test.ts   CHÉP từ web/test
-  scripts/check-copies.mjs    so băm ba file và test đã chép với bản web (mục 3.2)
+    time.test.ts merge.test.ts errors.test.ts   CHÉP từ web/test
+    check-copies.test.ts control.test.ts repo.test.ts
+  scripts/check-copies.mjs        so băm 7 file với web/ (CRLF → LF), chỉ cảnh báo
+  spikes/RESULTS.md
 ```
+
+Cập nhật 17/10/2026 theo plan (thêm `components/` và các file `lib/` tách trách nhiệm); không đổi màn hình hay luồng dữ liệu.
 
 ### 1.5 Bước 1 của plan: kiểm trước khi viết code
 
