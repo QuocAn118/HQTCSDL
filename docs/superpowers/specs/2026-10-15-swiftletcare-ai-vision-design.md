@@ -314,7 +314,7 @@ Mỗi camera **một tiến trình**; **không bao giờ chạy hai tiến trìn
 - Giữ các khung có phát hiện của lớp đó trong **`confirm_seconds` gần nhất, tính theo `at`**.
 - Đủ `confirm_frames` khung → **xác nhận một sự kiện**, gửi ngay.
 - Ảnh gửi đi là **khung có độ tin cậy cao nhất trong các khung đủ để xác nhận**, không phải khung tốt nhất của cả lần thiên địch xuất hiện. Đánh đổi có chủ ý: cảnh báo đến nhanh, ảnh có thể chưa đẹp nhất.
-- Chỉ giữ bản sao khung tốt nhất, không giữ cả danh sách ảnh, để bộ nhớ không tăng.
+- Mỗi lớp giữ **tối đa `confirm_frames` khung** đang chờ trong cửa sổ `confirm_seconds` (đủ thì xác nhận hoặc bị cooldown chặn rồi xóa; khung trượt khỏi cửa sổ thì bỏ). Giữ một bản sao duy nhất không chọn đúng được khung tốt nhất khi khung đó trượt khỏi cửa sổ. Bộ nhớ vẫn có trần: tối đa `confirm_frames` khung cho mỗi lớp.
 
 **Sự kiện gửi đi:** `camera`; `class`; `confidence` của khung tốt nhất (làm tròn 2 chữ số); `at` của khung tốt nhất (UTC có `Z`); `image` là JPEG của khung đó.
 

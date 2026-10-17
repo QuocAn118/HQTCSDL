@@ -1844,7 +1844,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `@dataclass Blocked(cls: str, at: datetime, remaining_seconds: int)`.
   - `class PredatorConfirmer: __init__(self, cfg: PredatorCfg)`; `observe(self, cls: str, at: datetime, confidence: float, frame: np.ndarray, boxes: list[Box]) -> Confirmed | Blocked | None`; `release(self, cls: str) -> None` (gọi được từ luồng gửi).
 
-Ghi chú bộ nhớ: mỗi lớp giữ tối đa `confirm_frames − 1` khung đang chờ (đủ `confirm_frames` là xác nhận hoặc bị chặn rồi xóa), nên bộ nhớ có trần cố định. Spec 4.4 ghi "chỉ giữ bản sao khung tốt nhất"; giữ đúng một bản thì không chọn được khung tốt nhất khi khung đó trượt khỏi cửa sổ `confirm_seconds` — xem mục mâu thuẫn trong `plans/README.md`, TV3 quyết định sửa câu spec.
+Ghi chú bộ nhớ: mỗi lớp giữ tối đa `confirm_frames − 1` khung đang chờ (đủ `confirm_frames` là xác nhận hoặc bị chặn rồi xóa), nên bộ nhớ có trần cố định, đúng spec 4.4 ("giữ tối đa `confirm_frames` khung").
 
 - [ ] **Step 1: Viết test (phải fail)**
 
