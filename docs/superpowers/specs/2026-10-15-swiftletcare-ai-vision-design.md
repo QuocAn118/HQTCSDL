@@ -343,6 +343,7 @@ Mỗi camera **một tiến trình**; **không bao giờ chạy hai tiến trìn
 3. **Tập dượt (01/11, 05/11) dùng `SwiftletCare_Dev`**, không chạy AI trên CSDL demo: ngày tập dượt có AI gửi `0/0` sẽ thành "ngày có dữ liệu" tổng thấp (mục 4.3).
 4. **CSDL demo `SwiftletCare` chỉ triển khai MỘT lần, vào ngày trước buổi demo thật**, ngày neo = hôm qua của buổi demo, **không dùng `-Reset`** (`deploy.ps1 -Reset` vốn chỉ chạy với `_Dev`/`_Test`).
 5. **Buổi tập cuối (08/11) làm trên một CSDL vừa triển khai mới** (theo đúng các bước sẽ làm cho `SwiftletCare`) để kiểm tra quy trình triển khai.
+6. **Cờ `--heartbeat`:** chỉ bật khi backend đã làm xong Task 26 (`POST /api/ai/heartbeat`). Không bật thì camera hiện **OFFLINE** trên web (nếu web đã làm huy hiệu OFFLINE cho camera); bật khi backend chưa có route thì AI nhận 404 và dừng (5.3).
 
 **Chưa kiểm chứng:**
 - Hành vi thật của vạch đếm supervision: track qua vạch nhiều lần, track mất rồi xuất hiện lại. Test tổng hợp ở bước đầu plan trả lời.
@@ -380,7 +381,7 @@ Phần 6 lấy số báo động giả mỗi giờ từ các dòng `predator.con
 |---|---|---|
 | `POST /api/ai/bird-counts` | Mảng `[{"camera","windowStart","in","out"}]` | Hàng đợi là **từ điển theo (camera, windowStart)**: tổng mới ghi đè tổng cũ (tổng chỉ tăng). Mỗi lần gửi gồm mọi cửa sổ đang chờ, tối đa 500. Nhận 200 thì xóa các cửa sổ đã gửi, trừ cửa sổ đã có tổng mới hơn trong lúc gửi |
 | `POST /api/ai/predator-detections` | multipart: `metadata` (chuỗi JSON `{"camera","class","confidence","at"}`), `image` (JPEG, `image/jpeg`) | Không gửi `snapshot` (backend tự sinh) |
-| `POST /api/ai/heartbeat` (Nên có) | `{"device":"<mã camera>","at":"…Z"}` mỗi 30 giây, bắt đầu sau khi đo fps | Thất bại chỉ log, **không thử lại** (30 giây sau có lần gửi tiếp) |
+| `POST /api/ai/heartbeat` (Nên có) | `{"device":"<mã camera>","at":"…Z"}` mỗi 30 giây, bắt đầu sau khi đo fps | **Chỉ gửi khi `live` có cờ `--heartbeat` (mặc định tắt)**: endpoint là plan backend Task 26, dưới ranh giới cắt; bật khi backend chưa có route sẽ nhận 404 và AI dừng (5.3). Thất bại chỉ log, **không thử lại** (30 giây sau có lần gửi tiếp) |
 
 ### 5.3 Bảng mã trả về
 
