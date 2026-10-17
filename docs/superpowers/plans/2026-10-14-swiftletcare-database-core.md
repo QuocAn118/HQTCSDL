@@ -135,7 +135,7 @@ GO
 
 **Files:**
 - Create: `database/package.json`, `database/prisma.config.ts`, `database/prisma/schema.prisma` (tạm, chỉ generator + datasource), `database/.env.example`, `database/scripts/lib.ps1`, `database/scripts/deploy.ps1`, `database/scripts/test.ps1`, `database/tests/deploy-guard.ps1`
-- Modify: `.gitignore` (tạo mới nếu chưa có)
+- Modify: `.gitignore` (chỉ thêm dòng còn thiếu; tạo mới chỉ khi chưa có)
 
 **Interfaces:**
 - Produces: `scripts/deploy.ps1 -Database <tên> [-Reset] [-AnchorDateVn yyyy-MM-dd] [-SkipSeed]`; thoát mã **2** khi từ chối reset, **3** khi tên CSDL chứa ký tự ngoài `[A-Za-z0-9_]`. `scripts/lib.ps1` cung cấp `Read-DotEnv`, `Get-DatabaseUrl $cfg $db`, `Invoke-Sql -Cfg -Database (-File|-Query) [-Variables]`, `Get-SqlScalar $cfg $db $query`. `npm test` chạy toàn bộ.
@@ -151,7 +151,9 @@ ALTER SERVER ROLE dbcreator ADD MEMBER swiftlet_dev;
 
 Kiểm tra: `sqlcmd -S localhost,1433 -U swiftlet_dev -P <mat khau> -Q "SELECT @@VERSION"` in ra phiên bản. CSDL do `swiftlet_dev` tạo (qua `deploy.ps1`) thì login này là chủ sở hữu, đủ quyền xóa/tạo lại.
 
-- [ ] **Step 2: Tạo `.gitignore` ở gốc repo**
+- [ ] **Step 2: `.gitignore` ở gốc repo: chỉ thêm các dòng còn thiếu, không ghi đè file đã có**
+
+File đã tồn tại thì mở ra, dòng nào dưới đây chưa có thì thêm vào cuối; **không** tạo lại hay ghi đè (file có dòng của module khác). Chỉ khi chưa có file mới tạo.
 
 ```gitignore
 database/.env

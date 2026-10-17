@@ -15,6 +15,8 @@ Mỗi plan làm bằng `superpowers:executing-plans` (cách Native): từng task
 | 4 | [mobile](2026-10-16-swiftletcare-mobile.md) | TV4 (TV5 hỗ trợ tuần 3 nếu trễ) | Task 1 (kiểm gọi HTTP từ Expo Go) ngay; Task 2+ sau web Task 2–5 | Hỏi nhóm ai có iPhone/Android trước Task 1 |
 | — | database-advanced | TV1 | Spec + plan **chưa viết** (roadmap: agent viết, TV1 xác nhận trước 22/10) | |
 
+> **TV1, plan database-core Task 1 Step 2:** `.gitignore` gốc đã có sẵn. Chỉ thêm các dòng còn thiếu, **không ghi đè file đã có**. Mọi plan khác cũng chỉ thêm dòng vào `.gitignore` gốc.
+
 Số "thứ tự" giống nhau là chạy song song. Người hỗ trợ chuyển sang module đang chậm theo roadmap.
 
 ## Mốc tuần (roadmap Phần 3)
