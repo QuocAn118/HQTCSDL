@@ -150,12 +150,16 @@ Cú pháp: `--drop <mã>[,<mã>…] --drop-after <phút> --drop-for <phút>`.
 - Hết `--drop-for`, kết nối lại và **gửi bù** số đo đã sinh.
 - **Khuyến nghị `--drop-for` ≥ 7 phút**: ngưỡng mất kết nối 5 phút cộng nhịp kiểm tra 60 giây, mới chắc thấy `DEVICE_OFFLINE`.
 
-Hai cách giữ số đo trong lúc ngắt; **bước 1 của plan thử cách A trước**:
+Hai cách giữ số đo trong lúc ngắt. **Chốt cách B** (ghi thêm 17/10/2026, xem dưới bảng):
 
 | Cách | Làm | Khi nào dùng |
 |---|---|---|
 | A | Hủy luồng mạng của client mqtt.js, để **hàng đợi offline của mqtt.js** giữ tin QoS 1; hết thời gian gọi `reconnect()` | Nếu thử thực tế thấy tin được giữ và gửi bù đủ, đúng thứ tự |
 | B | Simulator `end()` kết nối, **tự giữ hàng đợi trong bộ nhớ** các tin số đo của thiết bị bị ngắt; kết nối lại thì publish lần lượt rồi xóa hàng đợi | Nếu cách A mất tin, gửi trùng sai thứ tự, hoặc không ngắt được thật |
+
+**Kết quả thử và quyết định (17/10/2026):**
+- Lúc viết plan, cách A được thử với mqtt 5.16.1 trên **một broker Node chạy trong bộ nhớ của máy**, không phải Mosquitto: sau `reconnect()`, các tin QoS 1 gửi lúc ngắt **không tới broker**. Vì vậy **chốt cách B** (plan simulator Task 9; code và test của cách B không cần broker).
+- Plan Task 1 vẫn thử lại cách A trên Mosquitto thật để ghi kết quả, nhưng **không chặn**: cách B đã đủ, Mosquitto cho cách A đạt cũng vẫn giữ cách B.
 
 Gửi bù trùng vô hại: SP khử trùng theo (thiết bị, chỉ số, `at`).
 
@@ -222,6 +226,6 @@ Thêm vào cùng PR hợp đồng ở backend 7.6:
 
 ### 3.5 Chưa kiểm chứng
 
-- Cách A ở mục 2.6: hành vi hàng đợi offline của mqtt.js 5.16.1 khi hủy luồng mạng rồi `reconnect()`.
+- Cách A ở mục 2.6 trên Mosquitto thật (đã thử trên broker Node trong máy: mất tin; không chặn vì đã chốt cách B).
 - Hằng số τ = 3 phút và mức tác động: test bất đẳng thức xác nhận thiết bị tắt được; độ dài chu kỳ mới tính tay, xác nhận ở kiểm tay 3.3.
 - Mở 26 kết nối cùng lúc tới Mosquitto bằng cùng một tài khoản.
