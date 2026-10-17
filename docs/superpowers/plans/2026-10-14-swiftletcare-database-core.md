@@ -44,7 +44,7 @@ npm view prisma@7.10.0 version   # phải in 7.10.0
 - Khóa ngoại `NO ACTION`; ngừng dùng bằng `IsActive = 0`.
 - Khóa lộ ra API là INT; chỉ `SensorReadings.ReadingId` là BIGINT.
 - Dữ liệu mẫu cố định (không `RAND()`/`NEWID()`), neo `@AnchorDateVn` mặc định `2026-10-12`, kết thúc 20:00 giờ Việt Nam ngày neo.
-- Mật khẩu dev tạm `SwiftletDev@2026`, seed chỉ chứa hash bcrypt `$2a$10$M/DxgzTqClpNLyz2TDREfuIq8x2OHTobFhaeNPRbb4wfw.xhCp05K` (đã kiểm `compareSync = true`). README ghi rõ chỉ dùng phát triển.
+- Mật khẩu dev ghi trong README database (`database/README.md`, Task 13); seed chỉ chứa hash bcrypt `$2a$10$M/DxgzTqClpNLyz2TDREfuIq8x2OHTobFhaeNPRbb4wfw.xhCp05K` (đã kiểm `compareSync = true`). README ghi rõ chỉ dùng phát triển.
 - `.env` không commit; chỉ commit `.env.example`.
 - Commit message tiếng Việt, kết thúc bằng dòng `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 
@@ -936,7 +936,7 @@ END
 
 BEGIN TRAN;
 
--- Mat khau dev tam 'SwiftletDev@2026' (CHI dung phat trien), seed chi chua hash bcrypt.
+-- Mat khau dev ghi trong README database (CHI dung phat trien), seed chi chua hash bcrypt.
 DECLARE @hash VARCHAR(255) = '$2a$10$M/DxgzTqClpNLyz2TDREfuIq8x2OHTobFhaeNPRbb4wfw.xhCp05K';
 
 INSERT dbo.Users (Username, PasswordHash, FullName, Email, Role) VALUES
