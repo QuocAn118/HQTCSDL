@@ -115,6 +115,16 @@ Tên lớp trên Roboflow viết **đúng chữ thường như trên**, để AI
 - **Không bật augmentation của Roboflow.** Ultralytics tự augment khi train; tránh ảnh augment lọt sang val/test.
 - Tập test có hai loại, đều **không dùng để train**: video thiên địch (đo Precision/Recall) và video chỉ có chim yến (đo báo động giả mỗi giờ).
 
+**Ghi chú 17/10/2026: chia việc tìm video** (chỉ ghi chú, không đổi quyết định đã duyệt):
+
+- **Nhóm trưởng** tìm video demo, tức video có thiên địch, rồi đưa TV3 ghi vào `SOURCES.md` và `splits.csv` (tập test).
+- **Video chim yến cho demo** dùng chính video test của TV3.
+- **TV3** tìm video train/test chim yến và ảnh chuột, rắn, cú.
+- Mỗi lớp có **ít nhất hai nguồn** (như trên).
+- Video thiên địch dùng để đo Precision/Recall theo sự kiện và để demo, nên **không được dùng để train**.
+- **Mọi video**, dù ai tìm, đều phải có người đăng, đường dẫn và giấy phép trong `SOURCES.md`.
+- **Nếu chỉ có đúng 2 video chim yến**, sẽ không có tập val độc lập. Khi đó tham số phải chọn trên video test, làm số đo lạc quan hơn thực tế (trái mục 6.1). Khuyến nghị tìm **video thứ 3** làm val. Nếu không tìm được, báo cáo phải ghi rõ hạn chế này.
+
 ### 2.5 Train trên Colab
 
 - Bắt đầu từ trọng số YOLOv8n có sẵn của Ultralytics.
