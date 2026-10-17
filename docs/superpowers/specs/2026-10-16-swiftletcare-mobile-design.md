@@ -173,7 +173,8 @@ Không có test component.
 
 ### 3.2 Chống lệch bản sao (`scripts/check-copies.mjs`)
 
-- So **băm SHA-256** của sáu cặp file: `lib/{time,merge,errors}.ts` và `test/{time,merge,errors}.test.ts` giữa `mobile/` và `web/`. Trước khi băm, đổi `CRLF` thành `LF` để Git trên Windows không gây báo sai.
+- So **băm SHA-256** của **bảy cặp file**: `lib/{time,merge,errors,types}.ts` và `test/{time,merge,errors}.test.ts` giữa `mobile/` và `web/` (`types.ts` vì `merge.ts` import nó). Chỉ băm file hàm thuần.
+- **Không băm `lib/socket.ts`**: mobile được phép sửa khác web có chủ ý (vòng đời theo AppState). Trong plan hiện tại `socket.ts` chép từ web, phần AppState nằm ở `lib/live.tsx`. Trước khi băm, đổi `CRLF` thành `LF` để Git trên Windows không gây báo sai.
 - Khác nhau → **in cảnh báo** nêu tên file; **không làm fail** `npm test`.
 - Chưa có thư mục `web/` (VD mobile làm trước) → in "bỏ qua kiểm bản sao", tiếp tục chạy test.
 - Dùng `node:crypto` và `node:fs` có sẵn, không thêm thư viện.

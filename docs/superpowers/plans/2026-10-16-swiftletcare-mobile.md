@@ -33,7 +33,7 @@ Roadmap: TV5 hỗ trợ mobile tuần 3 nếu TV4 trễ.
 
 **Goal:** Dựng `mobile/` — app Expo SDK 58 chạy bằng Expo Go cho chủ nhà yến: đăng nhập (giữ phiên qua `expo-secure-store`), tổng quan số đo trực tiếp, cảnh báo kèm ACK/RESOLVED và ảnh thiên địch, điều khiển tay, banner cảnh báo trong app; đúng hợp đồng REST và sự kiện như web.
 
-**Architecture:** Expo Router: lớp gốc `app/_layout.tsx` giữ màn hình chờ tới khi đọc xong phiên, chọn nhóm màn hình bằng `Stack.Protected`, mở **một** socket cho cả app (đóng khi app vào nền) và đặt banner cảnh báo; ba tab dùng chung "nhà đang chọn" (`lib/house.tsx`). Bốn file hàm thuần (`time`, `merge`, `errors`, `types`) và ba file test **chép nguyên văn từ `web/`**, `scripts/check-copies.mjs` cảnh báo khi lệch. `lib/socket.ts` cũng chép từ web (không kiểm băm, xem mục mâu thuẫn).
+**Architecture:** Expo Router: lớp gốc `app/_layout.tsx` giữ màn hình chờ tới khi đọc xong phiên, chọn nhóm màn hình bằng `Stack.Protected`, mở **một** socket cho cả app (đóng khi app vào nền) và đặt banner cảnh báo; ba tab dùng chung "nhà đang chọn" (`lib/house.tsx`). Bốn file hàm thuần (`time`, `merge`, `errors`, `types`) và ba file test **chép nguyên văn từ `web/`**, `scripts/check-copies.mjs` cảnh báo khi lệch. `lib/socket.ts` cũng chép từ web nhưng không kiểm băm (spec 3.2: mobile được phép sửa khác web).
 
 **Tech Stack (bản thật do `npx expo install` chọn cho SDK 58 ngày 17/10/2026, ghim chính xác):** `expo` 58.0.14, `expo-router` 58.0.23, `expo-secure-store` 58.0.2, `expo-splash-screen` 58.0.10, `expo-constants` 58.0.12, `expo-linking` 58.0.13, `expo-status-bar` 58.0.3, `react` 19.3.0, `react-dom` 19.3.0, `react-native` 0.88.0, `react-native-safe-area-context` 5.10.1, `react-native-screens` 4.30.0, `socket.io-client` 4.8.3; dev: `typescript` 6.0.3, `@types/react` 19.3.0, `@types/node` 24.19.2, `vitest` 5.0.5. Task 1 cài lại thật trên máy TV4 và **ghi số thật** nếu khác.
 
@@ -96,7 +96,7 @@ mobile/
   spikes/RESULTS.md
 ```
 
-So với spec 1.4: thêm `components/`, `lib/{types,auth,live,house,control,config}`, `test/{check-copies,control,repo}.test.ts`, `tsconfig.json`. `lib/types.ts` phải chép theo vì `merge.ts` của web import nó — `check-copies` kiểm **7** file thay vì 6 (mục mâu thuẫn). Không có `app/index.tsx` ở gốc (route `/` là tab Tổng quan).
+So với spec 1.4: thêm `components/`, `lib/{types,auth,live,house,control,config}`, `test/{check-copies,control,repo}.test.ts`, `tsconfig.json`. `lib/types.ts` phải chép theo vì `merge.ts` của web import nó — `check-copies` kiểm **7** file (spec 3.2). Không có `app/index.tsx` ở gốc (route `/` là tab Tổng quan).
 
 ## Phụ thuộc vào module khác và cách làm khi chưa có
 
