@@ -34,7 +34,8 @@ Mỗi PR sửa **spec integration-contract và `contracts/fixtures/` trong cùng
 | # | PR | Nội dung | Mở khi | Module ảnh hưởng |
 |---|---|---|---|---|
 | 1 | Hợp đồng gốc | Toàn bộ plan integration-contract: `contracts/lib/{fixtures,seed-refs}.mjs`, fixture `mqtt/`, `ai/`, `rest/`, `ws/`, bổ sung spec (B1–B10), Mosquitto | Theo plan hợp đồng | Tất cả |
-| 2 | Bổ sung từ backend | plan backend Task 3: (1) sửa câu "simulator/AI dùng `fixtures.mjs`" (AI chỉ đối chiếu kiểu); (2) `POST /api/admin/anomalies/detect`; (3) thân 503 của `/api/health`; (4) `503 RETRY_LATER` khi CSDL chưa sẵn sàng; (5) Socket.IO: đổi vai trò → ngắt, `data.code` ∈ {`UNAUTHENTICATED`, `RETRY_LATER`}; (6) 2.1: **26** kết nối, không phải 28; (7) cách chốt ACL với `contract-test`/`latency-probe`; kèm 4 fixture mới | **Sau khi PR số 1 merge** (cùng sửa spec 4.3) | backend, web, mobile, simulator, ai-vision |
-| 3 | Ghép trạng thái thiết bị (đề xuất từ rà chéo 17/10) | Hợp đồng 4.1 ghi "`device.state` ghép theo `at`", nhưng REST `devices` không có mốc trạng thái; sửa thành cách của spec web 2.4: giữ sự kiện đến trong lúc REST tải, áp REST rồi áp lại theo thứ tự đến, mỗi sự kiện ghi đè toàn bộ trạng thái | Gộp vào PR số 2 nếu PR đó chưa mở; nếu không thì ngay sau PR số 2 | web, mobile |
+| 2 | Bổ sung từ backend | plan backend Task 3: (1) sửa câu "simulator/AI dùng `fixtures.mjs`" (AI chỉ đối chiếu kiểu); (2) `POST /api/admin/anomalies/detect`; (3) thân 503 của `/api/health`; (4) `503 RETRY_LATER` khi CSDL chưa sẵn sàng; (5) Socket.IO: đổi vai trò → ngắt, `data.code` ∈ {`UNAUTHENTICATED`, `RETRY_LATER`}; (6) 2.1: **26** kết nối, không phải 28; (7) cách chốt ACL với `contract-test`/`latency-probe`; (8) 4.1: `device.state` không ghép theo `at` (REST `devices` không có mốc trạng thái) mà theo cách của spec web 2.4: giữ sự kiện đến trong lúc REST tải, áp REST rồi áp lại theo thứ tự đến (đã duyệt ở rà chéo 17/10); kèm 4 fixture mới | **Sau khi PR số 1 merge** (cùng sửa spec 4.3) | backend, web, mobile, simulator, ai-vision |
+
+Chỉ có hai PR hợp đồng; không mở PR riêng cho mục (8).
 
 Không mở PR hợp đồng song song khi hai PR cùng sửa một mục của spec hợp đồng.

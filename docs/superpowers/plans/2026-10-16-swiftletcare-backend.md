@@ -757,6 +757,7 @@ Dùng Edit, chỉ thêm/sửa đúng các chỗ sau:
 5. **3.5** bảng HTTP thêm: `| 503 | RETRY_LATER | CSDL chưa sẵn sàng hoặc mất kết nối (kể cả lúc khởi động); 1205 sau một lần thử lại |`.
 6. **4.1** thêm: "Đổi vai trò người dùng → server ngắt mọi kết nối của người đó (`disconnectSockets`), client kết nối lại được xếp phòng theo vai trò mới. Lỗi bắt tay gửi `Error` có `data: {code}`, `code` ∈ {`UNAUTHENTICATED`, `RETRY_LATER`}; client đọc `connect_error.data.code`: `UNAUTHENTICATED` → về đăng nhập, `RETRY_LATER` → tự kết nối lại (giãn dần)."
 7. **4.3** bảng fixture thêm bốn file mới; ghi: "Hai fixture `*.invalid-db-*` chạy với backend trỏ CSDL tới cổng không ai nghe (bộ chạy tự đặt); `{{token:…}}` khi đó do bộ chạy tự ký bằng `JWT_SECRET` của `.env.test`."
+8. **4.1** dòng "**Trạng thái cơ cấu chấp hành** (`device.state`) ghép theo `at` tương tự." → "**Trạng thái cơ cấu chấp hành** (`device.state`): REST `devices` không có mốc thời gian trạng thái nên không ghép theo `at`. Giữ các `device.state` đến trong lúc REST đang tải; REST xong thì áp kết quả REST, rồi áp lại các sự kiện đã giữ theo thứ tự đến; sau đó áp sự kiện trực tiếp. Mỗi sự kiện ghi đè toàn bộ trạng thái (`mode`, `isOn`, `level`), nên áp lại là idempotent." (theo spec web 2.4; rà chéo 17/10)
 
 Plan hợp đồng, câu Architecture: "backend import thư viện này cho test tích hợp, simulator/AI dùng để kiểm payload tự tạo" → "backend import thư viện này cho test tích hợp; simulator kiểm **hình dạng** payload tự tạo (spec simulator 3.1); AI viết bằng Python nên chỉ đối chiếu kiểu dữ liệu với fixture (spec ai-vision 1.5)".
 
@@ -764,7 +765,7 @@ Plan hợp đồng, câu Architecture: "backend import thư viện này cho test
 
 ```powershell
 git add contracts docs/superpowers/specs/2026-10-13-swiftletcare-integration-contract-design.md docs/superpowers/plans/2026-10-14-swiftletcare-integration-contract.md
-git commit -m "docs(contract): endpoint admin demo, body health 503, RETRY_LATER khi CSDL chưa sẵn sàng, mã lỗi Socket.IO, 26 kết nối, ACL
+git commit -m "docs(contract): endpoint admin demo, body health 503, RETRY_LATER khi CSDL chưa sẵn sàng, mã lỗi Socket.IO, 26 kết nối, ACL, ghép device.state
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 git push -u origin contract/backend-additions
@@ -782,6 +783,7 @@ Nội dung PR (stdin):
 5. Socket.IO: đổi vai trò → ngắt kết nối; lỗi bắt tay `data.code` ∈ {UNAUTHENTICATED, RETRY_LATER}.
 6. "28 kết nối" → 26; tài khoản/ACL không giới hạn số kết nối.
 7. ACL xung đột với `contract-test`/`latency-probe` → không bật ACL trên máy dev/test.
+8. 4.1: `device.state` không ghép theo `at` (REST `devices` không có mốc trạng thái); giữ sự kiện trong lúc REST tải, áp REST rồi áp lại theo thứ tự đến (spec web 2.4).
 
 ## Module bị ảnh hưởng
 backend (TV2), web và mobile (TV4: xử lý `connect_error.data.code`, trang `/admin/tools`), simulator (TV5: 26 kết nối).
@@ -797,7 +799,7 @@ Merge xong báo cả nhóm:
 
 ```text
 [Hợp đồng] Đã merge PR bổ sung từ backend: endpoint admin demo, body health 503, RETRY_LATER khi CSDL chưa sẵn sàng,
-data.code khi bắt tay Socket.IO, 26 kết nối, không bật ACL trên máy dev/test. Ảnh hưởng: backend, web, mobile, simulator.
+data.code khi bắt tay Socket.IO, 26 kết nối, không bật ACL trên máy dev/test, ghép device.state theo thứ tự đến. Ảnh hưởng: backend, web, mobile, simulator.
 ```
 
 ### Task 4: Lỗi — `ApiError`, đổi số lỗi SQL, kiểm đầu vào, bộ lọc toàn cục
