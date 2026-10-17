@@ -26,6 +26,10 @@
 - Web không làm màn hình này. Tạo, khóa, đổi vai trò hoặc đặt lại mật khẩu: dùng tài khoản trong dữ liệu mẫu hoặc gọi thẳng API (VD `Invoke-RestMethod` trong PowerShell).
 - Muốn thêm thì phải sửa roadmap trước; đó là quyết định của nhóm.
 
+**Ngoài phạm vi: phát video đầu ra có khung bao của ai-vision.**
+- Lệnh `offline --annotated-video` của ai-vision (spec ai-vision 4.5) chỉ ghi file video trên máy chạy AI. Web **không phát** video này: không có endpoint nào phục vụ file video, hợp đồng không có.
+- Khung bao chỉ hiện trên web qua **ảnh thiên địch** (`hasSnapshot`, ảnh do AI vẽ sẵn khung bao). Muốn trình chiếu video khi demo thì mở file bằng trình phát video trên máy chạy AI.
+
 **Vai trò:**
 - OWNER thấy các nhà của mình.
 - ADMIN thấy mọi nhà, và thêm trang ẩn `/admin/tools` (dưới ranh giới cắt).
