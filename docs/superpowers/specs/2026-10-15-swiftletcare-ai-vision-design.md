@@ -266,6 +266,19 @@ Mỗi camera **một tiến trình**; **không bao giờ chạy hai tiến trìn
 - **`offline`:** xử lý playlist một lượt, nhanh hết mức, không gửi backend. Ghi `counts.csv` (`camera, windowStart, in, out`, trùng trường gửi đi), `predators.csv` (`camera, class, confidence, at`, trùng `metadata`) và `crossings.csv` (`at, chieu, track_id`, mỗi lần qua vạch một dòng, dùng cho mục 6.6).
 - **`scripts\start-cameras.ps1`** (Nên có): mỗi camera một cửa sổ.
 
+**Cờ dòng lệnh:**
+
+| Cờ | Lệnh | Ý nghĩa |
+|---|---|---|
+| `--weights <đường dẫn>` | `live`, `offline` | Trọng số; mặc định `data\weights\best.pt` |
+| `--imgsz <số>` | `live`, `offline` | Kích thước ảnh suy luận; mặc định theo trọng số (dùng khi fps không đủ, mục 3.4) |
+| `--heartbeat` | `live` | Gửi heartbeat 30 giây; **mặc định tắt** (mục 5.2) |
+| `--t0 <YYYY-MM-DDTHH:MM:SSZ>` | `offline` | Mốc bắt đầu (mục 4.1); mặc định giờ chạy |
+| `--playlist <file> …` | `offline` | Thay playlist trong YAML (đường dẫn tính từ `ai-vision\`), để chạy riêng từng video khi đo (Phần 6) |
+| `--annotated-video` | `offline` | Ghi thêm video có khung bao (mục 4.5) |
+
+**Log của `offline`** ghi vào `<out>\<mã camera>.log` (cùng thư mục `--out` với CSV), không ghi vào `data\logs\`, để log của lần chạy offline không lẫn với log `live`.
+
 **File khóa chống chạy trùng:** `live` tạo `data\run\<mã camera>.lock` khi khởi động (chỉ tạo nếu chưa có) và xóa khi thoát bình thường hoặc Ctrl+C. File đã tồn tại thì **dừng**, báo thời điểm file được tạo và hướng dẫn: kiểm tra không còn cửa sổ nào đang chạy camera này, rồi xóa tay file đó. Không tự dò tiến trình còn sống. Máy tắt đột ngột thì file còn lại, người chạy xóa tay theo hướng dẫn.
 
 **Chưa kiểm chứng:**
@@ -372,6 +385,11 @@ Mỗi camera **một tiến trình**; **không bao giờ chạy hai tiến trìn
 | `heartbeat` | `status` |
 | `fps` | `fps`, `droppedFrameRatio` (mỗi phút, mục 3.4) |
 | `stop` | `reason`, `exitCode` |
+| `start` | `fpsXuLy` (`live`, sau khi đo fps; giờ của dòng này dùng làm `--t0` khi so offline với live, mục 6.7) |
+| `video.frame_error` | `file`, `frame` (đọc khung lỗi: bỏ khung đó và đọc tiếp; lỗi liên tiếp quá 30 khung thì coi như hết video) |
+| `error` | `message` (lỗi không lường trước, mục 5.5), có thể kèm `where` |
+
+Loại `start`, `video.frame_error`, `error` không kiểm trường bắt buộc. `offline` ghi log vào `<out>\<mã camera>.log` (mục 3.5).
 
 Phần 6 lấy số báo động giả mỗi giờ từ các dòng `predator.confirmed` và `predator.cooldown_blocked`.
 
