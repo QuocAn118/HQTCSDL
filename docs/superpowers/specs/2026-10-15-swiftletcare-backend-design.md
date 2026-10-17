@@ -456,7 +456,8 @@ Danh sách endpoint đầy đủ: hợp đồng 3.3. Phần này chỉ ghi cách
 
 | Cột / khóa từ CSDL | Trường API | Ghi chú |
 |---|---|---|
-| `MetricCode` | `metric` | Số đo, lịch sử, sự kiện, cảnh báo, ngưỡng |
+| `MetricCode` | `metric` | Số đo, lịch sử, sự kiện `readings.new`, thống kê ngày |
+| `MetricCode` | `metricCode` | Cảnh báo, ngưỡng (hợp đồng 4.2, B10, fixture) |
 | `RecordedAt` | `at` | Số đo |
 | `SnapshotPath` | **`hasSnapshot`** (boolean) | Không trả đường dẫn; ảnh qua `/api/alerts/:alertId/snapshot` |
 | `PasswordHash` | **(không bao giờ trả)** | |
