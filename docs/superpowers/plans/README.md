@@ -13,11 +13,23 @@ Mỗi plan làm bằng `superpowers:executing-plans` (cách Native): từng task
 | 2 | [ai-vision](2026-10-16-swiftletcare-ai-vision.md) | TV3 (TV5 cùng gán nhãn tuần 1) | Ngay: Task 1–2 trước M1 | Test hình dạng cần fixture AI (PR số 1); kiểm tay cần backend Task 19 (trước 29/10) |
 | 3 | [web](2026-10-16-swiftletcare-web.md) | TV4 | Task 1–5 ngay (hàm thuần); Task 6+ khi backend có REST | Làm **trước** mobile vì mobile chép 5 file từ web |
 | 4 | [mobile](2026-10-16-swiftletcare-mobile.md) | TV4 (TV5 hỗ trợ tuần 3 nếu trễ) | Task 1 (kiểm gọi HTTP từ Expo Go) ngay; Task 2+ sau web Task 2–5 | Hỏi nhóm ai có iPhone/Android trước Task 1 |
-| — | database-advanced | TV1 | Spec + plan **chưa viết** (roadmap: agent viết, TV1 xác nhận trước 22/10) | |
+| — | database-advanced | TV1 | Phần 2 (phân quyền) giao 21–22/10, sau database-core Task 6; phần còn lại từ 26/10 | Spec đã viết, chờ duyệt; plan chưa viết |
 
 > **TV1, plan database-core Task 1 Step 2:** `.gitignore` gốc đã có sẵn. Chỉ thêm các dòng còn thiếu, **không ghi đè file đã có**. Mọi plan khác cũng chỉ thêm dòng vào `.gitignore` gốc.
 
 Số "thứ tự" giống nhau là chạy song song. Người hỗ trợ chuyển sang module đang chậm theo roadmap.
+
+## Việc chéo module (từ spec database-advanced 1.5)
+
+Mỗi chủ plan tự sửa plan của mình và báo nhóm. Agent không sửa hộ plan database-core hay plan backend.
+
+| # | Việc | Người làm | Sửa ở đâu | Hạn |
+|---|---|---|---|---|
+| D1 | Guard `deploy.ps1 -Reset` nhận thêm `_Perf`; sửa `tests/deploy-guard.ps1`: chấp nhận `SwiftletCare_Perf`, từ chối `SwiftletCare_Performance` và `SwiftletCare` | TV1 | plan database-core | trước 26/10 |
+| D2 | `deploy.ps1` chạy thêm `sql\04-security` sau `03-triggers`, trước seed | TV1 | plan database-core | 21–22/10 |
+| D3 | `database/.env.example` thêm `APP_BACKEND_PASSWORD=`, `APP_REPORT_PASSWORD=` (để trống) | TV1 | plan database-core | 21–22/10 |
+| D4 | `.gitignore` gốc: chỉ thêm dòng còn thiếu `*.bak`, `*.trn` | TV1 | plan database-core | 21–22/10 |
+| D5 | Backend chạy bằng `app_backend` (`DB_USER` trong `.env.example`). Trình chạy `test:contract` (Task 22) dùng `DB_ADMIN_USER`/`DB_ADMIN_PASSWORD` (`swiftlet_dev`) cho `BACKUP`/`RESTORE` | **TV2 tự sửa plan backend** (không đổi hợp đồng) | plan backend | trước 25/10 (M2) |
 
 ## Mốc tuần (roadmap Phần 3)
 
