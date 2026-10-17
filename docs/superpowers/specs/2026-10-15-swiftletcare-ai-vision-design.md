@@ -153,7 +153,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python -c "import ultralytics, supervision"
 ```
 
-- `requirements.txt` ghim chính xác (`==`) các gói cấp trên cùng: `torch`, `torchvision`, `ultralytics`, `supervision`, `requests`, `PyYAML`, `pytest`. Số phiên bản lấy từ lần cài thật ở bước 1 của plan.
+- `requirements.txt` ghim chính xác (`==`) các gói cấp trên cùng: `torch`, `torchvision`, `ultralytics`, `supervision`, `requests`, `PyYAML`, `pytest`, **`opencv-python`, `numpy`** (code import thẳng `cv2`, `numpy`). Số phiên bản lấy từ lần cài thật ở bước 1 của plan. Bản đã dùng khi chạy thử plan (17/10/2026, ngoài repo): `opencv-python==5.0.0.93`, `numpy==2.5.4`; Ultralytics có nhận hai bản này không: chưa kiểm chứng.
 - `torch`, `torchvision` lấy từ PyPI: trang cài đặt PyTorch (kiểm tra 15/10/2026, bản ổn định 2.14.1) cho Windows + Pip + CPU ghi lệnh `pip3 install torch torchvision`, không có index-url, nên bản PyPI trên Windows là bản CPU. Trang ghi PyTorch trên Windows hỗ trợ Python 3.10–3.14.
 - Notebook Colab chỉ cài `ultralytics==…` và `supervision==…`, dùng torch có sẵn. Một test kiểm tra hai bản ghim trong notebook trùng `requirements.txt`.
 - Không làm file khóa phụ thuộc đầy đủ (`pip freeze`); gói phụ thuộc gián tiếp có thể khác giữa các máy. Máy nào cho kết quả khác thì mới thêm.

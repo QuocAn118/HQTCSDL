@@ -37,14 +37,14 @@ Hết 25/10 mà chưa có `best.pt` nạp được trên máy nhóm thì TV3 bá
 
 **Architecture:** Gói `swiftletcare_ai/` chia theo trách nhiệm: hàm thuần (thời gian, cấu hình, cửa sổ, xác nhận thiên địch, payload, chỉ số đo) test không cần mô hình; `counting.py` là chỗ **duy nhất** nói chuyện với vạch đếm supervision; `sender.py` là luồng gửi riêng có hàng đợi, là chỗ **duy nhất** gọi HTTP; `app.py` ráp lại thành hai lệnh `live` và `offline`. Phụ thuộc bên ngoài (mô hình, video, đồng hồ, HTTP) đưa vào qua tham số để test thay bằng bản giả.
 
-**Tech Stack:** Python 3.12 (Windows, `ai-vision\.venv`), torch 2.14.1 + torchvision 0.29.1 (CPU, PyPI), ultralytics 8.4.178, supervision 0.30.9, requests 2.34.2, PyYAML 6.0.3, pytest 9.1.1; OpenCV và NumPy đi kèm Ultralytics. Số phiên bản là bản mới nhất trên PyPI ngày 16/10/2026 (`pip index versions`), **chưa cài thử** — Task 1 chốt.
+**Tech Stack:** Python 3.12 (Windows, `ai-vision\.venv`), torch 2.14.1 + torchvision 0.29.1 (CPU, PyPI), ultralytics 8.4.178, supervision 0.30.9, requests 2.34.2, PyYAML 6.0.3, pytest 9.1.1, opencv-python 5.0.0.93, numpy 2.5.4 (hai gói cuối là bản đã dùng khi chạy thử 239 test). Số phiên bản là bản mới nhất trên PyPI ngày 16/10/2026 (`pip index versions`); torch, torchvision, ultralytics **chưa cài thử** — Task 1 chốt.
 
 **Spec:** [docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md](../specs/2026-10-15-swiftletcare-ai-vision-design.md) · hợp đồng: [integration-contract](../specs/2026-10-13-swiftletcare-integration-contract-design.md) mục 2.4 · fixture AI: [plan hợp đồng](2026-10-14-swiftletcare-integration-contract.md) Task 4 · endpoint: [plan backend](2026-10-16-swiftletcare-backend.md) Task 19 (Task 26 cho heartbeat)
 
 ## Global Constraints
 
 - Python 3.12, môi trường ảo `ai-vision\.venv`; mọi lệnh gọi `.\.venv\Scripts\python`, không dùng `Activate.ps1`. Lệnh chạy trong thư mục `ai-vision\`.
-- `requirements.txt` ghim `==` đúng bảy gói: `torch`, `torchvision`, `ultralytics`, `supervision`, `requests`, `PyYAML`, `pytest`. Không `pip freeze`. Notebook Colab chỉ cài `ultralytics==…` và `supervision==…`, trùng `requirements.txt`.
+- `requirements.txt` ghim `==` đúng chín gói: `torch`, `torchvision`, `ultralytics`, `supervision`, `requests`, `PyYAML`, `pytest`, `opencv-python`, `numpy` (code import thẳng `cv2`, `numpy`). Không `pip freeze`. Notebook Colab chỉ cài `ultralytics==…` và `supervision==…`, trùng `requirements.txt`.
 - Lớp: `swiftlet`, `rat`, `snake`, `owl` — chữ thường, gửi thẳng tên lớp thiên địch sang backend.
 - Danh sách camera cố định trong code: `H1-F0-CAMERA`, `H2-F0-CAMERA`.
 - `.env`: `BACKEND_URL` (mặc định mẫu `http://localhost:3000`), `AI_SERVICE_KEY` (trống trong mẫu), `SNAPSHOT_MAX_BYTES` (mặc định `2097152`). **Không bao giờ in `AI_SERVICE_KEY` ra log hay màn hình**, kể cả khi 401.
@@ -162,6 +162,8 @@ supervision==0.30.9
 requests==2.34.2
 PyYAML==6.0.3
 pytest==9.1.1
+opencv-python==5.0.0.93
+numpy==2.5.4
 ```
 
 ```powershell
@@ -171,7 +173,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python -c "import sys, torch, torchvision, ultralytics, supervision, requests, yaml, pytest, cv2, numpy; print(sys.version); print(torch.__version__, torchvision.__version__, ultralytics.__version__, supervision.__version__, requests.__version__, yaml.__version__, pytest.__version__, cv2.__version__, numpy.__version__, torch.cuda.is_available())"
 ```
 
-Expected: cài không lỗi; dòng cuối in bảy phiên bản trùng `requirements.txt`, kèm bản OpenCV, NumPy (đi kèm Ultralytics) và `False` (CPU).
+Expected: cài không lỗi; dòng cuối in chín phiên bản trùng `requirements.txt` (`cv2.__version__` là `5.0.0` ứng với `opencv-python==5.0.0.93`) và `False` (CPU). Ultralytics 8.4.178 có nhận `opencv-python` 5 và `numpy` 2.5 không: **chưa kiểm chứng** (lần chạy thử không có Ultralytics); pip báo xung đột thì lùi hai gói này về bản Ultralytics kéo về, ghi S2.
 
 Pip báo xung đột hoặc không có bản cho Python 3.12 Windows: lùi gói gây lỗi về bản mới nhất cài được (`py -3.12 -m pip index versions <gói>`), sửa `requirements.txt`, cài lại. Ghi S2: số phiên bản thật, gói nào phải lùi, vì sao; **cập nhật dòng Tech Stack của plan này và spec 3.1** bằng số thật.
 
@@ -331,7 +333,7 @@ Tạo `ai-vision/spikes/RESULTS.md` theo khung dưới, điền cột "Kết qu�
 | Mã | Mục (spec) | Cách kiểm | Kết quả | Ngày |
 |---|---|---|---|---|
 | S1 | Python 3.12 + Python Launcher (3.1, 3.5) | `py -0p`, `py -3.12 --version` | | |
-| S2 | Cài được bảy gói trên Windows, số phiên bản thật (3.1) | Task 1 Step 2 | | |
+| S2 | Cài được chín gói trên Windows, số phiên bản thật (3.1) | Task 1 Step 2 | | |
 | S3 | `sv.LineZone`: tham số, chiều khi bay lên (3.4, 4.2) | `spikes/check_supervision.py` | | |
 | S4 | `sv.ByteTrack`, `Detections.from_ultralytics` (3.4) | như trên | | |
 | S5 | Ultralytics CPU: fps 1280×720, tên tham số epochs/imgsz/seed (2.6, 3.5) | `spikes/check_ultralytics.py` | | |
@@ -367,7 +369,7 @@ from pathlib import Path
 
 AI = Path(__file__).resolve().parent.parent
 ROOT = AI.parent
-PINNED = {'torch', 'torchvision', 'ultralytics', 'supervision', 'requests', 'PyYAML', 'pytest'}
+PINNED = {'torch', 'torchvision', 'ultralytics', 'supervision', 'requests', 'PyYAML', 'pytest', 'opencv-python', 'numpy'}
 
 
 def read_pins(path: Path) -> dict[str, str]:
@@ -382,7 +384,7 @@ def read_pins(path: Path) -> dict[str, str]:
     return pins
 
 
-def test_requirements_ghim_dung_bay_goi():
+def test_requirements_ghim_dung_chin_goi():
     pins = read_pins(AI / 'requirements.txt')
     assert set(pins) == PINNED
     for name, version in pins.items():
