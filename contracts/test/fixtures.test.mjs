@@ -27,7 +27,7 @@ const EXPECTED = {
     'alerts-list.page.json', 'readings-history.json', 'thresholds-put.json', 'health.json',
     'harvests-post.cut.json', 'report-env-vs-yield.cut.json',
     'auth-login.invalid-credentials.json', 'control.invalid-not-controllable.json', 'alert.invalid-transition.json',
-    'readings-history.invalid-range.json', 'readings-history.invalid-missing-z.json',
+    'readings-history.invalid-range.json', 'readings-history.invalid-missing-z.json', 'readings-history.invalid-offset.json',
     'thresholds-put.invalid-min-max.json', 'house.invalid-not-owner.json', 'users.invalid-modify-self.json',
   ],
   ws: [
@@ -229,6 +229,7 @@ const INVALID_EXPECTED = {
   'rest/alert.invalid-transition.json': [409, 'ALERT_INVALID_TRANSITION', 50021, null],
   'rest/readings-history.invalid-range.json': [400, 'INVALID_PARAMETER', 50041, null],
   'rest/readings-history.invalid-missing-z.json': [400, 'VALIDATION_ERROR', null, ['from']],
+  'rest/readings-history.invalid-offset.json': [400, 'VALIDATION_ERROR', null, ['from']],
   'rest/thresholds-put.invalid-min-max.json': [400, 'CONSTRAINT_VIOLATION', 547, null],
   'rest/house.invalid-not-owner.json': [404, 'NOT_FOUND', null, null],
   'rest/users.invalid-modify-self.json': [409, 'CANNOT_MODIFY_SELF', null, null],
@@ -244,6 +245,7 @@ test('ai, rest: fixture invalid dung loi spec 4.3, dau vao that su sai', () => {
   }
   // REST: ly do nam o dau vao, kiem dau vao that su sai (AI da kiem o AI_BODY_INVALID).
   assert.match(loadFixture('rest/readings-history.invalid-missing-z').path, /from=\{\{now[^}]*:noZ\}\}/);
+  assert.match(loadFixture('rest/readings-history.invalid-offset').path, /from=\{\{now[^}]*:\+07:00\}\}/);
   const mm = loadFixture('rest/thresholds-put.invalid-min-max').body;
   assert.ok(mm.minValue >= mm.maxValue, 'min-max: minValue phai >= maxValue');
   const range = expand(loadFixture('rest/readings-history.invalid-range'), ctx).path;
