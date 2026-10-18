@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "path": "/api/ai/heartbeat",
+  "headers": {"X-Service-Key": "{{serviceKey}}"},
+  "body": {"device": "H1-F0-CAMERA", "at": "{{now}}"},
+  "status": 200,
+  "response": {"accepted": 1, "rejected": 0}
+}

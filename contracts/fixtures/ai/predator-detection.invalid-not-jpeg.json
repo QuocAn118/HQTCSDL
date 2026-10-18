@@ -1,0 +1,11 @@
+{
+  "method": "POST",
+  "path": "/api/ai/predator-detections",
+  "headers": {"X-Service-Key": "{{serviceKey}}"},
+  "body": {
+    "metadata": {"camera": "H1-F0-CAMERA", "class": "snake", "confidence": 0.9, "at": "{{now}}"},
+    "image": "@not-jpeg.png"
+  },
+  "status": 415,
+  "response": {"error": {"code": "UNSUPPORTED_MEDIA_TYPE", "message": "{{any:string}}", "sqlNumber": null, "details": null}}
+}

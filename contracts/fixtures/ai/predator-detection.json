@@ -1,0 +1,11 @@
+{
+  "method": "POST",
+  "path": "/api/ai/predator-detections",
+  "headers": {"X-Service-Key": "{{serviceKey}}"},
+  "body": {
+    "metadata": {"camera": "H1-F0-CAMERA", "class": "snake", "confidence": 0.87, "at": "{{now}}"},
+    "image": "@snake.jpg"
+  },
+  "status": 200,
+  "response": {"created": true, "alertId": "{{any:id}}", "skipReason": null}
+}

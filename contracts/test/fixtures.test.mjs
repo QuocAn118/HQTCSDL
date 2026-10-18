@@ -13,6 +13,14 @@ const EXPECTED = {
     'readings.invalid-missing-z.json', 'readings.invalid-offset.json',
     'readings.invalid-device-mismatch.json', 'readings.invalid-not-array.json',
   ],
+  ai: [
+    'bird-counts.json', 'bird-counts.resend-smaller.json',
+    'predator-detection.json', 'snake.jpg', 'predator-detection.cooldown.json', 'predator-detection.low-confidence.json',
+    'heartbeat.cut.json',
+    'bird-counts.invalid-window-not-aligned.json', 'bird-counts.invalid-negative.json', 'bird-counts.invalid-missing-z.json',
+    'predator-detection.invalid-class.json', 'predator-detection.invalid-offset.json',
+    'predator-detection.invalid-not-jpeg.json', 'not-jpeg.png', 'ai.invalid-service-key.json',
+  ],
 };
 
 const SHAPE = {
@@ -126,6 +134,126 @@ test('mqtt: fixture khong hop le bi bat dung ly do', () => {
     const problems = mqttProblems(expand(load('mqtt', file), ctx));
     assert.ok(problems.some((p) => re.test(p)), `${file}: ${problems.join('; ')}`);
   }
+});
+
+// ---------- Loi HTTP (bang doi ma spec 3.5) ----------
+const SQL_ERRORS = {
+  50003: [409, 'DEVICE_NOT_CONTROLLABLE'], 50010: [404, 'CAMERA_NOT_FOUND'],
+  50012: [400, 'VALIDATION_ERROR'], 50013: [400, 'VALIDATION_ERROR'], 50014: [400, 'VALIDATION_ERROR'],
+  50020: [404, 'ALERT_NOT_FOUND'], 50021: [409, 'ALERT_INVALID_TRANSITION'], 50030: [400, 'INVALID_JSON'],
+  50040: [400, 'INVALID_PARAMETER'], 50041: [400, 'INVALID_PARAMETER'], 50042: [400, 'INVALID_PARAMETER'],
+  547: [400, 'CONSTRAINT_VIOLATION'], 2627: [409, 'DUPLICATE'], 2601: [409, 'DUPLICATE'], 1205: [503, 'RETRY_LATER'],
+};
+const APP_ERRORS = {
+  VALIDATION_ERROR: 400, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CANNOT_MODIFY_SELF: 409,
+  LAST_ADMIN: 409, PAYLOAD_TOO_LARGE: 413, UNSUPPORTED_MEDIA_TYPE: 415, INTERNAL: 500,
+};
+const SQL_FIELDS = { 50012: ['in', 'out'], 50013: ['class'], 50014: ['windowStart'] };
+
+function errorProblems(f) {
+  if (!sameKeys(f.response, ['error'])) return ['phan hoi loi phai la {error:{…}}'];
+  const e = f.response.error;
+  if (!sameKeys(e, ['code', 'message', 'sqlNumber', 'details'])) return ['error phai co dung code, message, sqlNumber, details'];
+  const p = [];
+  if (e.message !== '{{any:string}}') p.push('message phai la {{any:string}} (khong khoa nguyen van)');
+  if (e.sqlNumber !== null) {
+    const m = SQL_ERRORS[e.sqlNumber];
+    if (!m) p.push(`sqlNumber ${e.sqlNumber} khong co trong bang 3.5`);
+    else if (m[0] !== f.status || m[1] !== e.code) p.push(`sqlNumber ${e.sqlNumber} phai la HTTP ${m[0]} ${m[1]}`);
+  } else if (APP_ERRORS[e.code] !== f.status) {
+    p.push(`${e.code} phai di voi HTTP ${APP_ERRORS[e.code]}`);
+  }
+  if (e.code === 'VALIDATION_ERROR') {
+    const fields = e.details?.fields;
+    if (!sameKeys(e.details, ['fields']) || !Array.isArray(fields) || fields.length === 0) p.push('details phai la {fields:[…]}');
+    else if (SQL_FIELDS[e.sqlNumber] && JSON.stringify(fields) !== JSON.stringify(SQL_FIELDS[e.sqlNumber])) {
+      p.push(`details.fields cua ${e.sqlNumber} phai la ${JSON.stringify(SQL_FIELDS[e.sqlNumber])}`);
+    }
+  } else if (e.details !== null) {
+    p.push('details phai la null');
+  }
+  return p;
+}
+
+function httpProblems(file, f) {
+  if (isInvalid(file)) return f.status >= 400 ? errorProblems(f) : ['fixture invalid phai co status >= 400'];
+  return [200, 201].includes(f.status) ? [] : ['fixture hop le phai co status 200 hoac 201'];
+}
+
+test('ai, rest: ma HTTP, phan hoi loi, file dinh kem', () => {
+  for (const folder of ['ai', 'rest'].filter((x) => EXPECTED[x])) {
+    for (const file of jsonFiles(folder)) {
+      const f = load(folder, file);
+      assert.deepEqual(httpProblems(file, f), [], `${folder}/${file}`);
+      for (const v of Object.values(f.body ?? {})) {
+        if (typeof v === 'string' && v.startsWith('@')) {
+          assert.ok(EXPECTED[folder].includes(v.slice(1)), `${folder}/${file}: file dinh kem ${v} khong co`);
+        }
+      }
+    }
+  }
+});
+
+// ---------- AI ----------
+const PREDATOR_CLASSES = ['rat', 'snake', 'owl'];
+
+function aiProblems(f) {
+  const b = f.body;
+  if (f.method !== 'POST') return ['endpoint AI deu la POST'];
+  if (f.path === '/api/ai/bird-counts') {
+    if (!Array.isArray(b)) return ['body phai la mang'];
+    return b.flatMap((x, i) => [
+      !sameKeys(x, ['camera', 'windowStart', 'in', 'out']) && `[${i}] khoa phai la camera, windowStart, in, out`,
+      !ISO_Z.test(x?.windowStart) && `[${i}] windowStart phai la UTC co Z`,
+      ISO_Z.test(x?.windowStart) && Date.parse(x.windowStart) % 300_000 !== 0 && `[${i}] windowStart phai dung moc 5 phut`,
+      !(Number.isInteger(x?.in) && x.in >= 0 && Number.isInteger(x?.out) && x.out >= 0) && `[${i}] in, out phai la so nguyen >= 0`,
+    ].filter(Boolean));
+  }
+  if (f.path === '/api/ai/predator-detections') {
+    const m = b?.metadata;
+    return [
+      !sameKeys(b, ['metadata', 'image']) && 'body multipart phai co metadata, image',
+      !sameKeys(m, ['camera', 'class', 'confidence', 'at']) && 'metadata phai co camera, class, confidence, at (khong co snapshot)',
+      !PREDATOR_CLASSES.includes(m?.class) && 'class phai la rat | snake | owl',
+      !(typeof m?.confidence === 'number' && m.confidence >= 0 && m.confidence <= 1) && 'confidence phai trong [0, 1]',
+      !ISO_Z.test(m?.at) && 'at phai la UTC co Z',
+    ].filter(Boolean);
+  }
+  if (f.path === '/api/ai/heartbeat') {
+    return [
+      !sameKeys(b, ['device', 'at']) && 'khoa phai la device, at',
+      !ISO_Z.test(b?.at) && 'at phai la UTC co Z',
+    ].filter(Boolean);
+  }
+  return [`duong dan AI la: ${f.path}`];
+}
+
+// Fixture invalid ma ly do nam o body (AI phai tu tranh); cac invalid con lai co body dung.
+const AI_BODY_INVALID = {
+  'bird-counts.invalid-window-not-aligned.json': /moc 5 phut/,
+  'bird-counts.invalid-negative.json': /so nguyen >= 0/,
+  'bird-counts.invalid-missing-z.json': /UTC co Z/,
+  'predator-detection.invalid-class.json': /rat \| snake \| owl/,
+  'predator-detection.invalid-offset.json': /UTC co Z/,
+};
+
+test('ai: header X-Service-Key, body dung hop dong', () => {
+  for (const file of jsonFiles('ai')) {
+    const f = expand(load('ai', file), ctx);
+    assert.ok(sameKeys(f.headers, ['X-Service-Key']), `${file}: headers chi gom X-Service-Key`);
+    if (file !== 'ai.invalid-service-key.json') assert.equal(f.headers['X-Service-Key'], ctx.serviceKey, `${file}: dung {{serviceKey}}`);
+    const problems = aiProblems(f);
+    if (AI_BODY_INVALID[file]) assert.ok(problems.some((p) => AI_BODY_INVALID[file].test(p)), `${file}: ${problems.join('; ')}`);
+    else assert.deepEqual(problems, [], file);
+  }
+});
+
+test('ai: anh mau - snake.jpg la JPEG that <= 2 MB, not-jpeg.png khong phai JPEG', () => {
+  const jpg = readFileSync(join(FIXTURES_DIR, 'ai', 'snake.jpg'));
+  assert.deepEqual([...jpg.subarray(0, 3)], [0xff, 0xd8, 0xff]);
+  assert.ok(jpg.length > 0 && jpg.length <= 2 * 1024 * 1024);
+  const png = readFileSync(join(FIXTURES_DIR, 'ai', 'not-jpeg.png'));
+  assert.deepEqual([...png.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
 });
 
 // <!-- TEST-APPEND -->

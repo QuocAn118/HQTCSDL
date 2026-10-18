@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "path": "/api/ai/bird-counts",
+  "headers": {"X-Service-Key": "{{serviceKey}}"},
+  "body": [{"camera": "H1-F0-CAMERA", "windowStart": "{{window}}", "in": -1, "out": 0}],
+  "status": 400,
+  "response": {"error": {"code": "VALIDATION_ERROR", "message": "{{any:string}}", "sqlNumber": 50012, "details": {"fields": ["in", "out"]}}}
+}

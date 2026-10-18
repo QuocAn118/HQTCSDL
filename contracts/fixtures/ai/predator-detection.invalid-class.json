@@ -1,0 +1,11 @@
+{
+  "method": "POST",
+  "path": "/api/ai/predator-detections",
+  "headers": {"X-Service-Key": "{{serviceKey}}"},
+  "body": {
+    "metadata": {"camera": "H1-F0-CAMERA", "class": "cat", "confidence": 0.9, "at": "{{now}}"},
+    "image": "@snake.jpg"
+  },
+  "status": 400,
+  "response": {"error": {"code": "VALIDATION_ERROR", "message": "{{any:string}}", "sqlNumber": null, "details": {"fields": ["class"]}}}
+}
