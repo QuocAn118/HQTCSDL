@@ -81,6 +81,7 @@ for (const folder of Object.keys(EXPECTED)) {
       assert.notDeepEqual([...raw.subarray(0, 3)], [0xef, 0xbb, 0xbf], 'file co BOM - luu lai UTF-8 khong BOM');
       const text = raw.toString('utf8');
       assert.ok(!text.includes('�'), 'ky tu hong - file khong phai UTF-8');
+      assert.doesNotMatch(text, /[ÃÂÄÆ][\u0080-¿]|á»|Ä‘/, 'mojibake - UTF-8 bi doc nhu Windows-1252 roi luu lai');
       assert.doesNotMatch(text, /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/, 'moc thoi gian co dinh - dung {{now…}} / {{window…}}');
       assert.doesNotMatch(text, /"(\w+Id|nextBefore)"\s*:\s*\d/, 'id co dinh - dung {{ref:…}} hoac {{any:id}}');
       assert.doesNotMatch(text, /\/api\/[\w-]+\/\d/, 'id co dinh trong duong dan - dung {{ref:…}}');
@@ -104,6 +105,15 @@ test('chuoi after: moi fixture nap duoc ca chuoi, khong vong lap, expand chung m
       for (const { fixture } of loadChain(`${folder}/${file.replace(/\.json$/, '')}`)) expand(fixture, ctx);
     }
   }
+});
+
+test('tieng Viet giu nguyen (khong mojibake, khong bi thay bang ?)', () => {
+  assert.equal(loadFixture('rest/alert-ack').body.note, 'Đã kiểm tra');
+  assert.equal(loadFixture('rest/control.manual').body.reason, 'Thử điều khiển tay');
+  assert.equal(loadFixture('rest/auth-login').response.user.fullName, 'Chủ nhà yến H1');
+  assert.equal(loadFixture('rest/alerts-list.page').response.items[0].message, 'Phát hiện rắn tại H1-F0-CAMERA (độ tin cậy 91.0%)');
+  assert.equal(loadFixture('ws/alert.created.predator').payload.alert.message, 'Phát hiện rắn tại H1-F0-CAMERA (độ tin cậy 87.0%)');
+  assert.equal(loadFixture('ws/alert.created.threshold').payload.alert.message, 'Nhiệt độ vượt ngưỡng trên 30.00 °C: 31.20 °C');
 });
 
 // ---------- MQTT ----------
