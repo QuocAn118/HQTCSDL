@@ -250,9 +250,20 @@ const AI_BODY_INVALID = {
   'predator-detection.invalid-offset.json': /UTC co Z/,
 };
 
+// B8: endpoint AI la POST hanh dong -> 200; B10 / spec 2.4: tap khoa phan hoi.
+const AI_RESPONSE_KEYS = {
+  '/api/ai/bird-counts': ['windowsUpserted', 'windowsUnchanged'],
+  '/api/ai/predator-detections': ['created', 'alertId', 'skipReason'],
+  '/api/ai/heartbeat': ['accepted', 'rejected'],
+};
+
 test('ai: header X-Service-Key, body dung hop dong', () => {
   for (const file of jsonFiles('ai')) {
     const f = expand(load('ai', file), ctx);
+    if (!isInvalid(file)) {
+      assert.equal(f.status, 200, `${file}: endpoint AI tra 200`);
+      assert.ok(sameKeys(f.response, AI_RESPONSE_KEYS[f.path] ?? []), `${file}: khoa phan hoi`);
+    }
     assert.ok(sameKeys(f.headers, ['X-Service-Key']), `${file}: headers chi gom X-Service-Key`);
     if (file !== 'ai.invalid-service-key.json') assert.equal(f.headers['X-Service-Key'], ctx.serviceKey, `${file}: dung {{serviceKey}}`);
     const problems = aiProblems(f);
