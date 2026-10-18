@@ -13,10 +13,10 @@ Nhóm 5 người (TV1–TV5), 4 tuần, hạn nộp **09/11/2026** (chờ thầy
 | Module | Chủ | Spec | Plan |
 |---|---|---|---|
 | `database-core` | TV1 | [spec](docs/superpowers/specs/2026-10-12-swiftletcare-database-core-design.md) | [plan](docs/superpowers/plans/2026-10-14-swiftletcare-database-core.md) |
-| `integration-contract` | TV2 (TV1 cùng duyệt) | [spec](docs/superpowers/specs/2026-10-13-swiftletcare-integration-contract-design.md) | [plan](docs/superpowers/plans/2026-10-14-swiftletcare-integration-contract.md) |
+| `integration-contract` | TV2 = nhóm trưởng (TV1 cùng duyệt) | [spec](docs/superpowers/specs/2026-10-13-swiftletcare-integration-contract-design.md) | [plan](docs/superpowers/plans/2026-10-14-swiftletcare-integration-contract.md) |
 | `database-advanced` | TV1 | [spec](docs/superpowers/specs/2026-10-17-swiftletcare-database-advanced-design.md) | [plan](docs/superpowers/plans/2026-10-17-swiftletcare-database-advanced.md) |
 | `ai-vision` | TV3 | [spec](docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md) | [plan](docs/superpowers/plans/2026-10-16-swiftletcare-ai-vision.md) |
-| `backend` | TV2 | [spec](docs/superpowers/specs/2026-10-15-swiftletcare-backend-design.md) | [plan](docs/superpowers/plans/2026-10-16-swiftletcare-backend.md) |
+| `backend` | TV2 = nhóm trưởng | [spec](docs/superpowers/specs/2026-10-15-swiftletcare-backend-design.md) | [plan](docs/superpowers/plans/2026-10-16-swiftletcare-backend.md) |
 | `simulator` | TV5 | [spec](docs/superpowers/specs/2026-10-16-swiftletcare-simulator-design.md) | [plan](docs/superpowers/plans/2026-10-16-swiftletcare-simulator.md) |
 | `web` | TV4 | [spec](docs/superpowers/specs/2026-10-16-swiftletcare-web-design.md) | [plan](docs/superpowers/plans/2026-10-16-swiftletcare-web.md) |
 | `mobile` | TV4 | [spec](docs/superpowers/specs/2026-10-16-swiftletcare-mobile-design.md) | [plan](docs/superpowers/plans/2026-10-16-swiftletcare-mobile.md) |
