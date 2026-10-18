@@ -85,6 +85,10 @@ for (const folder of Object.keys(EXPECTED)) {
       assert.doesNotMatch(text, /"(\w+Id|nextBefore)"\s*:\s*\d/, 'id co dinh - dung {{ref:…}} hoac {{any:id}}');
       assert.doesNotMatch(text, /\/api\/[\w-]+\/\d/, 'id co dinh trong duong dan - dung {{ref:…}}');
       const f = JSON.parse(text);
+      if (f.path) {
+        assert.doesNotMatch(f.path, /\/\d/, 'id co dinh trong doan duong dan - dung {{ref:…}}');
+        assert.doesNotMatch(f.path, /[?&]\w*(Id|before)=\d/, 'id co dinh trong query - dung {{ref:…}}');
+      }
       const { required, optional } = SHAPE[folder];
       assert.deepEqual(required.filter((k) => !Object.hasOwn(f, k)), [], 'thieu khoa');
       assert.deepEqual(Object.keys(f).filter((k) => !required.includes(k) && !optional.includes(k)), [], 'khoa la');
