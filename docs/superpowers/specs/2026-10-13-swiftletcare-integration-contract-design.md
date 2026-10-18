@@ -74,7 +74,7 @@ Mỗi thành viên **chạy Mosquitto riêng trên máy mình** (cùng SQL Serve
 
 1. Cài Mosquitto cho Windows.
 2. Repo có cấu hình mẫu `infra/mosquitto/mosquitto.conf` (**không chứa mật khẩu**):
-   - `listener 1883`, `allow_anonymous false`, `password_file` trỏ tới `infra/mosquitto/passwd` (file này nằm trong `.gitignore`).
+   - `listener 1883 127.0.0.1` (mặc định chỉ máy mình kết nối được; demo qua LAN dùng bản sao `infra/mosquitto/mosquitto.local.conf` với `0.0.0.0`, nằm trong `.gitignore` — xem `infra/mosquitto/README.md` mục 5), `allow_anonymous false`, `password_file` trỏ tới `infra/mosquitto/passwd` (file này nằm trong `.gitignore`).
    - `persistence true`, `persistence_location infra/mosquitto/data/` (trong `.gitignore`) — tin QoS 1 đang chờ và tin retained còn sau khi broker khởi động lại.
    - `max_queued_messages 10000` (mặc định 1000): với 6 cảm biến × 1 tin/10 giây, đủ giữ số đo khoảng 4,5 giờ khi backend tắt.
    - **Lưu ý:** backend dùng client id cố định `swiftlet-backend` → **không chạy hai backend cùng lúc trên một broker** (broker sẽ ngắt kết nối cũ, hai bên tranh nhau liên tục).
