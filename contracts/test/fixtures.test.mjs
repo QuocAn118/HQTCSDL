@@ -29,6 +29,8 @@ const EXPECTED = {
     'auth-login.invalid-credentials.json', 'control.invalid-not-controllable.json', 'alert.invalid-transition.json',
     'readings-history.invalid-range.json', 'readings-history.invalid-missing-z.json', 'readings-history.invalid-offset.json',
     'thresholds-put.invalid-min-max.json', 'house.invalid-not-owner.json', 'users.invalid-modify-self.json',
+    'health.invalid-db-down.json', 'houses-list.invalid-db-not-ready.json',
+    'admin-anomalies-detect.invalid-missing-z.json', 'admin-anomalies-detect.invalid-forbidden.json',
   ],
   ws: [
     'readings.new.json', 'alert.created.threshold.json', 'alert.created.predator.json',
@@ -181,7 +183,7 @@ const SQL_ERRORS = {
 };
 const APP_ERRORS = {
   VALIDATION_ERROR: 400, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CANNOT_MODIFY_SELF: 409,
-  LAST_ADMIN: 409, PAYLOAD_TOO_LARGE: 413, UNSUPPORTED_MEDIA_TYPE: 415, INTERNAL: 500,
+  LAST_ADMIN: 409, PAYLOAD_TOO_LARGE: 413, UNSUPPORTED_MEDIA_TYPE: 415, INTERNAL: 500, RETRY_LATER: 503,
 };
 const SQL_FIELDS = { 50012: ['in', 'out'], 50013: ['class'], 50014: ['windowStart'] };
 
@@ -211,6 +213,10 @@ function errorProblems(f) {
 }
 
 function httpProblems(file, f) {
+  if (file === 'health.invalid-db-down.json') {
+    return f.status === 503 && sameKeys(f.response, ['status', 'db', 'mqtt']) && f.response.status === 'error'
+      ? [] : ['health 503 phai la {status:"error", db, mqtt}'];
+  }
   if (isInvalid(file)) return f.status >= 400 ? errorProblems(f) : ['fixture invalid phai co status >= 400'];
   return [200, 201].includes(f.status) ? [] : ['fixture hop le phai co status 200 hoac 201'];
 }
@@ -233,10 +239,16 @@ const INVALID_EXPECTED = {
   'rest/thresholds-put.invalid-min-max.json': [400, 'CONSTRAINT_VIOLATION', 547, null],
   'rest/house.invalid-not-owner.json': [404, 'NOT_FOUND', null, null],
   'rest/users.invalid-modify-self.json': [409, 'CANNOT_MODIFY_SELF', null, null],
+  'rest/houses-list.invalid-db-not-ready.json': [503, 'RETRY_LATER', null, null],
+  'rest/admin-anomalies-detect.invalid-missing-z.json': [400, 'VALIDATION_ERROR', null, ['nowUtc']],
+  'rest/admin-anomalies-detect.invalid-forbidden.json': [403, 'FORBIDDEN', null, null],
 };
+// health 503 khong co dang {error} (spec backend 3.5): kiem rieng o httpProblems.
+const INVALID_NOT_ERROR = ['rest/health.invalid-db-down.json'];
 
 test('ai, rest: fixture invalid dung loi spec 4.3, dau vao that su sai', () => {
-  const invalid = ['ai', 'rest'].flatMap((d) => jsonFiles(d).filter(isInvalid).map((f) => `${d}/${f}`));
+  const invalid = ['ai', 'rest'].flatMap((d) => jsonFiles(d).filter(isInvalid).map((f) => `${d}/${f}`))
+    .filter((n) => !INVALID_NOT_ERROR.includes(n));
   assert.deepEqual(invalid.sort(), Object.keys(INVALID_EXPECTED).sort());
   for (const [name, [status, code, sqlNumber, fields]] of Object.entries(INVALID_EXPECTED)) {
     const f = loadFixture(name.replace(/\.json$/, ''));
@@ -257,6 +269,9 @@ test('ai, rest: fixture invalid dung loi spec 4.3, dau vao that su sai', () => {
   const other = loadFixture('rest/house.invalid-not-owner');
   const owned = { owner1: 'H1', owner2: 'H2' }[other.headers.Authorization.match(/token:(\w+)/)[1]]; // seed: chu nha
   assert.ok(owned && !other.path.includes(`{{ref:house:${owned}}}`), 'not-owner: phai doc nha cua nguoi khac');
+  assert.match(loadFixture('rest/admin-anomalies-detect.invalid-missing-z').body.nowUtc, /^\{\{now[^}]*:noZ\}\}$/);
+  assert.notEqual(loadFixture('rest/admin-anomalies-detect.invalid-forbidden').headers.Authorization, 'Bearer {{token:admin}}',
+    'forbidden: phai la nguoi khong phai ADMIN');
 });
 
 test('bang 3.5: 50001, 50002 la loi backend -> 500 INTERNAL', () => {
@@ -376,7 +391,7 @@ const REST_ROW_KEYS = {
     'pctInRange', 'nestCount', 'weightGram'],
 };
 const REST_CREATED = ['harvests-post.cut.json']; // B8: POST tao tai nguyen -> 201
-const REST_PUBLIC = ['auth-login.json', 'auth-login.invalid-credentials.json', 'health.json'];
+const REST_PUBLIC = ['auth-login.json', 'auth-login.invalid-credentials.json', 'health.json', 'health.invalid-db-down.json'];
 
 test('rest: xac thuc, ma thanh cong, tap khoa phan hoi', () => {
   for (const file of jsonFiles('rest')) {

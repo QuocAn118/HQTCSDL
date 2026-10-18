@@ -98,7 +98,7 @@ Mỗi thành viên **chạy Mosquitto riêng trên máy mình** (cùng SQL Serve
 | `swiftlet/devices/{code}/heartbeat` | cơ cấu chấp hành → backend | 0 | Không | Tín hiệu sống |
 | `swiftlet/devices/{code}/command` | backend → cơ cấu chấp hành | 1 | **Có** | Trạng thái mong muốn |
 
-`{code}` = `Devices.Code` = MQTT client id của thiết bị; simulator mở **một kết nối cho mỗi thiết bị** (28 kết nối với dữ liệu mẫu).
+`{code}` = `Devices.Code` = MQTT client id của thiết bị; simulator mở **một kết nối cho mỗi thiết bị** (26 kết nối với dữ liệu mẫu: 6 SENSOR + 20 cơ cấu chấp hành; CAMERA gửi qua HTTP). Tài khoản `simulator` và ACL không giới hạn số kết nối.
 
 **readings** — mỗi cảm biến gửi 4 chỉ số trong một tin, mặc định **10 giây/lần** (cấu hình được). Payload là mảng **đúng các phần tử `sp_IngestReadings` đọc**, backend chuyển nguyên văn:
 
@@ -196,6 +196,8 @@ Backend xử lý theo thứ tự:
 
 **Nên có:** file ACL Mosquitto — `simulator` chỉ publish `readings`/`heartbeat`, chỉ subscribe `command`; `backend` ngược lại.
 
+ACL `pattern write swiftlet/devices/%c/readings` từ chối client `contract-test` (test hợp đồng backend) và `latency-probe` (đo độ trễ) khi publish vào topic cảm biến bằng tài khoản `simulator`. Máy dev/test **không bật ACL**; bật ACL trên máy demo thì hai việc đó không chạy trên máy demo.
+
 ## Phần 3 — REST API và bảng đổi mã lỗi (đã duyệt)
 
 ### 3.1 Quy tắc chung
@@ -220,7 +222,7 @@ Database-core quy ước không ghi bảng có trigger bằng `prisma.<model>.cr
 
 | Nhóm | Endpoint | Quyền | Gọi tới |
 |---|---|---|---|
-| Sức khỏe | `GET /api/health` → `{status, db, mqtt}`; 200 khi tất cả `ok`/`connected`, ngược lại 503 | Công khai | `SELECT 1`, trạng thái client MQTT. Không trả chi tiết khác |
+| Sức khỏe | `GET /api/health` → `{status, db, mqtt}`; 200 khi tất cả `ok`/`connected`, ngược lại 503. 503: `{"status":"error","db":"ok"\|"down","mqtt":"connected"\|"disconnected"}` | Công khai | `SELECT 1`, trạng thái client MQTT. Không trả chi tiết khác |
 | Xác thực | `POST /api/auth/login` `{username,password}` → `{accessToken, expiresIn, user}` | Công khai | Prisma đọc Users, bcrypt |
 | | `GET /api/auth/me` | Đã đăng nhập | |
 | Người dùng | `GET/POST /api/users`, `GET/PATCH /api/users/:userId` (`fullName`, `email`, `phone`, `role`, `isActive`) | ADMIN | Prisma |
@@ -242,6 +244,7 @@ Database-core quy ước không ghi bảng có trigger bằng `prisma.<model>.cr
 | Đếm chim | `GET /api/houses/:houseId/bird-flow?fromVnDate=&toVnDate=` | như trên | `vw_DailyBirdFlow` |
 | | `GET /api/devices/:deviceId/bird-counts?from=&to=` | | Prisma đọc BirdCounts |
 | AI | `POST /api/ai/bird-counts`, `/predator-detections`, `/heartbeat` (Phần 2) | `X-Service-Key` | |
+| Demo | `POST /api/admin/anomalies/detect` `{"nowUtc"}` → `{"newAlerts":[…cảnh báo 14 khóa…]}` | ADMIN; chỉ khi backend đặt `DEMO_TOOLS=true`, không thì 404 như route không tồn tại | `sp_DetectAnomalies(@NowUtc, @OfflineMinutes = 525600)` |
 | *Dưới ranh giới cắt* | `GET/POST /api/zones/:zoneId/harvests`; `GET /api/houses/:houseId/reports/env-vs-yield?fromVnDate=&toVnDate=` | như trên | Prisma; `sp_Report_EnvStabilityVsYield` |
 
 **Người dùng**
@@ -263,6 +266,8 @@ Database-core quy ước không ghi bảng có trigger bằng `prisma.<model>.cr
 - **Web:** `fetch` kèm token → `blob` → `URL.createObjectURL(blob)` gán cho `<img>`; thu hồi bằng `URL.revokeObjectURL` khi component gỡ.
 - **Mobile:** `<Image source={{ uri, headers: { Authorization: 'Bearer …' } }} />` (React Native `Image` và `expo-image` đều hỗ trợ).
 - Backend không cần cơ chế riêng. Không dùng đường dẫn có chữ ký: tốn khóa HMAC, mốc hết hạn, endpoint cấp chữ ký chỉ để có cache trình duyệt — không cần với lượng ảnh nhỏ.
+
+**Demo** — `nowUtc` bắt buộc `Z`. Cảnh báo tạo ra có `createdAt = nowUtc`. Phát `alert.created` cho từng cảnh báo. Nhịp nền đang chạy thì chờ tối đa 10 giây, quá thì 503 `RETRY_LATER`. Mỗi nhà tối đa một cảnh báo sụt đàn mỗi ngày → mỗi CSDL demo được một lần.
 
 ### 3.4 Định dạng lỗi
 
@@ -304,6 +309,7 @@ Mã HTTP thành công: `POST` tạo tài nguyên (nhà, khu vực, thiết bị,
 | 409 | `CANNOT_MODIFY_SELF`, `LAST_ADMIN` | Quy tắc người dùng ở 3.3 |
 | 413 | `PAYLOAD_TOO_LARGE` | Ảnh vượt `SNAPSHOT_MAX_BYTES`, lô AI vượt 500 phần tử |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | Ảnh không phải JPEG thật |
+| 503 | `RETRY_LATER` | CSDL chưa sẵn sàng hoặc mất kết nối (kể cả lúc khởi động); 1205 sau một lần thử lại |
 
 **Nên có:** giới hạn tần suất `/api/auth/login`.
 
@@ -328,6 +334,7 @@ Mã HTTP thành công: `POST` tạo tài nguyên (nhà, khu vực, thiết bị,
   - Tạo nhà → server cho `user:{ownerId}` và `role:ADMIN` vào `house:{id}` (`socketsJoin`).
   - Nhà ngừng dùng → `socketsLeave` khỏi `house:{id}`.
   - Người dùng bị khóa → `disconnectSockets` phòng `user:{id}`.
+- Đổi vai trò người dùng → server ngắt mọi kết nối của người đó (`disconnectSockets`), client kết nối lại được xếp phòng theo vai trò mới. Lỗi bắt tay gửi `Error` có `data: {code}`, `code` ∈ {`UNAUTHENTICATED`, `RETRY_LATER`}; client đọc `connect_error.data.code`: `UNAUTHENTICATED` → về đăng nhập, `RETRY_LATER` → tự kết nối lại (giãn dần).
 - **Token hết hạn:** khi kết nối, server hẹn giờ ngắt đúng lúc `exp`; client đăng nhập lại rồi kết nối lại.
 - **Client không gửi sự kiện nào lên server**; mọi thao tác qua REST.
 
@@ -337,7 +344,7 @@ Mã HTTP thành công: `POST` tạo tài nguyên (nhà, khu vực, thiết bị,
 2. Ghép kết quả REST với sự kiện đến đồng thời theo quy tắc:
    - **Cảnh báo ghép theo `alertId`:** dữ liệu đến sau thay dữ liệu đến trước; một cảnh báo đã `RESOLVED` không bị dữ liệu `NEW`/`ACK` cũ hơn ghi đè (thứ tự trạng thái chỉ tiến NEW → ACK → RESOLVED).
    - **Số đo ghép theo `at`** cho mỗi (thiết bị, chỉ số): bỏ qua số đo có `at` cũ hơn hoặc bằng cái đang có.
-   - **Trạng thái cơ cấu chấp hành** (`device.state`) ghép theo `at` tương tự.
+   - **Trạng thái cơ cấu chấp hành** (`device.state`): REST `devices` không có mốc thời gian trạng thái nên không ghép theo `at`. Giữ các `device.state` đến trong lúc REST đang tải; REST xong thì áp kết quả REST, rồi áp lại các sự kiện đã giữ theo thứ tự đến; sau đó áp sự kiện trực tiếp. Mỗi sự kiện ghi đè toàn bộ trạng thái (`mode`, `isOn`, `level`), nên áp lại là idempotent.
 3. Nhờ vậy kết quả REST tải chậm không ghi đè sự kiện mới hơn, và ngược lại.
 
 ### 4.2 Sự kiện (server → client, camelCase, luôn có `houseId`)
@@ -413,7 +420,9 @@ Backend đổi PascalCase → camelCase (và `MetricCode` → `metric`, `Recorde
 |---|---|---|
 | `mqtt/` | `readings.json`, `heartbeat.cut.json`, `command.manual.json`, `command.auto.json` | `readings.invalid-missing-z.json`, `readings.invalid-offset.json` (`+07:00`), `readings.invalid-device-mismatch.json`, `readings.invalid-not-array.json` |
 | `ai/` | `bird-counts.json`, `bird-counts.resend-smaller.json` (giữ số lớn), `predator-detection.json` + `snake.jpg`, `predator-detection.cooldown.json`, `predator-detection.low-confidence.json`, `heartbeat.cut.json` | `bird-counts.invalid-window-not-aligned.json` (50014), `bird-counts.invalid-negative.json` (50012), `bird-counts.invalid-missing-z.json`, `predator-detection.invalid-class.json`, `predator-detection.invalid-offset.json`, `predator-detection.invalid-not-jpeg.json` + `not-jpeg.png` (415), `ai.invalid-service-key.json` (401) |
-| `rest/` | `auth-login.json`, `control.manual.json`, `control.auto-without-ison.json`, `alert-ack.json`, `alerts-list.page.json`, `readings-history.json`, `thresholds-put.json`, `health.json`, `harvests-post.cut.json`, `report-env-vs-yield.cut.json` | `auth-login.invalid-credentials.json`, `control.invalid-not-controllable.json` (409), `alert.invalid-transition.json` (409), `readings-history.invalid-range.json` (50041), `readings-history.invalid-missing-z.json`, `readings-history.invalid-offset.json` (`+07:00`), `thresholds-put.invalid-min-max.json` (547), `house.invalid-not-owner.json` (404), `users.invalid-modify-self.json` (409 `CANNOT_MODIFY_SELF`) |
+| `rest/` | `auth-login.json`, `control.manual.json`, `control.auto-without-ison.json`, `alert-ack.json`, `alerts-list.page.json`, `readings-history.json`, `thresholds-put.json`, `health.json`, `harvests-post.cut.json`, `report-env-vs-yield.cut.json` | `auth-login.invalid-credentials.json`, `control.invalid-not-controllable.json` (409), `alert.invalid-transition.json` (409), `readings-history.invalid-range.json` (50041), `readings-history.invalid-missing-z.json`, `readings-history.invalid-offset.json` (`+07:00`), `thresholds-put.invalid-min-max.json` (547), `house.invalid-not-owner.json` (404), `users.invalid-modify-self.json` (409 `CANNOT_MODIFY_SELF`), `health.invalid-db-down.json` (503 `{status:"error"}`), `houses-list.invalid-db-not-ready.json` (503 `RETRY_LATER`), `admin-anomalies-detect.invalid-missing-z.json`, `admin-anomalies-detect.invalid-forbidden.json` (403) |
 | `ws/` | `readings.new.json`, `alert.created.threshold.json`, `alert.created.predator.json`, `alert.updated.json`, `device.state.json`, `birdcount.updated.json` | — |
 
 `LAST_ADMIN` không có fixture: gọi tuần tự thì người gọi luôn là một ADMIN đang hoạt động khác người bị hạ, nên chỉ hai ADMIN hạ nhau **đồng thời** mới gặp — backend kiểm bằng test đồng thời của mình.
+
+Hai fixture `*.invalid-db-*` chạy với backend trỏ CSDL tới cổng không ai nghe (bộ chạy tự đặt); `{{token:…}}` khi đó do bộ chạy tự ký bằng `JWT_SECRET` của `.env.test`.

@@ -6,7 +6,7 @@
 
 **Goal:** Dựng `contracts/` (fixture cho mọi payload MQTT/AI/REST/WebSocket + thư viện thay chỗ giữ chỗ và so khớp + test kiểm fixture khớp hợp đồng) và `infra/mosquitto/` (cấu hình mẫu + hướng dẫn tài khoản), đúng spec integration-contract.
 
-**Architecture:** Fixture là file JSON thuần trong `contracts/fixtures/{mqtt,ai,rest,ws}/`. `contracts/lib/fixtures.mjs` (không phụ thuộc gói nào) thay chỗ giữ chỗ (`{{now}}`, `{{ref:…}}`, …) và so khớp kết quả (`{{any:id}}`, …); backend import thư viện này cho test tích hợp, simulator/AI dùng để kiểm payload tự tạo. `contracts/test/*.test.mjs` chạy bằng `node --test`, kiểm cấu trúc fixture theo các quy tắc của hợp đồng, không cần CSDL hay broker.
+**Architecture:** Fixture là file JSON thuần trong `contracts/fixtures/{mqtt,ai,rest,ws}/`. `contracts/lib/fixtures.mjs` (không phụ thuộc gói nào) thay chỗ giữ chỗ (`{{now}}`, `{{ref:…}}`, …) và so khớp kết quả (`{{any:id}}`, …); backend import thư viện này cho test tích hợp; simulator kiểm **hình dạng** payload tự tạo (spec simulator 3.1); AI viết bằng Python nên chỉ đối chiếu kiểu dữ liệu với fixture (spec ai-vision 1.5). `contracts/test/*.test.mjs` chạy bằng `node --test`, kiểm cấu trúc fixture theo các quy tắc của hợp đồng, không cần CSDL hay broker.
 
 **Tech Stack:** Node.js (≥ 20.19, máy nhóm dùng 25) với `node:test`, `node:assert` — không có dependency; PowerShell 5.1 (sinh ảnh mẫu bằng `System.Drawing`); Mosquitto 2.x cho Windows.
 

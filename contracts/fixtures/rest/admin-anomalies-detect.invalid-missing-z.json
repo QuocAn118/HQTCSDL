@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "path": "/api/admin/anomalies/detect",
+  "headers": {"Authorization": "Bearer {{token:admin}}"},
+  "body": {"nowUtc": "{{now:noZ}}"},
+  "status": 400,
+  "response": {"error": {"code": "VALIDATION_ERROR", "message": "{{any:string}}", "sqlNumber": null, "details": {"fields": ["nowUtc"]}}}
+}
