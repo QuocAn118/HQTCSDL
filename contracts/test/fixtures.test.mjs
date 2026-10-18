@@ -193,6 +193,48 @@ function httpProblems(file, f) {
   return [200, 201].includes(f.status) ? [] : ['fixture hop le phai co status 200 hoac 201'];
 }
 
+// Moi fixture invalid ghim dung loi theo bang spec 4.3 (ma trong ngoac) va B7 (details.fields).
+const INVALID_EXPECTED = {
+  'ai/bird-counts.invalid-window-not-aligned.json': [400, 'VALIDATION_ERROR', 50014, ['windowStart']],
+  'ai/bird-counts.invalid-negative.json': [400, 'VALIDATION_ERROR', 50012, ['in', 'out']],
+  'ai/bird-counts.invalid-missing-z.json': [400, 'VALIDATION_ERROR', null, ['windowStart']],
+  'ai/predator-detection.invalid-class.json': [400, 'VALIDATION_ERROR', null, ['class']],
+  'ai/predator-detection.invalid-offset.json': [400, 'VALIDATION_ERROR', null, ['at']],
+  'ai/predator-detection.invalid-not-jpeg.json': [415, 'UNSUPPORTED_MEDIA_TYPE', null, null],
+  'ai/ai.invalid-service-key.json': [401, 'UNAUTHENTICATED', null, null],
+  'rest/auth-login.invalid-credentials.json': [401, 'UNAUTHENTICATED', null, null],
+  'rest/control.invalid-not-controllable.json': [409, 'DEVICE_NOT_CONTROLLABLE', 50003, null],
+  'rest/alert.invalid-transition.json': [409, 'ALERT_INVALID_TRANSITION', 50021, null],
+  'rest/readings-history.invalid-range.json': [400, 'INVALID_PARAMETER', 50041, null],
+  'rest/readings-history.invalid-missing-z.json': [400, 'VALIDATION_ERROR', null, ['from']],
+  'rest/thresholds-put.invalid-min-max.json': [400, 'CONSTRAINT_VIOLATION', 547, null],
+  'rest/house.invalid-not-owner.json': [404, 'NOT_FOUND', null, null],
+  'rest/users.invalid-modify-self.json': [409, 'CANNOT_MODIFY_SELF', null, null],
+};
+
+test('ai, rest: fixture invalid dung loi spec 4.3, dau vao that su sai', () => {
+  const invalid = ['ai', 'rest'].flatMap((d) => jsonFiles(d).filter(isInvalid).map((f) => `${d}/${f}`));
+  assert.deepEqual(invalid.sort(), Object.keys(INVALID_EXPECTED).sort());
+  for (const [name, [status, code, sqlNumber, fields]] of Object.entries(INVALID_EXPECTED)) {
+    const f = loadFixture(name.replace(/\.json$/, ''));
+    const e = f.response.error;
+    assert.deepEqual([f.status, e.code, e.sqlNumber, e.details?.fields ?? null], [status, code, sqlNumber, fields], name);
+  }
+  // REST: ly do nam o dau vao, kiem dau vao that su sai (AI da kiem o AI_BODY_INVALID).
+  assert.match(loadFixture('rest/readings-history.invalid-missing-z').path, /from=\{\{now[^}]*:noZ\}\}/);
+  const mm = loadFixture('rest/thresholds-put.invalid-min-max').body;
+  assert.ok(mm.minValue >= mm.maxValue, 'min-max: minValue phai >= maxValue');
+  const range = expand(loadFixture('rest/readings-history.invalid-range'), ctx).path;
+  const [from, to] = ['from', 'to'].map((k) => Date.parse(new URLSearchParams(range.split('?')[1]).get(k)));
+  assert.ok(from >= to, 'invalid-range: from phai >= to');
+  assert.equal(loadFixture('rest/auth-login.invalid-credentials').body.password.includes('{{devPassword}}'), false);
+  const self = loadFixture('rest/users.invalid-modify-self');
+  assert.equal(self.path, `/api/users/{{ref:user:${self.headers.Authorization.match(/token:(\w+)/)[1]}}}`, 'modify-self: sua chinh minh');
+  const other = loadFixture('rest/house.invalid-not-owner');
+  const owned = { owner1: 'H1', owner2: 'H2' }[other.headers.Authorization.match(/token:(\w+)/)[1]]; // seed: chu nha
+  assert.ok(owned && !other.path.includes(`{{ref:house:${owned}}}`), 'not-owner: phai doc nha cua nguoi khac');
+});
+
 test('ai, rest: ma HTTP, phan hoi loi, file dinh kem', () => {
   for (const folder of ['ai', 'rest'].filter((x) => EXPECTED[x])) {
     for (const file of jsonFiles(folder)) {
