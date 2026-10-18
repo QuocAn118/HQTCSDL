@@ -2,10 +2,10 @@
   "method": "POST",
   "path": "/api/zones/{{ref:zone:H1-F1}}/harvests",
   "headers": {"Authorization": "Bearer {{token:owner1}}"},
-  "body": {"harvestDate": "2026-09-15", "nestCount": 120, "weightGram": 950.5, "grade": "A"},
+  "body": {"harvestDate": "2026-07-15", "nestCount": 120, "weightGram": 950.5, "grade": "A"},
   "status": 201,
   "response": {
-    "harvestId": "{{any:id}}", "zoneId": "{{ref:zone:H1-F1}}", "harvestDate": "2026-09-15", "nestCount": 120,
+    "harvestId": "{{any:id}}", "zoneId": "{{ref:zone:H1-F1}}", "harvestDate": "2026-07-15", "nestCount": 120,
     "weightGram": 950.5, "grade": "A", "recordedBy": "{{ref:user:owner1}}", "createdAt": "{{any:iso}}"
   }
 }

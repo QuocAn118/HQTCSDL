@@ -314,6 +314,15 @@ test('rest: xac thuc, ma thanh cong, tap khoa phan hoi', () => {
   }
 });
 
+test('rest bao cao: thang thu hoach khong trung thang thu hoach seed', () => {
+  // Seed 90-harvests: H1 F1-F3 ngay 10 thang neo (2026-10) va 2 thang truoc -> trung thang thi bao cao ra them dong.
+  const month = load('rest', 'harvests-post.cut.json').body.harvestDate.slice(0, 7);
+  assert.ok(!['2026-08', '2026-09', '2026-10'].includes(month), `thang ${month} co thu hoach seed`);
+  const report = load('rest', 'report-env-vs-yield.cut.json');
+  assert.deepEqual(report.response.map((r) => r.monthVn), [month]);
+  assert.match(report.path, new RegExp(`fromVnDate=${month}-01&`));
+});
+
 test('mqtt command: khop ket qua control tuong ung', () => {
   for (const [cmd, ctl] of [['command.manual.json', 'rest/control.manual'], ['command.auto.json', 'rest/control.auto-without-ison']]) {
     const c = load('mqtt', cmd);

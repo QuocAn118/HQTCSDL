@@ -1,11 +1,11 @@
 {
   "after": "rest/harvests-post.cut",
   "method": "GET",
-  "path": "/api/houses/{{ref:house:H1}}/reports/env-vs-yield?fromVnDate=2026-09-01&toVnDate=2026-10-01",
+  "path": "/api/houses/{{ref:house:H1}}/reports/env-vs-yield?fromVnDate=2026-07-01&toVnDate=2026-08-01",
   "headers": {"Authorization": "Bearer {{token:owner1}}"},
   "status": 200,
   "response": [{
-    "zoneId": "{{ref:zone:H1-F1}}", "zoneName": "F1", "monthVn": "2026-09",
+    "zoneId": "{{ref:zone:H1-F1}}", "zoneName": "F1", "monthVn": "2026-07",
     "avgTemp": null, "stdevTemp": null, "avgHumid": null, "stdevHumid": null, "pctInRange": null,
     "nestCount": 120, "weightGram": 950.5
   }]
