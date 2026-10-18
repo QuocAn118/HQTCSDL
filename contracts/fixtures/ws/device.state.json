@@ -1,0 +1,8 @@
+{
+  "after": "rest/control.manual",
+  "event": "device.state",
+  "payload": {
+    "deviceId": "{{ref:device:H1-F1-FAN}}", "deviceCode": "H1-F1-FAN", "houseId": "{{ref:house:H1}}", "zoneId": "{{ref:zone:H1-F1}}",
+    "mode": "MANUAL", "isOn": true, "level": 80, "source": "MANUAL", "at": "{{any:iso}}"
+  }
+}

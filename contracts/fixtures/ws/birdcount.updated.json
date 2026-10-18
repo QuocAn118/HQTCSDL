@@ -1,0 +1,5 @@
+{
+  "after": "ai/bird-counts",
+  "event": "birdcount.updated",
+  "payload": {"houseId": "{{ref:house:H1}}", "cameraId": "{{ref:device:H1-F0-CAMERA}}"}
+}

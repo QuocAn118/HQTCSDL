@@ -1,0 +1,5 @@
+{
+  "after": "rest/alert-ack",
+  "event": "alert.updated",
+  "payload": {"alertId": "{{ref:alert:H1-F3-HUMID}}", "houseId": "{{ref:house:H1}}", "status": "ACK", "resolvedAt": null, "resolvedBy": null}
+}

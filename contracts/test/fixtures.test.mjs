@@ -30,6 +30,10 @@ const EXPECTED = {
     'readings-history.invalid-range.json', 'readings-history.invalid-missing-z.json',
     'thresholds-put.invalid-min-max.json', 'house.invalid-not-owner.json', 'users.invalid-modify-self.json',
   ],
+  ws: [
+    'readings.new.json', 'alert.created.threshold.json', 'alert.created.predator.json',
+    'alert.updated.json', 'device.state.json', 'birdcount.updated.json',
+  ],
 };
 
 const SHAPE = {
@@ -321,4 +325,36 @@ test('mqtt command: khop ket qua control tuong ung', () => {
   }
 });
 
-// <!-- TEST-APPEND -->
+// ---------- WebSocket (spec 4.2) ----------
+const WS_PAYLOAD_KEYS = {
+  'readings.new': ['houseId', 'readings'],
+  'alert.created': ['alert'],
+  'alert.updated': ['alertId', 'houseId', 'status', 'resolvedAt', 'resolvedBy'],
+  'device.state': ['deviceId', 'deviceCode', 'houseId', 'zoneId', 'mode', 'isOn', 'level', 'source', 'at'],
+  'birdcount.updated': ['houseId', 'cameraId'],
+};
+
+test('ws: moi su kien co fixture, ten file, tap khoa, luon co houseId', () => {
+  const events = jsonFiles('ws').map((file) => load('ws', file).event);
+  assert.deepEqual([...new Set(events)].sort(), Object.keys(WS_PAYLOAD_KEYS).sort(), 'moi su kien spec 4.2 co it nhat mot fixture');
+  for (const file of jsonFiles('ws')) {
+    const f = load('ws', file);
+    assert.ok(file.startsWith(`${f.event}.`), `${file}: ten file bat dau bang ten su kien`);
+    assert.ok(f.after, `${file}: phai co after (hanh dong sinh ra su kien)`);
+    assert.ok(sameKeys(f.payload, WS_PAYLOAD_KEYS[f.event] ?? []), `${file}: khoa payload`);
+    const houseId = f.event === 'alert.created' ? f.payload.alert.houseId : f.payload.houseId;
+    assert.match(String(houseId), /^\{\{ref:house:H\d\}\}$/, `${file}: phai co houseId de chon phong house:{id}`);
+    if (f.event === 'alert.created') assert.deepEqual(Object.keys(f.payload.alert), ALERT_KEYS, `${file}: 14 khoa canh bao, khong co snapshotPath`);
+    if (f.event === 'readings.new') {
+      for (const r of f.payload.readings) {
+        assert.ok(sameKeys(r, ['deviceId', 'deviceCode', 'zoneId', 'metric', 'value', 'at']), `${file}: khoa so do`);
+      }
+    }
+  }
+});
+
+test('ws readings.new: dung cac so do mqtt/readings da gui, cung thu tu', () => {
+  const sent = loadFixture('mqtt/readings').payload;
+  const got = load('ws', 'readings.new.json').payload.readings;
+  assert.deepEqual(got.map((r) => [r.deviceCode, r.metric, r.value, r.at]), sent.map((r) => [r.device, r.metric, r.value, r.at]));
+});

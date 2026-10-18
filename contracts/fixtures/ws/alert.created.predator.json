@@ -1,0 +1,12 @@
+{
+  "after": "ai/predator-detection",
+  "event": "alert.created",
+  "payload": {
+    "alert": {
+      "alertId": "{{any:id}}", "houseId": "{{ref:house:H1}}", "zoneId": "{{ref:zone:H1-F0}}",
+      "deviceId": "{{ref:device:H1-F0-CAMERA}}", "alertType": "PREDATOR", "severity": "CRITICAL",
+      "metricCode": null, "value": null, "detectedClass": "snake", "confidence": 0.87, "hasSnapshot": true,
+      "message": "Phát hiện rắn tại H1-F0-CAMERA (độ tin cậy 87.0%)", "status": "NEW", "createdAt": "{{now}}"
+    }
+  }
+}
