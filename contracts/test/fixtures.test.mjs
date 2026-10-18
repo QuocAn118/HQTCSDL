@@ -173,7 +173,7 @@ test('mqtt: fixture khong hop le bi bat dung ly do', () => {
 
 // ---------- Loi HTTP (bang doi ma spec 3.5) ----------
 const SQL_ERRORS = {
-  50003: [409, 'DEVICE_NOT_CONTROLLABLE'], 50010: [404, 'CAMERA_NOT_FOUND'],
+  50001: [500, 'INTERNAL'], 50002: [500, 'INTERNAL'], 50003: [409, 'DEVICE_NOT_CONTROLLABLE'], 50010: [404, 'CAMERA_NOT_FOUND'],
   50012: [400, 'VALIDATION_ERROR'], 50013: [400, 'VALIDATION_ERROR'], 50014: [400, 'VALIDATION_ERROR'],
   50020: [404, 'ALERT_NOT_FOUND'], 50021: [409, 'ALERT_INVALID_TRANSITION'], 50030: [400, 'INVALID_JSON'],
   50040: [400, 'INVALID_PARAMETER'], 50041: [400, 'INVALID_PARAMETER'], 50042: [400, 'INVALID_PARAMETER'],
@@ -255,6 +255,13 @@ test('ai, rest: fixture invalid dung loi spec 4.3, dau vao that su sai', () => {
   const other = loadFixture('rest/house.invalid-not-owner');
   const owned = { owner1: 'H1', owner2: 'H2' }[other.headers.Authorization.match(/token:(\w+)/)[1]]; // seed: chu nha
   assert.ok(owned && !other.path.includes(`{{ref:house:${owned}}}`), 'not-owner: phai doc nha cua nguoi khac');
+});
+
+test('bang 3.5: 50001, 50002 la loi backend -> 500 INTERNAL', () => {
+  for (const sqlNumber of [50001, 50002]) {
+    const f = { status: 500, response: { error: { code: 'INTERNAL', message: '{{any:string}}', sqlNumber, details: null } } };
+    assert.deepEqual(errorProblems(f), [], String(sqlNumber));
+  }
 });
 
 test('ai, rest: ma HTTP, phan hoi loi, file dinh kem', () => {
