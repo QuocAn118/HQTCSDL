@@ -272,6 +272,10 @@ Database-core quy ước không ghi bảng có trigger bằng `prisma.<model>.cr
 
 `sqlNumber` = `null` khi lỗi không đến từ SQL. **Không bao giờ trả nguyên văn thông báo lỗi SQL** cho client.
 
+`details`: lỗi `VALIDATION_ERROR` → `{"fields": [<tên trường lá>, …]}` (DTO: các trường sai; SQL 50012 → `["in","out"]`, 50013 → `["class"]`, 50014 → `["windowStart"]`); mã khác → `null`.
+
+Mã HTTP thành công: `POST` tạo tài nguyên (nhà, khu vực, thiết bị, người dùng, thu hoạch) → **201**; `POST` hành động (login, control, reset-password, endpoint AI) → **200**; còn lại 200.
+
 ### 3.5 Bảng đổi mã lỗi SQL → HTTP
 
 | Mã SQL | HTTP | `code` | Ghi chú |
@@ -382,10 +386,32 @@ Backend đổi PascalCase → camelCase (và `MetricCode` → `metric`, `Recorde
 4. **Giá trị khớp dữ liệu mẫu** (H1, H2, `H1-F1-SENSOR`, …) để backend chạy test tích hợp trên `SwiftletCare_Test`. Fixture cảnh báo ngưỡng mới dùng cặp (khu vực, chỉ số) **chưa có cảnh báo mở trong seed** (VD H1-F1 TEMP), không dùng H1-F3 HUMID.
 5. **Ảnh mẫu** (`snake.jpg`, `not-jpeg.png`) là **ảnh nhỏ tự tạo** (vài KB, VD sinh bằng script), không lấy từ internet.
 6. Fixture thuộc phần dưới ranh giới cắt có hậu tố `.cut` trong tên (VD `heartbeat.cut.json`) để bỏ được nếu cắt.
+7. **Chỗ giữ chỗ bổ sung** (chốt khi dựng fixture):
+
+   | Chỗ giữ chỗ | Thay bằng |
+   |---|---|
+   | `{{ref:house:H1}}`, `{{ref:zone:H1-F1}}`, `{{ref:device:H1-F1-FAN}}`, `{{ref:user:owner1}}` | Id của đối tượng seed đó |
+   | `{{ref:alert:H1-F3-HUMID}}` | Id cảnh báo THRESHOLD đang mở của (khu vực, chỉ số) |
+   | `{{token:<username>}}` | JWT của người dùng seed |
+   | `{{serviceKey}}`, `{{devPassword}}` | Khóa dịch vụ AI, mật khẩu dev — bộ chạy test lấy từ `.env` |
+
+   - Chuỗi chỉ gồm một `{{ref:…}}` → **số**; nằm trong chuỗi dài hơn (đường dẫn, query) → chữ số.
+   - Mốc thời gian: `{{now|window}}` + tùy chọn `±N` đơn vị `s|m|h` + tùy chọn `:noZ` hoặc `:+07:00` (VD `{{now+1m}}`, `{{window:noZ}}`).
+   - Mốc thời gian trong kết quả mong đợi so theo **thời điểm** (`…:00Z` khớp `…:00.000Z`).
+8. **Multipart:** `"body": {"metadata": {…}, "image": "@snake.jpg"}` — `metadata` gửi dạng chuỗi JSON; giá trị bắt đầu bằng `@` là file cùng thư mục.
+9. **`after`** ghi `<thư mục>/<tên file không .json>` (VD `"rest/control.manual"`), được phép trỏ sang thư mục khác; cả chuỗi `after` chạy trong một ca test và dùng **một** `now`.
+10. **Thư viện:** `contracts/lib/fixtures.mjs` (`expand`, `match`, `loadChain`) là cách duy nhất để thay chỗ giữ chỗ và so khớp — backend, simulator, AI import thư viện này, không tự viết lại.
+11. Dạng phản hồi REST theo cột CSDL đổi camelCase: `user` = `{userId, username, fullName, email, phone, role, isActive}`; ngưỡng = `{zoneId, metricCode, minValue, maxValue, targetValue, updatedBy, updatedAt}`; lịch sử số đo = mảng `{bucketUtc, avgValue, minValue, maxValue}`; `PATCH /api/alerts/:id` = `{alertId, houseId, zoneId, alertType, status, resolvedAt, resolvedBy}`; `POST /api/ai/heartbeat` = `{accepted, rejected}`; thu hoạch = `{harvestId, zoneId, harvestDate, nestCount, weightGram, grade, recordedBy, createdAt}`; báo cáo = mảng cột `sp_Report_EnvStabilityVsYield` camelCase; mục trong danh sách cảnh báo = 14 khóa cảnh báo.
+12. **Mỗi chuỗi `after` chạy trên CSDL vừa phục hồi về dữ liệu mẫu** — các fixture sửa trạng thái của nhau (`rest/alert-ack` đổi cảnh báo seed, `mqtt/readings.invalid-*` thêm số đo cùng khu vực với `rest/readings-history`, chuỗi AI thêm cảnh báo làm đổi `rest/alerts-list.page`):
+    - Sau `deploy.ps1 -Database SwiftletCare_Test -Reset` (ngày neo mặc định), backup **một lần**: `BACKUP DATABASE SwiftletCare_Test TO DISK = N'SwiftletCare_Test_seed.bak' WITH INIT, COPY_ONLY;` (tên file không có đường dẫn → nằm trong thư mục backup mặc định của SQL Server, tài khoản dịch vụ SQL Server ghi được).
+    - **Trước mỗi chuỗi**: `ALTER DATABASE SwiftletCare_Test SET SINGLE_USER WITH ROLLBACK IMMEDIATE; RESTORE DATABASE SwiftletCare_Test FROM DISK = N'SwiftletCare_Test_seed.bak' WITH REPLACE; ALTER DATABASE SwiftletCare_Test SET MULTI_USER;` — chạy từ kết nối vào `master`. Kết nối cũ của backend bị ngắt; bộ chạy test mở lại pool (hoặc khởi động lại backend) sau khi phục hồi.
+    - Không chạy hai chuỗi song song trên cùng một CSDL.
 
 | Thư mục | Hợp lệ | Không hợp lệ |
 |---|---|---|
 | `mqtt/` | `readings.json`, `heartbeat.cut.json`, `command.manual.json`, `command.auto.json` | `readings.invalid-missing-z.json`, `readings.invalid-offset.json` (`+07:00`), `readings.invalid-device-mismatch.json`, `readings.invalid-not-array.json` |
 | `ai/` | `bird-counts.json`, `bird-counts.resend-smaller.json` (giữ số lớn), `predator-detection.json` + `snake.jpg`, `predator-detection.cooldown.json`, `predator-detection.low-confidence.json`, `heartbeat.cut.json` | `bird-counts.invalid-window-not-aligned.json` (50014), `bird-counts.invalid-negative.json` (50012), `bird-counts.invalid-missing-z.json`, `predator-detection.invalid-class.json`, `predator-detection.invalid-offset.json`, `predator-detection.invalid-not-jpeg.json` + `not-jpeg.png` (415), `ai.invalid-service-key.json` (401) |
-| `rest/` | `auth-login.json`, `control.manual.json`, `control.auto-without-ison.json`, `alert-ack.json`, `alerts-list.page.json`, `readings-history.json`, `thresholds-put.json`, `health.json`, `harvests-post.cut.json`, `report-env-vs-yield.cut.json` | `auth-login.invalid-credentials.json`, `control.invalid-not-controllable.json` (409), `alert.invalid-transition.json` (409), `readings-history.invalid-range.json` (50041), `readings-history.invalid-missing-z.json`, `thresholds-put.invalid-min-max.json` (547), `house.invalid-not-owner.json` (404), `users.invalid-last-admin.json` (409) |
+| `rest/` | `auth-login.json`, `control.manual.json`, `control.auto-without-ison.json`, `alert-ack.json`, `alerts-list.page.json`, `readings-history.json`, `thresholds-put.json`, `health.json`, `harvests-post.cut.json`, `report-env-vs-yield.cut.json` | `auth-login.invalid-credentials.json`, `control.invalid-not-controllable.json` (409), `alert.invalid-transition.json` (409), `readings-history.invalid-range.json` (50041), `readings-history.invalid-missing-z.json`, `thresholds-put.invalid-min-max.json` (547), `house.invalid-not-owner.json` (404), `users.invalid-modify-self.json` (409 `CANNOT_MODIFY_SELF`) |
 | `ws/` | `readings.new.json`, `alert.created.threshold.json`, `alert.created.predator.json`, `alert.updated.json`, `device.state.json`, `birdcount.updated.json` | — |
+
+`LAST_ADMIN` không có fixture: gọi tuần tự thì người gọi luôn là một ADMIN đang hoạt động khác người bị hạ, nên chỉ hai ADMIN hạ nhau **đồng thời** mới gặp — backend kiểm bằng test đồng thời của mình.

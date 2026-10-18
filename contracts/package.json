@@ -1,0 +1,14 @@
+{
+  "name": "swiftletcare-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fixture và thư viện so khớp hợp đồng tích hợp SwiftletCare",
+  "exports": "./lib/fixtures.mjs",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}
