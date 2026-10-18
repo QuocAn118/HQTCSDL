@@ -1,0 +1,8 @@
+{
+  "method": "PATCH",
+  "path": "/api/users/{{ref:user:admin}}",
+  "headers": {"Authorization": "Bearer {{token:admin}}"},
+  "body": {"isActive": false},
+  "status": 409,
+  "response": {"error": {"code": "CANNOT_MODIFY_SELF", "message": "{{any:string}}", "sqlNumber": null, "details": null}}
+}

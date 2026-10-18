@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "path": "/api/devices/{{ref:device:H1-F1-FAN}}/control",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "body": {"isOn": true, "level": 80, "mode": "MANUAL", "reason": "Thử điều khiển tay"},
+  "status": 200,
+  "response": {"changed": true, "deviceCode": "H1-F1-FAN", "mode": "MANUAL", "isOn": true, "level": 80}
+}

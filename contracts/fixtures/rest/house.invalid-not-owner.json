@@ -1,0 +1,7 @@
+{
+  "method": "GET",
+  "path": "/api/houses/{{ref:house:H2}}",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "status": 404,
+  "response": {"error": {"code": "NOT_FOUND", "message": "{{any:string}}", "sqlNumber": null, "details": null}}
+}

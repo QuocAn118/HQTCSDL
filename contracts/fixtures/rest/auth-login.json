@@ -1,0 +1,14 @@
+{
+  "method": "POST",
+  "path": "/api/auth/login",
+  "body": {"username": "owner1", "password": "{{devPassword}}"},
+  "status": 200,
+  "response": {
+    "accessToken": "{{any:string}}",
+    "expiresIn": 28800,
+    "user": {
+      "userId": "{{ref:user:owner1}}", "username": "owner1", "fullName": "Chủ nhà yến H1",
+      "email": "owner1@swiftletcare.local", "phone": null, "role": "OWNER", "isActive": true
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "method": "PATCH",
+  "path": "/api/alerts/{{ref:alert:H1-F3-HUMID}}",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "body": {"status": "ACK", "note": "Đã kiểm tra"},
+  "status": 200,
+  "response": {
+    "alertId": "{{ref:alert:H1-F3-HUMID}}", "houseId": "{{ref:house:H1}}", "zoneId": "{{ref:zone:H1-F3}}",
+    "alertType": "THRESHOLD", "status": "ACK", "resolvedAt": null, "resolvedBy": null
+  }
+}

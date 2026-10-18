@@ -12,6 +12,7 @@ const EXPECTED = {
     'readings.json', 'heartbeat.cut.json',
     'readings.invalid-missing-z.json', 'readings.invalid-offset.json',
     'readings.invalid-device-mismatch.json', 'readings.invalid-not-array.json',
+    'command.manual.json', 'command.auto.json',
   ],
   ai: [
     'bird-counts.json', 'bird-counts.resend-smaller.json',
@@ -20,6 +21,14 @@ const EXPECTED = {
     'bird-counts.invalid-window-not-aligned.json', 'bird-counts.invalid-negative.json', 'bird-counts.invalid-missing-z.json',
     'predator-detection.invalid-class.json', 'predator-detection.invalid-offset.json',
     'predator-detection.invalid-not-jpeg.json', 'not-jpeg.png', 'ai.invalid-service-key.json',
+  ],
+  rest: [
+    'auth-login.json', 'control.manual.json', 'control.auto-without-ison.json', 'alert-ack.json',
+    'alerts-list.page.json', 'readings-history.json', 'thresholds-put.json', 'health.json',
+    'harvests-post.cut.json', 'report-env-vs-yield.cut.json',
+    'auth-login.invalid-credentials.json', 'control.invalid-not-controllable.json', 'alert.invalid-transition.json',
+    'readings-history.invalid-range.json', 'readings-history.invalid-missing-z.json',
+    'thresholds-put.invalid-min-max.json', 'house.invalid-not-owner.json', 'users.invalid-modify-self.json',
   ],
 };
 
@@ -254,6 +263,62 @@ test('ai: anh mau - snake.jpg la JPEG that <= 2 MB, not-jpeg.png khong phai JPEG
   assert.ok(jpg.length > 0 && jpg.length <= 2 * 1024 * 1024);
   const png = readFileSync(join(FIXTURES_DIR, 'ai', 'not-jpeg.png'));
   assert.deepEqual([...png.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
+});
+
+// ---------- REST ----------
+const ALERT_KEYS = ['alertId', 'houseId', 'zoneId', 'deviceId', 'alertType', 'severity', 'metricCode', 'value',
+  'detectedClass', 'confidence', 'hasSnapshot', 'message', 'status', 'createdAt'];
+const USER_KEYS = ['userId', 'username', 'fullName', 'email', 'phone', 'role', 'isActive'];
+const CONTROL_KEYS = ['changed', 'deviceCode', 'mode', 'isOn', 'level'];
+// Phan hoi la object: tap khoa (bo sung hop dong B10).
+const REST_OBJECT_KEYS = {
+  'auth-login.json': ['accessToken', 'expiresIn', 'user'],
+  'control.manual.json': CONTROL_KEYS,
+  'control.auto-without-ison.json': CONTROL_KEYS,
+  'alert-ack.json': ['alertId', 'houseId', 'zoneId', 'alertType', 'status', 'resolvedAt', 'resolvedBy'],
+  'alerts-list.page.json': ['items', 'nextBefore'],
+  'thresholds-put.json': ['zoneId', 'metricCode', 'minValue', 'maxValue', 'targetValue', 'updatedBy', 'updatedAt'],
+  'health.json': ['status', 'db', 'mqtt'],
+  'harvests-post.cut.json': ['harvestId', 'zoneId', 'harvestDate', 'nestCount', 'weightGram', 'grade', 'recordedBy', 'createdAt'],
+};
+// Phan hoi la mang dong: tap khoa moi dong.
+const REST_ROW_KEYS = {
+  'readings-history.json': ['bucketUtc', 'avgValue', 'minValue', 'maxValue'],
+  'report-env-vs-yield.cut.json': ['zoneId', 'zoneName', 'monthVn', 'avgTemp', 'stdevTemp', 'avgHumid', 'stdevHumid',
+    'pctInRange', 'nestCount', 'weightGram'],
+};
+const REST_CREATED = ['harvests-post.cut.json']; // B8: POST tao tai nguyen -> 201
+const REST_PUBLIC = ['auth-login.json', 'auth-login.invalid-credentials.json', 'health.json'];
+
+test('rest: xac thuc, ma thanh cong, tap khoa phan hoi', () => {
+  for (const file of jsonFiles('rest')) {
+    const f = load('rest', file);
+    if (REST_PUBLIC.includes(file)) assert.equal(f.headers, undefined, `${file}: route cong khai khong gui header`);
+    else assert.match(f.headers?.Authorization ?? '', /^Bearer \{\{token:\w+\}\}$/, `${file}: can Authorization: Bearer {{token:…}}`);
+    if (isInvalid(file)) continue;
+    assert.equal(f.status, REST_CREATED.includes(file) ? 201 : 200, `${file}: ma thanh cong`);
+    if (REST_OBJECT_KEYS[file]) {
+      assert.ok(sameKeys(f.response, REST_OBJECT_KEYS[file]), `${file}: khoa phan hoi`);
+    } else {
+      assert.ok(REST_ROW_KEYS[file], `${file}: chua khai bao dang phan hoi trong test`);
+      assert.ok(Array.isArray(f.response) && f.response.every((r) => sameKeys(r, REST_ROW_KEYS[file])), `${file}: khoa tung dong`);
+    }
+  }
+  assert.ok(sameKeys(load('rest', 'auth-login.json').response.user, USER_KEYS), 'auth-login: khoa user');
+  for (const item of load('rest', 'alerts-list.page.json').response.items) {
+    assert.deepEqual(Object.keys(item), ALERT_KEYS, 'alerts-list: 14 khoa canh bao dung thu tu');
+  }
+});
+
+test('mqtt command: khop ket qua control tuong ung', () => {
+  for (const [cmd, ctl] of [['command.manual.json', 'rest/control.manual'], ['command.auto.json', 'rest/control.auto-without-ison']]) {
+    const c = load('mqtt', cmd);
+    const r = loadFixture(ctl).response;
+    assert.equal(c.after, ctl, `${cmd}: after`);
+    assert.equal(c.topic, `swiftlet/devices/${r.deviceCode}/command`, `${cmd}: topic tu deviceCode`);
+    assert.deepEqual({ isOn: c.payload.isOn, level: c.payload.level, mode: c.payload.mode },
+      { isOn: r.isOn, level: r.level, mode: r.mode }, `${cmd}: payload = ket qua sp_SetActuator`);
+  }
 });
 
 // <!-- TEST-APPEND -->

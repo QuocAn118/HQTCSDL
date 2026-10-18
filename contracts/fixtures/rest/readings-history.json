@@ -1,0 +1,8 @@
+{
+  "after": "mqtt/readings",
+  "method": "GET",
+  "path": "/api/zones/{{ref:zone:H1-F1}}/readings?metric=TEMP&from={{now-59m}}&to={{now+1m}}&bucketMinutes=60",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "status": 200,
+  "response": [{"bucketUtc": "{{now-59m}}", "avgValue": 31.2, "minValue": 31.2, "maxValue": 31.2}]
+}

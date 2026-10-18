@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "path": "/api/devices/{{ref:device:H1-F1-SENSOR}}/control",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "body": {"isOn": true, "mode": "MANUAL"},
+  "status": 409,
+  "response": {"error": {"code": "DEVICE_NOT_CONTROLLABLE", "message": "{{any:string}}", "sqlNumber": 50003, "details": null}}
+}
