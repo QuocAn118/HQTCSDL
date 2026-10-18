@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { FIXTURES_DIR, baseNow, expand, loadFixture } from '../lib/fixtures.mjs';
+import { FIXTURES_DIR, baseNow, expand, loadChain, loadFixture } from '../lib/fixtures.mjs';
 import { SEED_REFS } from '../lib/seed-refs.mjs';
 
 // Danh sach file theo bang fixture spec 4.3; moi task them thu muc / file cua minh.
@@ -97,6 +97,14 @@ for (const folder of Object.keys(EXPECTED)) {
     });
   }
 }
+
+test('chuoi after: moi fixture nap duoc ca chuoi, khong vong lap, expand chung mot ctx', () => {
+  for (const folder of Object.keys(EXPECTED)) {
+    for (const file of jsonFiles(folder)) {
+      for (const { fixture } of loadChain(`${folder}/${file.replace(/\.json$/, '')}`)) expand(fixture, ctx);
+    }
+  }
+});
 
 // ---------- MQTT ----------
 const MQTT_TOPIC = /^swiftlet\/devices\/([A-Z0-9-]+)\/(readings|heartbeat|command)$/;
