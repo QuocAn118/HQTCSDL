@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Người thực thi:** TV1, theo cách Native (`superpowers:executing-plans`) trên máy mình. Việc H1 (Task 9) và H2 (khung `run-two-sessions.ps1` ở Task 5) có thể giao người hỗ trợ theo `plans/README.md` (**chưa xác nhận**); TV1 duyệt PR của họ.
+**Người thực thi:** TV1, theo cách Native (`superpowers:executing-plans`) trên máy mình. Việc H1 (Task 9) có thể giao người hỗ trợ theo `plans/README.md` (**chưa xác nhận**); TV1 duyệt PR của họ. H2 (khung `run-two-sessions.ps1` ở Task 5) do TV1 tự làm.
 
 ## Trước khi chạy
 
@@ -363,7 +363,7 @@ Báo TV2 (21–22/10):
 - [ ] **Step 1: Kiểm D5**
 
 Run: `Select-String -Path backend/.env.test.example -Pattern 'DB_ADMIN_USER'` và đọc trình chạy Task 22 trong `backend/`.
-Expected: có `DB_ADMIN_USER`; `RESTORE` dùng tài khoản quản trị. Nếu chưa có thì dừng task, ghi A9 = "chưa xong ngày …", báo TV2 và nhóm trưởng. Theo spec A9, backend tạm chạy `swiftlet_dev`.
+Expected: có `DB_ADMIN_USER`; `RESTORE` dùng tài khoản quản trị. Nếu chưa có thì dừng task, ghi A9 = "chưa xong ngày …", báo TV2 (= nhóm trưởng). Theo spec A9, backend tạm chạy `swiftlet_dev`.
 
 - [ ] **Step 2: Chạy `npm run test:contract` (cùng TV2, tắt backend dev và simulator trước)**
 
