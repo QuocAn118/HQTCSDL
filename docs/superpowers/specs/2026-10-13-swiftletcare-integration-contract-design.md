@@ -276,6 +276,8 @@ Database-core quy ước không ghi bảng có trigger bằng `prisma.<model>.cr
 
 Mã HTTP thành công: `POST` tạo tài nguyên (nhà, khu vực, thiết bị, người dùng, thu hoạch) → **201**; `POST` hành động (login, control, reset-password, endpoint AI) → **200**; còn lại 200.
 
+`expiresIn` (phản hồi `POST /api/auth/login`) tính bằng giây.
+
 ### 3.5 Bảng đổi mã lỗi SQL → HTTP
 
 | Mã SQL | HTTP | `code` | Ghi chú |
