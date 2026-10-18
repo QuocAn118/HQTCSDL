@@ -378,3 +378,18 @@ test('ws readings.new: dung cac so do mqtt/readings da gui, cung thu tu', () => 
   const got = load('ws', 'readings.new.json').payload.readings;
   assert.deepEqual(got.map((r) => [r.deviceCode, r.metric, r.value, r.at]), sent.map((r) => [r.device, r.metric, r.value, r.at]));
 });
+
+test('ws: gia tri khop fixture sinh ra su kien', () => {
+  const ctl = loadFixture('rest/control.manual').response;
+  const ds = load('ws', 'device.state.json').payload;
+  assert.deepEqual([ds.deviceCode, ds.mode, ds.isOn, ds.level], [ctl.deviceCode, ctl.mode, ctl.isOn, ctl.level], 'device.state = rest/control.manual');
+  const ack = loadFixture('rest/alert-ack').response;
+  const up = load('ws', 'alert.updated.json').payload;
+  for (const k of ['alertId', 'houseId', 'status', 'resolvedAt', 'resolvedBy']) assert.equal(up[k], ack[k], `alert.updated.${k} = rest/alert-ack`);
+  const det = loadFixture('ai/predator-detection').body.metadata;
+  const pa = load('ws', 'alert.created.predator.json').payload.alert;
+  assert.deepEqual([pa.detectedClass, pa.confidence, pa.createdAt], [det.class, det.confidence, det.at], 'alert.created.predator = ai/predator-detection');
+  const temp = loadFixture('mqtt/readings').payload.find((r) => r.metric === 'TEMP');
+  const ta = load('ws', 'alert.created.threshold.json').payload.alert;
+  assert.deepEqual([ta.metricCode, ta.value], [temp.metric, temp.value], 'alert.created.threshold = mqtt/readings TEMP');
+});
