@@ -44,3 +44,30 @@ Chưa ghi nhận lỗi SQL Server 334.
 Quyết định: Có thể sử dụng Prisma create trong trường hợp
 đã kiểm chứng. Các thao tác cập nhật có trigger cần tiếp tục
 kiểm tra khi triển khai trigger nghiệp vụ thực tế.
+
+
+
+## R3 – Prisma gọi Stored Procedure
+
+- Trạng thái: PASS
+- Prisma 7.10.0 với adapter-mssql gọi thành công `dbo.sp_IngestReadings`.
+- Stored procedure trả về kết quả gồm Received, Accepted, Duplicates, Rejected, AcceptedJson, NewAlertsJson, ResolvedAlertIdsJson.
+- Thử truy vấn hai tập kết quả:
+  `SELECT 1 AS a; SELECT 2 AS b;`
+- Kết quả thực tế: `[{"a":1}]`.
+- Kết luận: Backend cần thiết kế stored procedure trả về một tập kết quả duy nhất.
+
+## R6 – Kiểm chứng DATETIME2 và UTC
+
+- Trạng thái: PASS
+- Adapter cấu hình `options.useUTC = true`.
+- Giá trị kiểm thử: `2026-10-13T10:00:07Z`.
+- Prisma đọc lại: `2026-10-13T10:00:07.000Z`.
+- Kết quả: DUNG.
+- Kết luận: Backend sử dụng `useUTC: true` để đọc thời gian theo UTC.
+
+## Decimal
+
+- Kiểu trả về thực tế: Decimal2.
+- JSON.stringify: `{"v":"28.5"}`.
+- Backend cần chuyển Decimal thành number khi API yêu cầu giá trị số.
