@@ -54,6 +54,7 @@ model Zones {
   Thresholds Thresholds[]
   Alerts     Alerts[]
   Harvests   Harvests[]
+  NestLogs NestLogs[]
 
   @@unique([HouseId, Name])
   @@unique([ZoneId, HouseId])
@@ -216,5 +217,19 @@ model Harvests {
   Recorder Users @relation(fields: [RecordedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([ZoneId, HarvestDate])
+}
+
+
+
+model NestLogs {
+  ZoneId      Int
+  WeekStart   DateTime @db.Date
+  ActiveNests Int
+  NewNests    Int
+  Note        String?  @db.NVarChar(500)
+
+  Zone Zones @relation(fields: [ZoneId], references: [ZoneId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([ZoneId, WeekStart])
 }
 
