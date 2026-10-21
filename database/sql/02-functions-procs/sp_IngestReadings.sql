@@ -158,13 +158,42 @@ BEGIN
         GROUP BY DeviceId
     ) a ON a.DeviceId = d.DeviceId;
 
+    
+    -- Luu cac canh bao DEVICE_OFFLINE dang mo
+    DECLARE @OfflineOpen TABLE (
+        AlertId INT NOT NULL
+    );
+
+    INSERT @OfflineOpen (AlertId)
+    SELECT a.AlertId
+    FROM dbo.Alerts a WITH (UPDLOCK, HOLDLOCK)
+    WHERE a.AlertType = 'DEVICE_OFFLINE'
+      AND a.Status <> 'RESOLVED'
+      AND a.DeviceId IN (
+          SELECT DeviceId
+          FROM #In
+          WHERE Status = 'ACCEPTED'
+      );
+
+    -- Chuyen thiet bi ve ONLINE khi nhan du lieu hop le
     UPDATE d
     SET Status = 'ONLINE'
     FROM dbo.Devices d
     WHERE d.Status <> 'ONLINE'
       AND d.DeviceId IN (
-          SELECT DeviceId FROM #In WHERE Status = 'ACCEPTED'
+          SELECT DeviceId
+          FROM #In
+          WHERE Status = 'ACCEPTED'
       );
+
+    -- Lay cac AlertId da duoc trigger tu dong dong
+    INSERT @Resolved (AlertId)
+    SELECT a.AlertId
+    FROM dbo.Alerts a
+    JOIN @OfflineOpen o
+        ON o.AlertId = a.AlertId
+    WHERE a.Status = 'RESOLVED';
+
 
     INSERT #Eval
         (ZoneId, HouseId, MetricCode, Value, MinValue, MaxValue, H)

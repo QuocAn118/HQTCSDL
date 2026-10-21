@@ -147,6 +147,45 @@ BEGIN
 
     -- Chuc nang OFFLINE se bo sung o Task 15
 
+
+    
+    -- ===== OFFLINE (muc 11) =====
+    -- Luu moc AlertId truoc khi danh dau thiet bi OFFLINE
+    DECLARE @MaxAlertBefore INT = ISNULL(
+        (SELECT MAX(AlertId) FROM dbo.Alerts),
+        0
+    );
+
+    -- Luu danh sach thiet bi vua bi danh dau OFFLINE
+    DECLARE @Marked TABLE (
+        DeviceId INT NOT NULL
+    );
+
+    -- Thiet bi dang ONLINE nhung qua thoi gian heartbeat
+    -- se duoc chuyen sang OFFLINE
+    UPDATE dbo.Devices
+    SET Status = 'OFFLINE'
+    OUTPUT inserted.DeviceId INTO @Marked (DeviceId)
+    WHERE IsActive = 1
+      AND Status = 'ONLINE'
+      AND LastSeenAt < DATEADD(
+          MINUTE,
+          -@OfflineMinutes,
+          @NowUtc
+      );
+
+    -- Trigger trg_Devices_Status se tao canh bao.
+    -- Dua cac canh bao moi vao ket qua JSON cua SP.
+    INSERT @New (AlertId)
+    SELECT a.AlertId
+    FROM dbo.Alerts a
+    JOIN @Marked m
+        ON m.DeviceId = a.DeviceId
+    WHERE a.AlertType = 'DEVICE_OFFLINE'
+      AND a.AlertId > @MaxAlertBefore;
+
+
+
     COMMIT;
 
     SELECT NewAlertsJson = ISNULL((
