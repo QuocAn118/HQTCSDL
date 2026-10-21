@@ -74,6 +74,7 @@ model Devices {
   SensorReadings SensorReadings[]
   ControlLogs    ControlLogs[]
   Alerts         Alerts[]
+  BirdCounts BirdCounts[]
 
   @@index([ZoneId])
 }
@@ -181,4 +182,17 @@ model AlertHistory {
   User  Users? @relation(fields: [UserId], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([AlertId])
+}
+
+
+model BirdCounts {
+  CountId     Int      @id @default(autoincrement())
+  CameraId    Int
+  WindowStart DateTime @db.DateTime2
+  InCount     Int
+  OutCount    Int
+
+  Camera Devices @relation(fields: [CameraId], references: [DeviceId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([CameraId, WindowStart])
 }
