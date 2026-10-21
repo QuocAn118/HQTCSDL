@@ -24,6 +24,8 @@ model Users {
   ControlLogs    ControlLogs[]
   AlertsResolved Alerts[]       @relation("AlertResolvedBy")
   AlertHistory   AlertHistory[]
+  Harvests       Harvests[]
+
 }
 
 model Houses {
@@ -51,6 +53,7 @@ model Zones {
   Devices    Devices[]
   Thresholds Thresholds[]
   Alerts     Alerts[]
+  Harvests   Harvests[]
 
   @@unique([HouseId, Name])
   @@unique([ZoneId, HouseId])
@@ -196,3 +199,22 @@ model BirdCounts {
 
   @@unique([CameraId, WindowStart])
 }
+
+
+
+model Harvests {
+  HarvestId   Int      @id @default(autoincrement())
+  ZoneId      Int
+  HarvestDate DateTime @db.Date
+  NestCount   Int
+  WeightGram  Decimal  @db.Decimal(9, 1)
+  Grade       String?  @db.Char(1)
+  RecordedBy  Int
+  CreatedAt   DateTime @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+
+  Zone     Zones @relation(fields: [ZoneId], references: [ZoneId], onDelete: NoAction, onUpdate: NoAction)
+  Recorder Users @relation(fields: [RecordedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([ZoneId, HarvestDate])
+}
+
