@@ -29,3 +29,18 @@
 - `deploy-guard`: PASS.
 - `constraints.test.sql`: PASS.
 - Database kiểm thử: `SwiftletCare_Test`.
+
+## R1 – Prisma OUTPUT và SQL Server Trigger
+
+Kết quả kiểm chứng trên SwiftletCare_Dev:
+
+- Prisma create với trigger AFTER UPDATE: OK
+- Prisma update với trigger AFTER UPDATE: OK
+- $executeRaw UPDATE: OK
+
+Kết luận: Cả ba thao tác đều thành công trong phép thử.
+Chưa ghi nhận lỗi SQL Server 334.
+
+Quyết định: Có thể sử dụng Prisma create trong trường hợp
+đã kiểm chứng. Các thao tác cập nhật có trigger cần tiếp tục
+kiểm tra khi triển khai trigger nghiệp vụ thực tế.
