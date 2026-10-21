@@ -1,0 +1,7 @@
+{
+  "method": "GET",
+  "path": "/api/houses",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "status": 503,
+  "response": {"error": {"code": "RETRY_LATER", "message": "{{any:string}}", "sqlNumber": null, "details": null}}
+}
