@@ -1,0 +1,20 @@
+
+{
+  "name": "swiftletcare-database",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy.ps1 -Database SwiftletCare_Dev",
+    "reset:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy.ps1 -Database SwiftletCare_Dev -Reset",
+    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test.ps1"
+  },
+  "dependencies": {
+    "@prisma/adapter-mssql": "7.10.0",
+    "@prisma/client": "7.10.0"
+  },
+  "devDependencies": {
+    "dotenv": "16.4.5",
+    "prisma": "7.10.0",
+    "tsx": "4.19.2"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "after": "rest/alert-ack",
+  "method": "PATCH",
+  "path": "/api/alerts/{{ref:alert:H1-F3-HUMID}}",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "body": {"status": "ACK"},
+  "status": 409,
+  "response": {"error": {"code": "ALERT_INVALID_TRANSITION", "message": "{{any:string}}", "sqlNumber": 50021, "details": null}}
+}

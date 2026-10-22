@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "path": "/api/ai/bird-counts",
+  "headers": {"X-Service-Key": "{{serviceKey}}"},
+  "body": [{"camera": "H1-F0-CAMERA", "windowStart": "{{window}}", "in": 5, "out": 1}],
+  "status": 200,
+  "response": {"windowsUpserted": 1, "windowsUnchanged": 0}
+}

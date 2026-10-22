@@ -1,0 +1,15 @@
+{
+  "method": "GET",
+  "path": "/api/alerts?houseId={{ref:house:H1}}&status=NEW,ACK&limit=1",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "status": 200,
+  "response": {
+    "items": [{
+      "alertId": "{{any:id}}", "houseId": "{{ref:house:H1}}", "zoneId": "{{ref:zone:H1-F0}}",
+      "deviceId": "{{ref:device:H1-F0-CAMERA}}", "alertType": "PREDATOR", "severity": "CRITICAL",
+      "metricCode": null, "value": null, "detectedClass": "snake", "confidence": 0.91, "hasSnapshot": true,
+      "message": "Phát hiện rắn tại H1-F0-CAMERA (độ tin cậy 91.0%)", "status": "ACK", "createdAt": "{{any:iso}}"
+    }],
+    "nextBefore": "{{any:id}}"
+  }
+}

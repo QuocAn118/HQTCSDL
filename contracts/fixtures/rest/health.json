@@ -1,0 +1,6 @@
+{
+  "method": "GET",
+  "path": "/api/health",
+  "status": 200,
+  "response": {"status": "ok", "db": "ok", "mqtt": "connected"}
+}

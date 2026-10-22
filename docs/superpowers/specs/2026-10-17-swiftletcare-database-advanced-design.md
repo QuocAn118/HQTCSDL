@@ -83,7 +83,7 @@ database/
 | D2 | `deploy.ps1` chạy thêm thư mục `sql\04-security` sau `03-triggers`, trước seed | TV1, plan database-core | **21–22/10** (cùng Phần 2) |
 | D3 | `database/.env.example` thêm `APP_BACKEND_PASSWORD=`, `APP_REPORT_PASSWORD=` (để trống) | TV1 | cùng D2 |
 | D4 | `.gitignore` gốc: **chỉ thêm dòng còn thiếu** `*.bak`, `*.trn` | TV1 | cùng D2 |
-| D5 | Backend chạy bằng `app_backend`: `backend/.env.example` `DB_USER=app_backend`. Trình chạy `test:contract` (plan backend Task 22) dùng **tài khoản quản trị riêng** (`DB_ADMIN_USER`, `DB_ADMIN_PASSWORD` = `swiftlet_dev`) cho `BACKUP`/`RESTORE`, còn backend dưới test chạy bằng `app_backend` trên `SwiftletCare_Test` | TV2 tự sửa plan backend (không đổi hợp đồng; agent không sửa hộ). **Chưa xác nhận** | trong M2, **trước 25/10** |
+| D5 | Backend chạy bằng `app_backend`: `backend/.env.example` `DB_USER=app_backend`. Trình chạy `test:contract` (plan backend Task 22) dùng **tài khoản quản trị riêng** (`DB_ADMIN_USER`, `DB_ADMIN_PASSWORD` = `swiftlet_dev`) cho `BACKUP`/`RESTORE`, còn backend dưới test chạy bằng `app_backend` trên `SwiftletCare_Test` | TV2 (= nhóm trưởng) tự sửa plan backend (không đổi hợp đồng; agent không sửa hộ). **Chưa xác nhận** | trong M2, **trước 25/10** |
 
 Hiện plan backend Task 22 dùng cùng `DB_USER` cho `RESTORE` và cho backend. `app_backend` không có quyền `RESTORE`, nên D5 là điều kiện bắt buộc.
 
@@ -96,7 +96,7 @@ Hiện plan backend Task 22 dùng cùng `DB_USER` cho `RESTORE` và cho backend.
 | Phần 2 phân quyền (script, test) | TV1 tự làm | giao 21–22/10 | đợt 1 |
 | Phần 4 sao lưu/phục hồi | TV1 tự làm | 30/10 | chạy thử trên máy demo trước 01/11 |
 | `perf/generate-readings.sql` (5 triệu dòng) | **TV4** (đề xuất, sau khi web đạt M2), **chưa xác nhận** | 29/10 | Không giao TV5: TV5 đã có simulator, gán nhãn, máy demo, báo cáo. TV1 duyệt PR |
-| `concurrency/run-two-sessions.ps1` (khung chạy hai phiên, gom log) | **TV2, tạm**: chỉ khi nhóm trưởng không nhận integration-contract. **Chưa xác nhận** | 29/10 | TV1 viết các file `session-*.sql` và duyệt PR |
+| `concurrency/run-two-sessions.ps1` (khung chạy hai phiên, gom log) | TV1 tự làm | 29/10 | cùng các file `session-*.sql` |
 | Phần 3 kịch bản, Phần 5 đo và kết luận INCLUDE, Phần 6 | TV1 | `results/` 04/11 | |
 
 - Người hỗ trợ chỉ nhận việc thêm khi phần **Bắt buộc của module mình đã đạt M2**. Nếu không ai nhận, TV1 tự làm và cắt theo 1.1.
@@ -169,6 +169,11 @@ Vì `deploy.ps1` chạy file này (D2), mọi CSDL đều có user: `_Dev`, `_Te
 |---|---|---|
 | Ca 1: `EXEC sp_IngestReadings` một số đo **vượt ngưỡng**, trong transaction rồi `ROLLBACK` | được; có thêm 1 dòng `Alerts` THRESHOLD và 1 dòng `AlertHistory` (chứng minh 2.4) | bị từ chối |
 | Ca 2: `UPDATE Devices` đổi `Status` sang OFFLINE, trong transaction rồi `ROLLBACK` | được; trigger ghi 1 dòng `Alerts` DEVICE_OFFLINE, không lỗi quyền | bị từ chối |
+| `SELECT` từ `vw_OpenAlerts` | được | được |
+| `SELECT` từ `dbo.Users` | được | bị từ chối |
+| `DELETE FROM dbo.Alerts WHERE 1 = 0` | bị từ chối | bị từ chối |
+| `DROP TABLE dbo.SensorReadings` (trong transaction, `ROLLBACK`) | bị từ chối | bị từ chối |
+| `CREATE TABLE dbo.x(a INT)` | bị từ chối | bị từ chối |
 
 **Dữ liệu cụ thể của hai ca** (seed của database-core: mọi khu vực có ngưỡng TEMP 26–30):
 
@@ -179,11 +184,6 @@ Vì `deploy.ps1` chạy file này (D2), mọi CSDL đều có user: `_Dev`, `_Te
   - Trước tiên `EXEC sp_IngestReadings` một số đo TEMP 28.0 (trong ngưỡng, `at` hiện tại), để thiết bị chắc chắn đang ONLINE.
   - Kiểm tiền điều kiện: không có cảnh báo DEVICE_OFFLINE đang mở cho thiết bị này.
   - Rồi `UPDATE dbo.Devices SET Status = 'OFFLINE' WHERE Code = 'H1-F1-SENSOR'`. Kiểm có đúng 1 cảnh báo DEVICE_OFFLINE mới.
-| `SELECT` từ `vw_OpenAlerts` | được | được |
-| `SELECT` từ `dbo.Users` | được | bị từ chối |
-| `DELETE FROM dbo.Alerts WHERE 1 = 0` | bị từ chối | bị từ chối |
-| `DROP TABLE dbo.SensorReadings` (trong transaction, `ROLLBACK`) | bị từ chối | bị từ chối |
-| `CREATE TABLE dbo.x(a INT)` | bị từ chối | bị từ chối |
 
 Ngoài ra **`npm run test:contract` của backend chạy bằng `app_backend` trên `SwiftletCare_Test`** (sau D5), để lộ sớm quyền còn thiếu. Lỗi 229 ở đó nghĩa là bảng 2.3 thiếu một dòng. Khi đó sửa bảng 2.3, không cấp rộng hơn.
 

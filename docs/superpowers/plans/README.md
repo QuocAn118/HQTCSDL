@@ -4,6 +4,8 @@ Mỗi plan làm bằng `superpowers:executing-plans` (cách Native): từng task
 
 ## Thứ tự thực thi và người làm
 
+**TV2 = nhóm trưởng**: nhóm trưởng đồng thời làm integration-contract rồi backend.
+
 | Thứ tự | Plan | Người làm | Bắt đầu khi | Ghi chú |
 |---|---|---|---|---|
 | 1 | [database-core](2026-10-14-swiftletcare-database-core.md) | TV1 | Ngay (sau khi duyệt) | Chặn mọi module khác; giao `sp_IngestReadings`, `sp_SetActuator` **trước 20/10** |
@@ -13,23 +15,44 @@ Mỗi plan làm bằng `superpowers:executing-plans` (cách Native): từng task
 | 2 | [ai-vision](2026-10-16-swiftletcare-ai-vision.md) | TV3 (TV5 cùng gán nhãn tuần 1) | Ngay: Task 1–2 trước M1 | Test hình dạng cần fixture AI (PR số 1); kiểm tay cần backend Task 19 (trước 29/10) |
 | 3 | [web](2026-10-16-swiftletcare-web.md) | TV4 | Task 1–5 ngay (hàm thuần); Task 6+ khi backend có REST | Làm **trước** mobile vì mobile chép 5 file từ web |
 | 4 | [mobile](2026-10-16-swiftletcare-mobile.md) | TV4 (TV5 hỗ trợ tuần 3 nếu trễ) | Task 1 (kiểm gọi HTTP từ Expo Go) ngay; Task 2+ sau web Task 2–5 | Hỏi nhóm ai có iPhone/Android trước Task 1 |
-| — | database-advanced | TV1 | Phần 2 (phân quyền) giao 21–22/10, sau database-core Task 6; phần còn lại từ 26/10 | Spec đã viết, chờ duyệt; plan chưa viết |
+| — | [database-advanced](2026-10-17-swiftletcare-database-advanced.md) | TV1 | Phần 2 (phân quyền) giao 21–22/10, sau database-core Task 6; phần còn lại từ 26/10 | Spec đã duyệt; làm theo plan database-advanced |
 
 > **TV1, plan database-core Task 1 Step 2:** `.gitignore` gốc đã có sẵn. Chỉ thêm các dòng còn thiếu, **không ghi đè file đã có**. Mọi plan khác cũng chỉ thêm dòng vào `.gitignore` gốc.
 
 Số "thứ tự" giống nhau là chạy song song. Người hỗ trợ chuyển sang module đang chậm theo roadmap.
 
-## Việc chéo module (từ spec database-advanced 1.5)
+## Việc chéo module (từ spec database-advanced 1.5 và 1.6)
 
-Mỗi chủ plan tự sửa plan của mình và báo nhóm. Agent không sửa hộ plan database-core hay plan backend.
+Mỗi chủ plan tự sửa plan của mình và báo nhóm. Agent không sửa hộ plan database-core hay plan backend. Mọi việc dưới đây ghi **chưa xác nhận** cho tới khi người nhận xác nhận; nhóm trưởng hỏi họ.
 
-| # | Việc | Người làm | Sửa ở đâu | Hạn |
-|---|---|---|---|---|
-| D1 | Guard `deploy.ps1 -Reset` nhận thêm `_Perf`; sửa `tests/deploy-guard.ps1`: chấp nhận `SwiftletCare_Perf`, từ chối `SwiftletCare_Performance` và `SwiftletCare` | TV1 | plan database-core | trước 26/10 |
-| D2 | `deploy.ps1` chạy thêm `sql\04-security` sau `03-triggers`, trước seed | TV1 | plan database-core | 21–22/10 |
-| D3 | `database/.env.example` thêm `APP_BACKEND_PASSWORD=`, `APP_REPORT_PASSWORD=` (để trống) | TV1 | plan database-core | 21–22/10 |
-| D4 | `.gitignore` gốc: chỉ thêm dòng còn thiếu `*.bak`, `*.trn` | TV1 | plan database-core | 21–22/10 |
-| D5 | Backend chạy bằng `app_backend` (`DB_USER` trong `.env.example`). Trình chạy `test:contract` (Task 22) dùng `DB_ADMIN_USER`/`DB_ADMIN_PASSWORD` (`swiftlet_dev`) cho `BACKUP`/`RESTORE` | **TV2 tự sửa plan backend** (không đổi hợp đồng) | plan backend | trước 25/10 (M2) |
+| # | Việc | Người làm | Sửa ở đâu | Hạn | Trạng thái |
+|---|---|---|---|---|---|
+| D1 | Guard `deploy.ps1 -Reset` nhận thêm `_Perf`; sửa `tests/deploy-guard.ps1`: chấp nhận `SwiftletCare_Perf`, từ chối `SwiftletCare_Performance` và `SwiftletCare` | TV1 | plan database-core | trước 26/10 | chưa xác nhận |
+| D2 | `deploy.ps1` chạy thêm `sql\04-security` sau `03-triggers`, trước seed | TV1 | plan database-core | 21–22/10 | chưa xác nhận |
+| D3 | `database/.env.example` thêm `APP_BACKEND_PASSWORD=`, `APP_REPORT_PASSWORD=` (để trống, chú thích: phải đạt chính sách mật khẩu Windows) | TV1 | plan database-core | 21–22/10 | chưa xác nhận |
+| D4 | `.gitignore` gốc: chỉ thêm dòng còn thiếu `*.bak`, `*.trn` | TV1 | plan database-core | 21–22/10 | chưa xác nhận |
+| D5 | Backend chạy bằng `app_backend` (`DB_USER` trong `.env.example`). Trình chạy `test:contract` (Task 22) dùng `DB_ADMIN_USER`/`DB_ADMIN_PASSWORD` (`swiftlet_dev`) cho `BACKUP`/`RESTORE` | **TV2 (= nhóm trưởng) tự sửa plan backend** (không đổi hợp đồng); agent không sửa hộ | plan backend | trước 25/10 (M2) | chưa xác nhận |
+| H1 | `database/advanced/perf/generate-readings.sql` (5 triệu dòng) | TV4 (đề xuất), chỉ khi web đã đạt M2; TV1 duyệt | plan database-advanced | 29/10 | chưa xác nhận |
+| H2 | `database/advanced/concurrency/run-two-sessions.ps1` | TV1 tự làm | plan database-advanced | 29/10 | TV1 tự làm, không cần xác nhận |
+| H3 | Máy demo và dựng môi trường demo | TV5 (theo NV6; TV5 giữ cả báo cáo) | — | trước tập 01/11 | chưa xác nhận |
+
+Người hỗ trợ chỉ nhận việc thêm khi phần **Bắt buộc của module mình đã đạt M2**.
+
+## Duyệt PR
+
+Theo CLAUDE.md: PR thường cần ít nhất một người duyệt; PR hợp đồng cần cả TV2 và TV1.
+
+**Không ai tự duyệt PR của mình.** Vì TV2 = nhóm trưởng:
+- PR hợp đồng do TV2 mở: TV1 duyệt.
+- PR tài liệu hoặc fixture do TV2 mở: nhờ TV4 hoặc TV5 duyệt.
+
+| Loại PR | Người duyệt |
+|---|---|
+| Đụng SQL (`database/`) hoặc hợp đồng (`contracts/`, spec integration-contract) | TV1 **và** TV2 (TV2 mở thì chỉ TV1) |
+| Chỉ tài liệu hoặc fixture | TV2 (nhóm trưởng) duyệt nhanh; TV2 mở thì TV4 hoặc TV5 |
+| backend | TV1 |
+| simulator, ai-vision | TV2 (phần gọi MQTT/HTTP) |
+| web, mobile | TV5, hoặc TV2 khi TV5 bận |
 
 ## Mốc tuần (roadmap Phần 3)
 

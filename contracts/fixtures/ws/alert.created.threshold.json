@@ -1,0 +1,12 @@
+{
+  "after": "mqtt/readings",
+  "event": "alert.created",
+  "payload": {
+    "alert": {
+      "alertId": "{{any:id}}", "houseId": "{{ref:house:H1}}", "zoneId": "{{ref:zone:H1-F1}}", "deviceId": null,
+      "alertType": "THRESHOLD", "severity": "WARNING", "metricCode": "TEMP", "value": 31.2,
+      "detectedClass": null, "confidence": null, "hasSnapshot": false,
+      "message": "Nhiệt độ vượt ngưỡng trên 30.00 °C: 31.20 °C", "status": "NEW", "createdAt": "{{any:iso}}"
+    }
+  }
+}

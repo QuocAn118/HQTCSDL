@@ -1,0 +1,7 @@
+{
+  "method": "GET",
+  "path": "/api/zones/{{ref:zone:H1-F1}}/readings?metric=TEMP&from={{now-1h:noZ}}&to={{now}}&bucketMinutes=60",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "status": 400,
+  "response": {"error": {"code": "VALIDATION_ERROR", "message": "{{any:string}}", "sqlNumber": null, "details": {"fields": ["from"]}}}
+}

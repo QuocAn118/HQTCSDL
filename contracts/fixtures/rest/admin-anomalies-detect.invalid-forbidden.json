@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "path": "/api/admin/anomalies/detect",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "body": {"nowUtc": "{{now}}"},
+  "status": 403,
+  "response": {"error": {"code": "FORBIDDEN", "message": "{{any:string}}", "sqlNumber": null, "details": null}}
+}

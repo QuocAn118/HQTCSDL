@@ -1,0 +1,8 @@
+{
+  "method": "PUT",
+  "path": "/api/zones/{{ref:zone:H1-F1}}/thresholds/TEMP",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "body": {"minValue": 31, "maxValue": 25, "targetValue": 28},
+  "status": 400,
+  "response": {"error": {"code": "CONSTRAINT_VIOLATION", "message": "{{any:string}}", "sqlNumber": 547, "details": null}}
+}

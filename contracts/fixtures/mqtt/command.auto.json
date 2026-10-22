@@ -1,0 +1,5 @@
+{
+  "after": "rest/control.auto-without-ison",
+  "topic": "swiftlet/devices/H1-F1-FAN/command",
+  "payload": {"isOn": true, "level": 80, "mode": "AUTO", "issuedAt": "{{any:iso}}"}
+}

@@ -1,0 +1,13 @@
+{
+  "after": "mqtt/readings",
+  "event": "readings.new",
+  "payload": {
+    "houseId": "{{ref:house:H1}}",
+    "readings": [
+      {"deviceId": "{{ref:device:H1-F1-SENSOR}}", "deviceCode": "H1-F1-SENSOR", "zoneId": "{{ref:zone:H1-F1}}", "metric": "TEMP", "value": 31.2, "at": "{{now}}"},
+      {"deviceId": "{{ref:device:H1-F1-SENSOR}}", "deviceCode": "H1-F1-SENSOR", "zoneId": "{{ref:zone:H1-F1}}", "metric": "HUMID", "value": 82.1, "at": "{{now}}"},
+      {"deviceId": "{{ref:device:H1-F1-SENSOR}}", "deviceCode": "H1-F1-SENSOR", "zoneId": "{{ref:zone:H1-F1}}", "metric": "CO2", "value": 650, "at": "{{now}}"},
+      {"deviceId": "{{ref:device:H1-F1-SENSOR}}", "deviceCode": "H1-F1-SENSOR", "zoneId": "{{ref:zone:H1-F1}}", "metric": "LIGHT", "value": 3, "at": "{{now}}"}
+    ]
+  }
+}

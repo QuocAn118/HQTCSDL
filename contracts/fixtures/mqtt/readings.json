@@ -1,0 +1,9 @@
+{
+  "topic": "swiftlet/devices/H1-F1-SENSOR/readings",
+  "payload": [
+    {"device": "H1-F1-SENSOR", "metric": "TEMP", "value": 31.2, "at": "{{now}}"},
+    {"device": "H1-F1-SENSOR", "metric": "HUMID", "value": 82.1, "at": "{{now}}"},
+    {"device": "H1-F1-SENSOR", "metric": "CO2", "value": 650, "at": "{{now}}"},
+    {"device": "H1-F1-SENSOR", "metric": "LIGHT", "value": 3, "at": "{{now}}"}
+  ]
+}

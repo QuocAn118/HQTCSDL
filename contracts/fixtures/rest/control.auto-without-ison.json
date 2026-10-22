@@ -1,0 +1,9 @@
+{
+  "after": "rest/control.manual",
+  "method": "POST",
+  "path": "/api/devices/{{ref:device:H1-F1-FAN}}/control",
+  "headers": {"Authorization": "Bearer {{token:owner1}}"},
+  "body": {"mode": "AUTO"},
+  "status": 200,
+  "response": {"changed": true, "deviceCode": "H1-F1-FAN", "mode": "AUTO", "isOn": true, "level": 80}
+}

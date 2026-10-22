@@ -1,0 +1,235 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model Users {
+  UserId       Int      @id @default(autoincrement())
+  Username     String   @unique @db.VarChar(50)
+  PasswordHash String   @db.VarChar(255)
+  FullName     String   @db.NVarChar(100)
+  Email        String   @unique @db.VarChar(255)
+  Phone        String?  @db.VarChar(20)
+  Role         String   @db.VarChar(10)
+  IsActive     Boolean  @default(true)
+  CreatedAt    DateTime @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+
+  Houses         Houses[]
+  Thresholds     Thresholds[]
+  ControlLogs    ControlLogs[]
+  AlertsResolved Alerts[]       @relation("AlertResolvedBy")
+  AlertHistory   AlertHistory[]
+  Harvests       Harvests[]
+
+}
+
+model Houses {
+  HouseId   Int      @id @default(autoincrement())
+  OwnerId   Int
+  Name      String   @db.NVarChar(100)
+  Address   String?  @db.NVarChar(255)
+  IsActive  Boolean  @default(true)
+  CreatedAt DateTime @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+
+  Owner  Users    @relation(fields: [OwnerId], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  Zones  Zones[]
+  Alerts Alerts[]
+
+  @@unique([OwnerId, Name])
+}
+
+model Zones {
+  ZoneId  Int    @id @default(autoincrement())
+  HouseId Int
+  Name    String @db.NVarChar(50)
+  FloorNo Int    @db.TinyInt
+
+  House      Houses       @relation(fields: [HouseId], references: [HouseId], onDelete: NoAction, onUpdate: NoAction)
+  Devices    Devices[]
+  Thresholds Thresholds[]
+  Alerts     Alerts[]
+  Harvests   Harvests[]
+  NestLogs NestLogs[]
+
+  @@unique([HouseId, Name])
+  @@unique([ZoneId, HouseId])
+}
+
+model Devices {
+  DeviceId   Int       @id @default(autoincrement())
+  ZoneId     Int
+  Code       String    @unique @db.VarChar(50)
+  Name       String    @db.NVarChar(100)
+  DeviceType String    @db.VarChar(10)
+  Status     String    @default("OFFLINE") @db.VarChar(10)
+  LastSeenAt DateTime? @db.DateTime2
+  Mode       String?   @db.VarChar(6)
+  IsOn       Boolean?
+  Level      Int?      @db.TinyInt
+  IsActive   Boolean   @default(true)
+  CreatedAt  DateTime  @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+
+  Zone           Zones            @relation(fields: [ZoneId], references: [ZoneId], onDelete: NoAction, onUpdate: NoAction)
+  SensorReadings SensorReadings[]
+  ControlLogs    ControlLogs[]
+  Alerts         Alerts[]
+  BirdCounts BirdCounts[]
+
+  @@index([ZoneId])
+}
+
+model Metrics {
+  MetricCode String  @id @db.VarChar(10)
+  Name       String  @db.NVarChar(50)
+  Unit       String  @db.NVarChar(10)
+  ValidMin   Decimal @db.Decimal(9, 2)
+  ValidMax   Decimal @db.Decimal(9, 2)
+  Hysteresis Decimal @db.Decimal(9, 2)
+
+  Thresholds     Thresholds[]
+  SensorReadings SensorReadings[]
+  Alerts         Alerts[]
+}
+
+model Thresholds {
+  ZoneId      Int
+  MetricCode  String   @db.VarChar(10)
+  MinValue    Decimal? @db.Decimal(9, 2)
+  MaxValue    Decimal? @db.Decimal(9, 2)
+  TargetValue Decimal? @db.Decimal(9, 2)
+  UpdatedBy   Int?
+  UpdatedAt   DateTime @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+
+  Zone    Zones   @relation(fields: [ZoneId], references: [ZoneId], onDelete: NoAction, onUpdate: NoAction)
+  Metric  Metrics @relation(fields: [MetricCode], references: [MetricCode], onDelete: NoAction, onUpdate: NoAction)
+  Updater Users?  @relation(fields: [UpdatedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([ZoneId, MetricCode])
+}
+
+model SensorReadings {
+  ReadingId  BigInt   @id(clustered: false) @default(autoincrement())
+  DeviceId   Int
+  MetricCode String   @db.VarChar(10)
+  Value      Decimal  @db.Decimal(9, 2)
+  RecordedAt DateTime @db.DateTime2
+
+  Device Devices @relation(fields: [DeviceId], references: [DeviceId], onDelete: NoAction, onUpdate: NoAction)
+  Metric Metrics @relation(fields: [MetricCode], references: [MetricCode], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([DeviceId, MetricCode, RecordedAt])
+  @@index([RecordedAt], clustered: true)
+}
+
+model ControlLogs {
+  LogId     Int      @id @default(autoincrement())
+  DeviceId  Int
+  IsOn      Boolean
+  Level     Int?     @db.TinyInt
+  Mode      String   @db.VarChar(6)
+  Source    String   @db.VarChar(6)
+  UserId    Int?
+  Reason    String?  @db.NVarChar(200)
+  CreatedAt DateTime @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+
+  Device Devices @relation(fields: [DeviceId], references: [DeviceId], onDelete: NoAction, onUpdate: NoAction)
+  User   Users?  @relation(fields: [UserId], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([DeviceId, CreatedAt(sort: Desc)])
+}
+
+model Alerts {
+  AlertId       Int       @id @default(autoincrement())
+  HouseId       Int
+  ZoneId        Int?
+  DeviceId      Int?
+  AlertType     String    @db.VarChar(20)
+  Severity      String    @db.VarChar(10)
+  MetricCode    String?   @db.VarChar(10)
+  Value         Decimal?  @db.Decimal(9, 2)
+  DetectedClass String?   @db.VarChar(10)
+  Confidence    Decimal?  @db.Decimal(4, 3)
+  SnapshotPath  String?   @db.NVarChar(260)
+  Message       String    @db.NVarChar(500)
+  Status        String    @default("NEW") @db.VarChar(10)
+  CreatedAt     DateTime  @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+  ResolvedAt    DateTime? @db.DateTime2
+  ResolvedBy    Int?
+
+  House    Houses         @relation(fields: [HouseId], references: [HouseId], onDelete: NoAction, onUpdate: NoAction)
+  // R5: Thu quan he ghep. Neu prisma validate bao loi, xu ly o Step 3.
+  Zone     Zones?         @relation(fields: [ZoneId, HouseId], references: [ZoneId, HouseId], onDelete: NoAction, onUpdate: NoAction)
+  Device   Devices?       @relation(fields: [DeviceId], references: [DeviceId], onDelete: NoAction, onUpdate: NoAction)
+  Metric   Metrics?       @relation(fields: [MetricCode], references: [MetricCode], onDelete: NoAction, onUpdate: NoAction)
+  Resolver Users?         @relation("AlertResolvedBy", fields: [ResolvedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  History  AlertHistory[]
+
+  @@index([HouseId, Status, CreatedAt(sort: Desc)])
+  @@index([DeviceId, AlertType, DetectedClass, CreatedAt(sort: Desc)])
+}
+
+model AlertHistory {
+  HistoryId Int      @id @default(autoincrement())
+  AlertId   Int
+  OldStatus String?  @db.VarChar(10)
+  NewStatus String   @db.VarChar(10)
+  UserId    Int?
+  Note      String?  @db.NVarChar(500)
+  ChangedAt DateTime @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+
+  Alert Alerts @relation(fields: [AlertId], references: [AlertId], onDelete: NoAction, onUpdate: NoAction)
+  User  Users? @relation(fields: [UserId], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([AlertId])
+}
+
+
+model BirdCounts {
+  CountId     Int      @id @default(autoincrement())
+  CameraId    Int
+  WindowStart DateTime @db.DateTime2
+  InCount     Int
+  OutCount    Int
+
+  Camera Devices @relation(fields: [CameraId], references: [DeviceId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([CameraId, WindowStart])
+}
+
+
+
+model Harvests {
+  HarvestId   Int      @id @default(autoincrement())
+  ZoneId      Int
+  HarvestDate DateTime @db.Date
+  NestCount   Int
+  WeightGram  Decimal  @db.Decimal(9, 1)
+  Grade       String?  @db.Char(1)
+  RecordedBy  Int
+  CreatedAt   DateTime @default(dbgenerated("sysutcdatetime()")) @db.DateTime2
+
+  Zone     Zones @relation(fields: [ZoneId], references: [ZoneId], onDelete: NoAction, onUpdate: NoAction)
+  Recorder Users @relation(fields: [RecordedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([ZoneId, HarvestDate])
+}
+
+
+
+model NestLogs {
+  ZoneId      Int
+  WeekStart   DateTime @db.Date
+  ActiveNests Int
+  NewNests    Int
+  Note        String?  @db.NVarChar(500)
+
+  Zone Zones @relation(fields: [ZoneId], references: [ZoneId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([ZoneId, WeekStart])
+}
+

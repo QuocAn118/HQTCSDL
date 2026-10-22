@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "path": "/api/ai/bird-counts",
+  "headers": {"X-Service-Key": "khoa-sai"},
+  "body": [{"camera": "H1-F0-CAMERA", "windowStart": "{{window}}", "in": 5, "out": 1}],
+  "status": 401,
+  "response": {"error": {"code": "UNAUTHENTICATED", "message": "{{any:string}}", "sqlNumber": null, "details": null}}
+}

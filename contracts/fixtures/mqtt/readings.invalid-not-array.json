@@ -1,0 +1,4 @@
+{
+  "topic": "swiftlet/devices/H1-F1-SENSOR/readings",
+  "payload": {"device": "H1-F1-SENSOR", "metric": "TEMP", "value": 28, "at": "{{now}}"}
+}

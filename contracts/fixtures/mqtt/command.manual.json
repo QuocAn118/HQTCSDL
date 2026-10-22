@@ -1,0 +1,5 @@
+{
+  "after": "rest/control.manual",
+  "topic": "swiftlet/devices/H1-F1-FAN/command",
+  "payload": {"isOn": true, "level": 80, "mode": "MANUAL", "issuedAt": "{{any:iso}}"}
+}
