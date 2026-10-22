@@ -16,6 +16,11 @@ backend/storage/
 ai-vision/.env
 ai-vision/.venv/
 ai-vision/data/
+# Thu muc du lieu hien tai cua TV3
+ai_vision/data/
+ai_vision/.env
+ai_vision/.venv/
+ai_vision/**/__pycache__/
 *.pt
 # simulator
 simulator/.env
