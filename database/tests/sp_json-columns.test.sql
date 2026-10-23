@@ -105,11 +105,11 @@ BEGIN TRY
         THROW 59999, N'Canh bao phai co 14 khoa', 1;
 
     IF EXISTS (
-        SELECT k FROM #keys
-        EXCEPT
-        SELECT [key] FROM OPENJSON(@alert)
-    )
-        THROW 59999, N'Thieu truong JSON canh bao', 1;
+    SELECT k COLLATE Latin1_General_BIN2 FROM #keys
+    EXCEPT
+    SELECT [key] FROM OPENJSON(@alert)
+)
+    THROW 59999, N'Thieu truong JSON canh bao', 1;
 
     IF NOT EXISTS (
         SELECT 1
