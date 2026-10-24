@@ -27,3 +27,5 @@ simulator/.env
 simulator/node_modules/
 # cong cu
 .playwright-mcp/
+*.bak
+*.trn

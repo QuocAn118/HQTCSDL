@@ -357,7 +357,7 @@ BEGIN
             SELECT AlertId
             FROM @Resolved
             ORDER BY AlertId
-            FOR JSON PATH
+            FOR JSON PATH, INCLUDE_NULL_VALUES
         ), N'[]');
 END
 GO
