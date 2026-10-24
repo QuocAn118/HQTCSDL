@@ -54,7 +54,7 @@ URL do người phụ trách cung cấp; đã đối chiếu metadata trong ZIP 
 | R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | Trang Universe và ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
 | R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test, chờ kiểm tra |
 
-Ngày 24/10/2026, người phụ trách xác nhận cả R06–R09 dùng giấy phép CC BY 4.0, cho phép chia sẻ lại kèm ghi công. R07/R08 đã đối chiếu trang Universe và ZIP; R06/R09 ghi nhận theo xác nhận của người phụ trách và metadata ZIP, chưa đối chiếu trực tiếp được trang nguồn gốc.
+Ngày 24/10/2026, người phụ trách xác nhận cả R06–R09 dùng giấy phép CC BY 4.0, cho phép chia sẻ lại kèm ghi công. Giấy phép R06/R09 đã được người phụ trách xác nhận; R07/R08 đã đối chiếu trang Universe và ZIP. Đã hoàn tất xác nhận giấy phép cho cả bốn nguồn; trạng thái chờ kiểm tra trong bảng chỉ áp dụng cho dữ liệu và nhãn trước khi đưa vào test.
 
 | Mã | Project bản sao trong ZIP | Version export | Nhãn gốc |
 |---|---|---|---|
