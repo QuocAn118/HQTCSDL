@@ -2,14 +2,19 @@ $ErrorActionPreference = 'Stop'
 $ai = Split-Path $PSScriptRoot -Parent
 $script = Join-Path $ai 'scripts/split_dataset.ps1'
 $mapping = @(Import-Csv (Join-Path $ai 'splits.csv'))
-if ($mapping.Count -ne 5 -or @($mapping | Group-Object nguon | Where-Object Count -ne 1).Count -or
+if ($mapping.Count -lt 5 -or @($mapping | Group-Object nguon | Where-Object Count -ne 1).Count -or
     @($mapping | Where-Object { $_.tap -notin @('train','val','test') }).Count) {
     throw 'Regression: splits.csv must contain one nguon,tap row per source, not image groups'
+}
+foreach ($source in @('R06','R07','R08','R09')) {
+    if (($mapping | Where-Object nguon -eq $source).tap -ne 'test') { throw "Accepted new source must be test-only: $source" }
 }
 $temp = Join-Path ([IO.Path]::GetTempPath()) ('swiftlet-split-test-' + [guid]::NewGuid())
 New-Item -ItemType Directory -Path $temp | Out-Null
 try {
     $base = Join-Path $temp 'input'
+    $fixtureSplits = Join-Path $temp 'fixture-splits.csv'
+    $mapping | Where-Object nguon -in @('R01','R02','R03','R04','R05') | Export-Csv $fixtureSplits -NoTypeInformation -Encoding UTF8
     $rows = @()
     foreach ($item in @(@('R01','swiftlet','train','same'), @('R01','swiftlet','test','other'),
         @('R05','swiftlet','train','same'), @('R02','rat','valid','rat'),
@@ -26,7 +31,7 @@ try {
     $rows | Export-Csv $review -NoTypeInformation -Encoding UTF8
     $before = (Get-FileHash $review).Hash
     $out = Join-Path $temp 'output'
-    & $script -Base $base -Out $out | Out-Null
+    & $script -Base $base -Out $out -SplitsPath $fixtureSplits | Out-Null
     $manifest = @(Import-Csv (Join-Path $out 'split_manifest.csv'))
     if ($manifest.Count -ne 6) { throw 'All input images must be copied' }
     foreach ($row in $manifest) {
@@ -44,23 +49,24 @@ try {
     $failed = $false
     try { & $script -Base $base -Out $out | Out-Null } catch { $failed = $_.Exception.Message -match 'Output already exists' }
     if (!$failed) { throw 'Must refuse overwrite' }
-    foreach ($case in @('unknown','duplicate','invalid','single-source')) {
+    foreach ($case in @('unknown','duplicate','invalid','single-source','missing-input')) {
         $bad = Join-Path $temp ($case+'.csv')
         $content = switch ($case) {
             'unknown' { "nguon,tap`nR01,train`n" }
             'duplicate' { "nguon,tap`nR01,train`nR01,val`n" }
             'invalid' { "nguon,tap`nR01,training`n" }
             'single-source' { "nguon,tap`nR01,train`nR05,val`nR02,test`nR03,train`nR04,train`n" }
+            'missing-input' { "nguon,tap`nR01,train`nR05,val`nR02,train`nR03,train`nR04,train`nR99,test`n" }
         }
         [IO.File]::WriteAllText($bad, $content)
         $failed = $false
         $badOut = Join-Path $temp ($case+'-out')
         try { & $script -Base $base -Out $badOut -SplitsPath $bad | Out-Null } catch {
-            $failed = $_.Exception.Message -match 'Unknown source|Duplicate source|Invalid split|Single-source class'
+            $failed = $_.Exception.Message -match 'Unknown source|Duplicate source|Invalid split|Single-source class|Mapped source has no input images'
         }
         if (!$failed -or (Test-Path $badOut)) { throw "Invalid mapping accepted or output created: $case" }
     }
-    Write-Output 'PASS: source mapping, whole-source copy, provenance, hashes, labels, immutable input, overwrite guard, unknown/duplicate/invalid/single-source rejection'
+    Write-Output 'PASS: source mapping, whole-source copy, provenance, hashes, labels, immutable input, overwrite guard, unknown/duplicate/invalid/single-source/missing-input rejection'
 } finally {
     # Only remove the unique test directory created by this script.
     $resolved = [IO.Path]::GetFullPath($temp)

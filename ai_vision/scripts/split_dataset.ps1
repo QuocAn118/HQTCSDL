@@ -1,6 +1,6 @@
 param(
-    [string]$Base = (Join-Path $PSScriptRoot '../data/working/sourced_v1'),
-    [string]$Out = (Join-Path $PSScriptRoot '../data/working/split_v2'),
+    [string]$Base = (Join-Path $PSScriptRoot '../data/working/sourced_v3'),
+    [string]$Out = (Join-Path $PSScriptRoot '../data/working/split_v3'),
     [string]$SplitsPath = (Join-Path $PSScriptRoot '../splits.csv')
 )
 $ErrorActionPreference = 'Stop'
@@ -38,6 +38,9 @@ foreach ($row in $rows) {
         split_group=$row.source_id; grouping_method='source_id'
         original_image=$row.image; sha256=$hash; objects=$row.objects
     }
+}
+foreach ($source in $mapping.Keys) {
+    if ($manifest.source_id -notcontains $source) { throw "Mapped source has no input images: $source" }
 }
 foreach ($class in @('owl','rat','snake','swiftlet')) {
     $items = @($manifest | Where-Object class -eq $class)

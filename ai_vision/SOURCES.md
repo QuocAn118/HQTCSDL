@@ -4,7 +4,7 @@ Dữ liệu lấy từ 5 bộ trên Roboflow Universe, sau đó gộp thành m�
 
 Project đã gộp: [Swiftlet and Predators Detection](https://app.roboflow.com/binhnguyen3244-gmail-com/swiftlet-and-predators-detection/browse).
 
-Ngày 24/10/2026 nhận thêm bốn nguồn ứng viên R06–R09 (bảng bên dưới). Các nguồn này chưa nhập vào bộ chia đang dùng `split_v2`.
+Ngày 24/10/2026 nhận thêm R06–R09 (bảng bên dưới), kiểm trùng và chuẩn hóa nhãn để tạo `split_v3`. Năm nguồn đầu giữ nguyên phân chia; các ảnh được giữ từ bốn nguồn mới nằm trong test.
 
 ## Các bộ dữ liệu sử dụng
 
@@ -22,7 +22,7 @@ Ngày 24/10/2026 nhận thêm bốn nguồn ứng viên R06–R09 (bảng bên d
 - Nhãn gốc có tên khác nhau: R01 có `swiftlet`, `walet`; R02 dùng `Rat`; R04 có `owl` và `owl - v2 2025-01-11 1:14am`. Bản đang dùng đã thống nhất class ID: 0 owl, 1 rat, 2 snake, 3 swiftlet.
 - Chưa xác nhận phiên bản Universe gốc và ngày tải. Số ảnh bản ZIP nằm ở bảng dưới; số ảnh sau làm sạch và chia tập nằm trong README.md.
 - Ngày 24/10/2026 đã sửa chia theo nguồn: mỗi dataset R01–R05 nằm nguyên trong đúng một tập. `splits.csv` có một dòng `nguon,tap` mỗi nguồn và là đầu vào của script. Bản chia theo tên ảnh ngày 22/10 không đáp ứng spec, chỉ giữ đối chiếu.
-- R02/R03/R04 mỗi lớp chỉ có một nguồn: đưa toàn bộ vào train và ghi rõ **không có tập test độc lập**. R01 vào train, R05 vào val để có val swiftlet độc lập nguồn; hiện chưa có nguồn test, chưa đủ val/test cho thiên địch. Cần bổ sung nguồn trước khi đánh giá đầy đủ; xem [README.md](README.md).
+- Ở bản cũ `split_v2`, R02/R03/R04 chỉ có nguồn train. Bản `split_v3` bổ sung R06 (owl), R07 mới (rat), R08 (snake), R09 (swiftlet) vào test sau khi loại ảnh trùng/lỗi. R01–R04 vẫn train, R05 vẫn val. Còn thiếu val độc lập cho thiên địch; xem [README.md](README.md).
 - Các nguồn trên là bộ ảnh. Video dùng để đếm chim và đánh giá cảnh báo sẽ ghi bổ sung riêng.
 
 ## Các bản nguồn đã nhận
@@ -47,14 +47,14 @@ R01 và R05 cùng nhóm `swiftlet`; R02 là `rat`, R03 là `snake`, R04 là `owl
 
 URL do người phụ trách cung cấp; đã đối chiếu metadata trong ZIP ở `data/raw/sources/<mã>/`. Ngày nhận và ngày export không khẳng định ngày tải hoặc phiên bản Universe gốc.
 
-| Mã | Nguồn/đường dẫn cung cấp | Lớp đích | Số ảnh trong ZIP | Giấy phép | Tập dự kiến |
-|---|---|---|---:|---|---|
-| R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test, chờ kiểm tra |
-| R07 | [Rat — Kwok Martin](https://universe.roboflow.com/kwok-martin-ip6on/rat-fsvlk) | rat | 225 | ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
-| R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | Trang Universe và ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
-| R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test, chờ kiểm tra |
+| Mã | Nguồn/đường dẫn cung cấp | Lớp đích | Ảnh trong ZIP | Ảnh giữ | Giấy phép | Tập |
+|---|---|---|---:|---:|---|---|
+| R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | 42 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test |
+| R07 | [Rat — Kwok Martin](https://universe.roboflow.com/kwok-martin-ip6on/rat-fsvlk) | rat | 225 | 212 | ZIP ghi CC BY 4.0 | test |
+| R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | 1.403 | Trang Universe và ZIP ghi CC BY 4.0 | test |
+| R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | 248 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test |
 
-Ngày 24/10/2026, người phụ trách xác nhận các nguồn bổ sung dùng giấy phép CC BY 4.0, cho phép chia sẻ lại kèm ghi công. Giấy phép R06/R09 đã được người phụ trách xác nhận; R08 đã đối chiếu trang Universe và ZIP. Bản R07 thay thế ghi CC BY 4.0 trong ZIP. Trạng thái chờ kiểm tra trong bảng áp dụng cho dữ liệu và nhãn trước khi đưa vào test.
+Ngày 24/10/2026, người phụ trách xác nhận các nguồn bổ sung dùng giấy phép CC BY 4.0, cho phép chia sẻ lại kèm ghi công. Giấy phép R06/R09 đã được người phụ trách xác nhận; R08 đã đối chiếu trang Universe và ZIP. Bản R07 thay thế ghi CC BY 4.0 trong ZIP.
 
 | Mã | Project bản sao trong ZIP | Version export | Nhãn gốc |
 |---|---|---|---|
@@ -63,11 +63,12 @@ Ngày 24/10/2026, người phụ trách xác nhận các nguồn bổ sung dùng
 | R08 | snake-4lxhl-qf8y2 | 1 | bandotan_puspa, kobra_jawa, kobra_sumatera, sanca_kembang, ular_cecak, ular_gadung, ular_tambang, ular_tanah, viper_hijau, weling |
 | R09 | swiftlet-segmentation-85uph | 1 | chim yen |
 
-R07 hiện dùng bộ `rat-fsvlk` do người phụ trách cung cấp thay cho bộ Ashveer `rat-detection-j9gzi` (443 ảnh). ZIP mới có 225 ảnh, đã chuyển từ thư mục tạm `R10` sang `data/raw/sources/R07/`; không dùng mã R10 riêng. Bộ cũ có ảnh vẽ sẵn khung/điểm dự đoán và ảnh không phù hợp, được tách khỏi nguồn đang dùng sang `data/raw/rejected/R07-ashveer/`. Các kết quả kiểm tra R07 trong `source_audit_v1` thuộc bộ cũ, không áp dụng cho bản thay thế. Nhãn gốc `1`/`2` của bộ mới cần kiểm tra ý nghĩa trước khi quy về lớp `rat`.
+R07 hiện dùng bộ `rat-fsvlk` do người phụ trách cung cấp thay cho bộ Ashveer `rat-detection-j9gzi` (443 ảnh). ZIP mới có 225 ảnh, đã chuyển từ thư mục tạm `R10` sang `data/raw/sources/R07/`; không dùng mã R10 riêng. Bộ cũ có ảnh vẽ sẵn khung/điểm dự đoán và ảnh không phù hợp, được tách khỏi nguồn đang dùng sang `data/raw/rejected/R07-ashveer/`. Các kết quả kiểm tra R07 trong `source_audit_v1` thuộc bộ cũ, không áp dụng cho bản thay thế; bản mới được kiểm trong `source_audit_R07_v2`. Đã xem mẫu cả hai nhãn `1`/`2` của bộ mới (class ID gốc 0/1): các mẫu đều là chuột; cả hai được quy về class ID 1 (`rat`).
 
 - README trong cả bốn ZIP ghi export ngày 24/10/2026 và không augmentation tại lần export này; chưa kết luận về dữ liệu trước khi import.
-- Trước khi đưa vào test: kiểm tra nguồn gốc, trùng file/pixel và ảnh gần giống với R01–R05; URL khác không tự chứng minh nguồn độc lập. Đặc biệt cần đối chiếu R08 với R03 vì cùng bộ tên 10 loài rắn; đây là dấu hiệu cần kiểm tra, chưa phải kết luận trùng dữ liệu.
-- Chuẩn hóa nhãn về class ID hiện tại: owl=0, rat=1, snake=2, swiftlet=3. R09 có tên project segmentation: phải kiểm tra định dạng nhãn thực tế; nếu là polygon thì chuyển sang bbox và rà lại trước khi dùng cho detection.
-- Chưa thêm R06–R09 vào `splits.csv`, chưa thay dữ liệu `sourced_v1`/`split_v2`. Chỉ gán chính thức sau khi kiểm tra; mỗi nguồn được chấp nhận phải nằm nguyên trong một tập.
-- Nếu R06–R09 đều được xác nhận độc lập và dùng cho test, vẫn thiếu val độc lập cho rat/snake/owl; không dùng test để chọn ngưỡng.
+- Đã đối chiếu với toàn bộ 4.295 ảnh trong ZIP R01–R05, bao gồm ảnh không còn trong bản sạch. Kiểm SHA-256 file/pixel RGB và ảnh thu nhỏ 16×16 (tương quan ≥ 0,97 và MAE RGB ≤ 8), có xét lật ngang. Đã xem các cặp nghi trùng và loại 3 ảnh R06 trùng R04, 13 ảnh R07 mới trùng R02. Bộ R07 cũ đã loại toàn bộ. Không phát hiện trùng R08/R09 theo các phép kiểm này.
+- R08 loại 44 ảnh có bbox vượt biên; giữ 1.403 ảnh có nhãn hợp lệ. R09 chuyển 7.131 polygon trên 248 ảnh thành bbox bao ngoài. Không ghi đè ảnh/nhãn trong ZIP gốc.
+- Chuẩn hóa class ID: owl=0, rat=1, snake=2, swiftlet=3. `splits.csv` có R06–R09 → test; mọi ảnh được giữ của cùng nguồn chỉ nằm trong một tập. `sourced_v1` và `split_v2` được giữ để đối chiếu.
+- Các CSV kiểm trùng/lỗi nằm trong `data/working/source_audit_v1/` và `source_audit_R07_v2/`; các bảng ảnh đối chiếu và mẫu xem nhãn cùng thư mục. Tóm tắt số lượng và SHA-256 ZIP được lưu trong [báo cáo kiểm tra nguồn](reports/2026-10-24-source-audit.json). Các phép kiểm gần giống không bảo đảm phát hiện hết crop/cảnh video chung hoặc chứng minh nguồn gốc độc lập tuyệt đối. Mới rà mẫu nhãn, chưa duyệt toàn bộ từng đối tượng; cần hoàn tất rà nhãn trước khi đóng băng bộ test đo chính thức.
+- Đã có nguồn train/test riêng cho rat/snake/owl. Vẫn thiếu val độc lập cho ba lớp này; không dùng test để chọn ngưỡng. Các bộ ảnh mới không thay thế video test để đo đếm chim hoặc cảnh báo theo sự kiện.
 
