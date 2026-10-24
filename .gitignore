@@ -29,3 +29,4 @@ simulator/node_modules/
 .playwright-mcp/
 *.bak
 *.trn
+.worktrees/
