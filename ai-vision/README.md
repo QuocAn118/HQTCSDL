@@ -1,4 +1,4 @@
-﻿# AI Vision
+# AI Vision
 
 Dataset hiện dùng: **data/working/split_v3/**, cập nhật 24/10/2026. Có 5.945 ảnh và 5.945 file nhãn YOLO detection. Các ảnh mới giữ kích thước gốc; Ultralytics resize lúc train/inference. Chia theo nguồn dataset Universe, đúng spec §2.4; ảnh trùng/lỗi đã loại không thuộc bộ chia.
 
@@ -31,24 +31,24 @@ R01–R04 nằm trong train; R05 nằm trong val; các ảnh được giữ từ
 Chạy từ gốc repo bằng PowerShell 5.1:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File ai_vision/tests/split_dataset.test.ps1
-ai_vision/.venv/Scripts/python -m unittest discover -s ai_vision/tests -p test_prepare_test_sources.py -v
-powershell -NoProfile -ExecutionPolicy Bypass -File ai_vision/scripts/split_dataset.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File ai-vision/tests/split_dataset.test.ps1
+ai-vision/.venv/Scripts/python -m unittest discover -s ai-vision/tests -p test_prepare_test_sources.py -v
+powershell -NoProfile -ExecutionPolicy Bypass -File ai-vision/scripts/split_dataset.ps1
 # Neu split_v3 da ton tai, chon thu muc moi; khong ghi de:
-powershell -NoProfile -ExecutionPolicy Bypass -File ai_vision/scripts/split_dataset.ps1 -Out ai_vision/data/working/split_v4
+powershell -NoProfile -ExecutionPolicy Bypass -File ai-vision/scripts/split_dataset.ps1 -Out ai-vision/data/working/split_v4
 ```
 
 Tạo lại từ các ZIP hiện có và `sourced_v1` (chọn tên thư mục mới nếu đầu ra đã tồn tại):
 
 ```powershell
-python -m venv ai_vision/.venv
-ai_vision/.venv/Scripts/python -m pip install -r ai_vision/requirements-data.txt
-ai_vision/.venv/Scripts/python ai_vision/scripts/prepare_test_sources.py --out ai_vision/data/working/audit_fresh
+python -m venv ai-vision/.venv
+ai-vision/.venv/Scripts/python -m pip install -r ai-vision/requirements-data.txt
+ai-vision/.venv/Scripts/python ai-vision/scripts/prepare_test_sources.py --out ai-vision/data/working/audit_fresh
 # Xem overlaps.csv va cac cap anh truoc khi chap nhan loai anh trung:
-ai_vision/.venv/Scripts/python ai_vision/scripts/prepare_test_sources.py --release-source R06 --audit ai_vision/data/working/audit_fresh --out ai_vision/data/working/reviewed_R06_fresh
-ai_vision/.venv/Scripts/python ai_vision/scripts/prepare_test_sources.py --release-source R07 --audit ai_vision/data/working/audit_fresh --out ai_vision/data/working/reviewed_R07_fresh
-ai_vision/.venv/Scripts/python ai_vision/scripts/prepare_test_sources.py --base ai_vision/data/working/sourced_v1 --prepared ai_vision/data/working/audit_fresh/prepared ai_vision/data/working/reviewed_R06_fresh ai_vision/data/working/reviewed_R07_fresh --out ai_vision/data/working/sourced_fresh
-powershell -NoProfile -ExecutionPolicy Bypass -File ai_vision/scripts/split_dataset.ps1 -Base ai_vision/data/working/sourced_fresh -Out ai_vision/data/working/split_fresh
+ai-vision/.venv/Scripts/python ai-vision/scripts/prepare_test_sources.py --release-source R06 --audit ai-vision/data/working/audit_fresh --out ai-vision/data/working/reviewed_R06_fresh
+ai-vision/.venv/Scripts/python ai-vision/scripts/prepare_test_sources.py --release-source R07 --audit ai-vision/data/working/audit_fresh --out ai-vision/data/working/reviewed_R07_fresh
+ai-vision/.venv/Scripts/python ai-vision/scripts/prepare_test_sources.py --base ai-vision/data/working/sourced_v1 --prepared ai-vision/data/working/audit_fresh/prepared ai-vision/data/working/reviewed_R06_fresh ai-vision/data/working/reviewed_R07_fresh --out ai-vision/data/working/sourced_fresh
+powershell -NoProfile -ExecutionPolicy Bypass -File ai-vision/scripts/split_dataset.ps1 -Base ai-vision/data/working/sourced_fresh -Out ai-vision/data/working/split_fresh
 ```
 
 ## Dữ liệu được giữ
