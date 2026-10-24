@@ -50,18 +50,20 @@ URL do người phụ trách cung cấp; đã đối chiếu metadata trong ZIP 
 | Mã | Nguồn/đường dẫn cung cấp | Lớp đích | Số ảnh trong ZIP | Giấy phép | Tập dự kiến |
 |---|---|---|---:|---|---|
 | R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test, chờ kiểm tra |
-| R07 | [Rat Detection — Ashveer Test Workspace](https://universe.roboflow.com/ashveer-test-workspace/rat-detection-j9gzi) | rat | 443 | Trang Universe và ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
+| R07 | [Rat — Kwok Martin](https://universe.roboflow.com/kwok-martin-ip6on/rat-fsvlk) | rat | 225 | ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
 | R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | Trang Universe và ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
 | R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test, chờ kiểm tra |
 
-Ngày 24/10/2026, người phụ trách xác nhận cả R06–R09 dùng giấy phép CC BY 4.0, cho phép chia sẻ lại kèm ghi công. Giấy phép R06/R09 đã được người phụ trách xác nhận; R07/R08 đã đối chiếu trang Universe và ZIP. Đã hoàn tất xác nhận giấy phép cho cả bốn nguồn; trạng thái chờ kiểm tra trong bảng chỉ áp dụng cho dữ liệu và nhãn trước khi đưa vào test.
+Ngày 24/10/2026, người phụ trách xác nhận các nguồn bổ sung dùng giấy phép CC BY 4.0, cho phép chia sẻ lại kèm ghi công. Giấy phép R06/R09 đã được người phụ trách xác nhận; R08 đã đối chiếu trang Universe và ZIP. Bản R07 thay thế ghi CC BY 4.0 trong ZIP. Trạng thái chờ kiểm tra trong bảng áp dụng cho dữ liệu và nhãn trước khi đưa vào test.
 
 | Mã | Project bản sao trong ZIP | Version export | Nhãn gốc |
 |---|---|---|---|
 | R06 | owl-dataset-model-yedkr | 1 | great-horn-owl, grey-owl, snowy-owl |
-| R07 | rat-detection-j9gzi-ovwfb | 1 | rat |
+| R07 | rat-fsvlk-anqjf | 1 | 1, 2 |
 | R08 | snake-4lxhl-qf8y2 | 1 | bandotan_puspa, kobra_jawa, kobra_sumatera, sanca_kembang, ular_cecak, ular_gadung, ular_tambang, ular_tanah, viper_hijau, weling |
 | R09 | swiftlet-segmentation-85uph | 1 | chim yen |
+
+R07 hiện dùng bộ `rat-fsvlk` do người phụ trách cung cấp thay cho bộ Ashveer `rat-detection-j9gzi` (443 ảnh). ZIP mới có 225 ảnh, đã chuyển từ thư mục tạm `R10` sang `data/raw/sources/R07/`; không dùng mã R10 riêng. Bộ cũ có ảnh vẽ sẵn khung/điểm dự đoán và ảnh không phù hợp, được tách khỏi nguồn đang dùng sang `data/raw/rejected/R07-ashveer/`. Các kết quả kiểm tra R07 trong `source_audit_v1` thuộc bộ cũ, không áp dụng cho bản thay thế. Nhãn gốc `1`/`2` của bộ mới cần kiểm tra ý nghĩa trước khi quy về lớp `rat`.
 
 - README trong cả bốn ZIP ghi export ngày 24/10/2026 và không augmentation tại lần export này; chưa kết luận về dữ liệu trước khi import.
 - Trước khi đưa vào test: kiểm tra nguồn gốc, trùng file/pixel và ảnh gần giống với R01–R05; URL khác không tự chứng minh nguồn độc lập. Đặc biệt cần đối chiếu R08 với R03 vì cùng bộ tên 10 loài rắn; đây là dấu hiệu cần kiểm tra, chưa phải kết luận trùng dữ liệu.
