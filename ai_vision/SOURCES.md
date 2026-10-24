@@ -6,20 +6,21 @@ Project đã gộp: [Swiftlet and Predators Detection](https://app.roboflow.com/
 
 ## Các bộ dữ liệu sử dụng
 
-| Mã | Nguồn | Link | Lớp sử dụng | Giấy phép | Chia sẻ lại | Ngày tải | Công cụ |
-|---|---|---|---|---|---|---|---|
-| R01 | iOnest | [Swiftlet](https://universe.roboflow.com/ionest/swiftlet) | swiftlet | Public Domain | Có | Chưa ghi | Roboflow |
-| R02 | Rats | [Rat detection](https://universe.roboflow.com/rats-2lftk/rat-detection-xbnjq) | rat | Public Domain | Có | Chưa ghi | Roboflow |
-| R03 | Snake Demo | [Snake Detection](https://universe.roboflow.com/snake-demo/snake-detection-lbjeu) | snake | CC BY 4.0 | Có, cần ghi công | Chưa ghi | Roboflow |
-| R04 | Owl | [Owl](https://universe.roboflow.com/owl-kb7jn/owl-ljwf6) | owl | CC BY 4.0 | Có, cần ghi công | Chưa ghi | Roboflow |
-| R05 | alfatihmm | [Swiftlet](https://universe.roboflow.com/alfatihmm/swiftlet-giggc) | swiftlet | Cần kiểm tra | Cần kiểm tra | Chưa ghi | Roboflow |
+| Mã | Nguồn | Link | Lớp sử dụng | Giấy phép | Chia sẻ lại | Ngày tải | Công cụ | Tập |
+|---|---|---|---|---|---|---|---|---|
+| R01 | iOnest | [Swiftlet](https://universe.roboflow.com/ionest/swiftlet) | swiftlet | Public Domain | Có | Chưa ghi | Roboflow | train |
+| R02 | Rats | [Rat detection](https://universe.roboflow.com/rats-2lftk/rat-detection-xbnjq) | rat | Public Domain | Có | Chưa ghi | Roboflow | train |
+| R03 | Snake Demo | [Snake Detection](https://universe.roboflow.com/snake-demo/snake-detection-lbjeu) | snake | CC BY 4.0 | Có, cần ghi công | Chưa ghi | Roboflow | train |
+| R04 | Owl | [Owl](https://universe.roboflow.com/owl-kb7jn/owl-ljwf6) | owl | CC BY 4.0 | Có, cần ghi công | Chưa ghi | Roboflow | train |
+| R05 | alfatihmm | [Swiftlet](https://universe.roboflow.com/alfatihmm/swiftlet-giggc) | swiftlet | Cần kiểm tra | Cần kiểm tra | Chưa ghi | Roboflow | val |
 
 ## Ghi chú
 
 - Giấy phép được đối chiếu trên trang nguồn ngày 21/10/2026. Riêng R03 đối chiếu tại [phiên bản 5](https://universe.roboflow.com/snake-demo/snake-detection-lbjeu/dataset/5), chưa ghi lại phiên bản thực tế đã lấy. R05 chưa kiểm tra được giấy phép.
 - Nhãn gốc có tên khác nhau: R01 có `swiftlet`, `walet`; R02 dùng `Rat`; R04 có `owl` và `owl - v2 2025-01-11 1:14am`. Bản đang dùng đã thống nhất class ID: 0 owl, 1 rat, 2 snake, 3 swiftlet.
 - Chưa xác nhận phiên bản Universe gốc và ngày tải. Số ảnh bản ZIP nằm ở bảng dưới; số ảnh sau làm sạch và chia tập nằm trong README.md.
-- Đã chia train/val/test ngày 22/10/2026. `splits.csv` ghi tập và nhóm từng ảnh; xem [README.md](README.md) để biết bộ dữ liệu đang dùng.
+- Ngày 24/10/2026 đã sửa chia theo nguồn: mỗi dataset R01–R05 nằm nguyên trong đúng một tập. `splits.csv` có một dòng `nguon,tap` mỗi nguồn và là đầu vào của script. Bản chia theo tên ảnh ngày 22/10 không đáp ứng spec, chỉ giữ đối chiếu.
+- R02/R03/R04 mỗi lớp chỉ có một nguồn: đưa toàn bộ vào train và ghi rõ **không có tập test độc lập**. R01 vào train, R05 vào val để có val swiftlet độc lập nguồn; hiện chưa có nguồn test, chưa đủ val/test cho thiên địch. Cần bổ sung nguồn trước khi đánh giá đầy đủ; xem [README.md](README.md).
 - Các nguồn trên là bộ ảnh. Video dùng để đếm chim và đánh giá cảnh báo sẽ ghi bổ sung riêng.
 
 ## Các bản nguồn đã nhận
