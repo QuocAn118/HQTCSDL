@@ -72,3 +72,15 @@ R07 hiện dùng bộ `rat-fsvlk` do người phụ trách cung cấp thay cho b
 - Các CSV kiểm trùng/lỗi nằm trong `data/working/source_audit_v1/` và `source_audit_R07_v2/`; các bảng ảnh đối chiếu và mẫu xem nhãn cùng thư mục. Tóm tắt số lượng và SHA-256 ZIP được lưu trong [báo cáo kiểm tra nguồn](reports/2026-10-24-source-audit.json). Các phép kiểm gần giống không bảo đảm phát hiện hết crop/cảnh video chung hoặc chứng minh nguồn gốc độc lập tuyệt đối. Mới rà mẫu nhãn, chưa duyệt toàn bộ từng đối tượng; cần hoàn tất rà nhãn trước khi đóng băng bộ test đo chính thức.
 - Đã có nguồn train/test riêng cho rat/snake/owl. Vẫn thiếu val độc lập cho ba lớp này; không dùng test để chọn ngưỡng. Các bộ ảnh mới không thay thế video test để đo đếm chim hoặc cảnh báo theo sự kiện.
 
+## Đối chiếu điều kiện hai nguồn cho mỗi lớp thiên địch
+
+Đã hoàn tất phần bổ sung nguồn và tạo tập test theo nguồn trong `data/working/split_v3/`:
+
+| Lớp | Nguồn train | Nguồn test | Ảnh test sau xử lý |
+|---|---|---|---:|
+| rat | R02 | R07 — rat-fsvlk thay thế | 212 |
+| snake | R03 | R08 | 1.403 |
+| owl | R04 | R06 | 42 |
+
+Mỗi lớp đã có hai mã nguồn, mỗi nguồn chỉ thuộc một tập; các ảnh gần trùng đã phát hiện với nguồn cũ được loại khỏi test. Việc rà toàn bộ nhãn, xác minh thêm cảnh/nguồn gốc nếu có nghi vấn và bổ sung val thiên địch vẫn cần hoàn tất trước khi tinh chỉnh hoặc đo chính thức. Chưa chạy mô hình để đo trên test.
+
