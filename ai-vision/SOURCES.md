@@ -10,17 +10,17 @@ Ngày 24/10/2026 nhận thêm R06–R09 (bảng bên dưới), kiểm trùng và
 
 | Mã | Nguồn | Link | Lớp sử dụng | Giấy phép | Chia sẻ lại | Ngày tải | Công cụ | Tập |
 |---|---|---|---|---|---|---|---|---|
-| R01 | iOnest | [Swiftlet](https://universe.roboflow.com/ionest/swiftlet) | swiftlet | Public Domain | Có | Chưa ghi | Roboflow | train |
-| R02 | Rats | [Rat detection](https://universe.roboflow.com/rats-2lftk/rat-detection-xbnjq) | rat | Public Domain | Có | Chưa ghi | Roboflow | train |
-| R03 | Snake Demo | [Snake Detection](https://universe.roboflow.com/snake-demo/snake-detection-lbjeu) | snake | CC BY 4.0 | Có, cần ghi công | Chưa ghi | Roboflow | train |
-| R04 | Owl | [Owl](https://universe.roboflow.com/owl-kb7jn/owl-ljwf6) | owl | CC BY 4.0 | Có, cần ghi công | Chưa ghi | Roboflow | train |
-| R05 | alfatihmm | [Swiftlet](https://universe.roboflow.com/alfatihmm/swiftlet-giggc) | swiftlet | Cần kiểm tra | Cần kiểm tra | Chưa ghi | Roboflow | val |
+| R01 | iOnest | [Swiftlet](https://universe.roboflow.com/ionest/swiftlet) | swiftlet | Public Domain | Có | 18/10/2026 | Roboflow | train |
+| R02 | Rats | [Rat detection](https://universe.roboflow.com/rats-2lftk/rat-detection-xbnjq) | rat | Public Domain | Có | 18/10/2026 | Roboflow | train |
+| R03 | Snake Demo | [Snake Detection](https://universe.roboflow.com/snake-demo/snake-detection-lbjeu) | snake | CC BY 4.0 | Có, cần ghi công | 18/10/2026 | Roboflow | train |
+| R04 | Owl | [Owl](https://universe.roboflow.com/owl-kb7jn/owl-ljwf6) | owl | CC BY 4.0 | Có, cần ghi công | 18/10/2026 | Roboflow | train |
+| R05 | alfatihmm | [Swiftlet](https://universe.roboflow.com/alfatihmm/swiftlet-giggc) | swiftlet | Cần kiểm tra | Cần kiểm tra | 18/10/2026 | Roboflow | val |
 
 ## Ghi chú
 
 - Giấy phép được đối chiếu trên trang nguồn ngày 21/10/2026. Riêng R03 đối chiếu tại [phiên bản 5](https://universe.roboflow.com/snake-demo/snake-detection-lbjeu/dataset/5), chưa ghi lại phiên bản thực tế đã lấy. R05 chưa kiểm tra được giấy phép.
 - Nhãn gốc có tên khác nhau: R01 có `swiftlet`, `walet`; R02 dùng `Rat`; R04 có `owl` và `owl - v2 2025-01-11 1:14am`. Bản đang dùng đã thống nhất class ID: 0 owl, 1 rat, 2 snake, 3 swiftlet.
-- Chưa xác nhận phiên bản Universe gốc và ngày tải. Số ảnh bản ZIP nằm ở bảng dưới; số ảnh sau làm sạch và chia tập nằm trong README.md.
+- Ngày tải do người phụ trách xác nhận: R01–R05 ngày 18/10/2026, R06–R09 ngày 24/10/2026. Chưa xác nhận phiên bản Universe gốc. Số ảnh bản ZIP nằm ở bảng dưới; số ảnh sau làm sạch và chia tập nằm trong README.md.
 - Ngày 24/10/2026 đã sửa chia theo nguồn: mỗi dataset R01–R05 nằm nguyên trong đúng một tập. `splits.csv` có một dòng `nguon,tap` mỗi nguồn và là đầu vào của script. Bản chia theo tên ảnh ngày 22/10 không đáp ứng spec, chỉ giữ đối chiếu.
 - Ở bản cũ `split_v2`, R02/R03/R04 chỉ có nguồn train. Bản `split_v3` bổ sung R06 (owl), R07 mới (rat), R08 (snake), R09 (swiftlet) vào test sau khi loại ảnh trùng/lỗi. R01–R04 vẫn train, R05 vẫn val. Còn thiếu val độc lập cho thiên địch; xem [README.md](README.md).
 - Các nguồn trên là bộ ảnh. Video dùng để đếm chim và đánh giá cảnh báo sẽ ghi bổ sung riêng.
@@ -45,14 +45,14 @@ R01 và R05 cùng nhóm `swiftlet`; R02 là `rat`, R03 là `snake`, R04 là `owl
 
 ## Nguồn bổ sung R06–R09 (nhận ngày 24/10/2026)
 
-URL do người phụ trách cung cấp; đã đối chiếu metadata trong ZIP ở `data/raw/sources/<mã>/`. Ngày nhận và ngày export không khẳng định ngày tải hoặc phiên bản Universe gốc.
+URL do người phụ trách cung cấp; đã đối chiếu metadata trong ZIP ở `data/raw/sources/<mã>/`. Ngày tải R06–R09 được người phụ trách xác nhận là 24/10/2026; phiên bản Universe gốc chưa được xác nhận.
 
 | Mã | Nguồn/đường dẫn cung cấp | Lớp đích | Ảnh trong ZIP | Ảnh giữ | Giấy phép | Ngày tải | Tập |
 |---|---|---|---:|---:|---|---|---|
-| R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | 42 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | Chưa xác nhận (nhận 24/10/2026) | test |
-| R07 | [Rat — Kwok Martin](https://universe.roboflow.com/kwok-martin-ip6on/rat-fsvlk) | rat | 225 | 212 | ZIP ghi CC BY 4.0 | Chưa xác nhận (nhận 24/10/2026) | test |
-| R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | 1.403 | Trang Universe và ZIP ghi CC BY 4.0 | Chưa xác nhận (nhận 24/10/2026) | test |
-| R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | 248 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | Chưa xác nhận (nhận 24/10/2026) | test |
+| R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | 42 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | 24/10/2026 | test |
+| R07 | [Rat — Kwok Martin](https://universe.roboflow.com/kwok-martin-ip6on/rat-fsvlk) | rat | 225 | 212 | ZIP ghi CC BY 4.0 | 24/10/2026 | test |
+| R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | 1.403 | Trang Universe và ZIP ghi CC BY 4.0 | 24/10/2026 | test |
+| R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | 248 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | 24/10/2026 | test |
 
 Ngày 24/10/2026, người phụ trách xác nhận các nguồn bổ sung dùng giấy phép CC BY 4.0, cho phép chia sẻ lại kèm ghi công. Giấy phép R06/R09 đã được người phụ trách xác nhận; R08 đã đối chiếu trang Universe và ZIP. Bản R07 thay thế ghi CC BY 4.0 trong ZIP.
 
