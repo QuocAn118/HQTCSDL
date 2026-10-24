@@ -49,12 +49,12 @@ URL do người phụ trách cung cấp; đã đối chiếu metadata trong ZIP 
 
 | Mã | Nguồn/đường dẫn cung cấp | Lớp đích | Số ảnh trong ZIP | Giấy phép | Tập dự kiến |
 |---|---|---|---:|---|---|
-| R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | ZIP ghi CC BY 4.0; chưa có URL/giấy phép nguồn gốc | test, chờ kiểm tra |
+| R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test, chờ kiểm tra |
 | R07 | [Rat Detection — Ashveer Test Workspace](https://universe.roboflow.com/ashveer-test-workspace/rat-detection-j9gzi) | rat | 443 | Trang Universe và ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
 | R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | Trang Universe và ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
-| R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | ZIP ghi CC BY 4.0; chưa truy cập được trang nguồn để đối chiếu | test, chờ kiểm tra |
+| R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | test, chờ kiểm tra |
 
-R07/R08 cần ghi công theo CC BY 4.0. R06/R09 chưa xác nhận quyền chia sẻ lại tại nguồn gốc; metadata của bản sao workspace không thay thế giấy phép gốc.
+Ngày 24/10/2026, người phụ trách xác nhận cả R06–R09 dùng giấy phép CC BY 4.0, cho phép chia sẻ lại kèm ghi công. R07/R08 đã đối chiếu trang Universe và ZIP; R06/R09 ghi nhận theo xác nhận của người phụ trách và metadata ZIP, chưa đối chiếu trực tiếp được trang nguồn gốc.
 
 | Mã | Project bản sao trong ZIP | Version export | Nhãn gốc |
 |---|---|---|---|
