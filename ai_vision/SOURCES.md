@@ -4,6 +4,8 @@ Dữ liệu lấy từ 5 bộ trên Roboflow Universe, sau đó gộp thành m�
 
 Project đã gộp: [Swiftlet and Predators Detection](https://app.roboflow.com/binhnguyen3244-gmail-com/swiftlet-and-predators-detection/browse).
 
+Ngày 24/10/2026 nhận thêm bốn nguồn ứng viên R06–R09 (bảng bên dưới). Các nguồn này chưa nhập vào bộ chia đang dùng `split_v2`.
+
 ## Các bộ dữ liệu sử dụng
 
 | Mã | Nguồn | Link | Lớp sử dụng | Giấy phép | Chia sẻ lại | Ngày tải | Công cụ | Tập |
@@ -40,4 +42,30 @@ YAML trong ZIP R05 ghi CC BY 4.0; đây là giấy phép của bản sao trong w
 Phần mềm huấn luyện: Ultralytics (AGPL-3.0).
 
 R01 và R05 cùng nhóm `swiftlet`; R02 là `rat`, R03 là `snake`, R04 là `owl`. Mã nguồn gốc được giữ trong danh mục chia tập để truy xuất.
+
+## Nguồn bổ sung R06–R09 (nhận ngày 24/10/2026)
+
+URL do người phụ trách cung cấp; đã đối chiếu metadata trong ZIP ở `data/raw/sources/<mã>/`. Ngày nhận và ngày export không khẳng định ngày tải hoặc phiên bản Universe gốc.
+
+| Mã | Nguồn/đường dẫn cung cấp | Lớp đích | Số ảnh trong ZIP | Giấy phép | Tập dự kiến |
+|---|---|---|---:|---|---|
+| R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | ZIP ghi CC BY 4.0; chưa có URL/giấy phép nguồn gốc | test, chờ kiểm tra |
+| R07 | [Rat Detection — Ashveer Test Workspace](https://universe.roboflow.com/ashveer-test-workspace/rat-detection-j9gzi) | rat | 443 | Trang Universe và ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
+| R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | Trang Universe và ZIP ghi CC BY 4.0 | test, chờ kiểm tra |
+| R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | ZIP ghi CC BY 4.0; chưa truy cập được trang nguồn để đối chiếu | test, chờ kiểm tra |
+
+R07/R08 cần ghi công theo CC BY 4.0. R06/R09 chưa xác nhận quyền chia sẻ lại tại nguồn gốc; metadata của bản sao workspace không thay thế giấy phép gốc.
+
+| Mã | Project bản sao trong ZIP | Version export | Nhãn gốc |
+|---|---|---|---|
+| R06 | owl-dataset-model-yedkr | 1 | great-horn-owl, grey-owl, snowy-owl |
+| R07 | rat-detection-j9gzi-ovwfb | 1 | rat |
+| R08 | snake-4lxhl-qf8y2 | 1 | bandotan_puspa, kobra_jawa, kobra_sumatera, sanca_kembang, ular_cecak, ular_gadung, ular_tambang, ular_tanah, viper_hijau, weling |
+| R09 | swiftlet-segmentation-85uph | 1 | chim yen |
+
+- README trong cả bốn ZIP ghi export ngày 24/10/2026 và không augmentation tại lần export này; chưa kết luận về dữ liệu trước khi import.
+- Trước khi đưa vào test: kiểm tra nguồn gốc, trùng file/pixel và ảnh gần giống với R01–R05; URL khác không tự chứng minh nguồn độc lập. Đặc biệt cần đối chiếu R08 với R03 vì cùng bộ tên 10 loài rắn; đây là dấu hiệu cần kiểm tra, chưa phải kết luận trùng dữ liệu.
+- Chuẩn hóa nhãn về class ID hiện tại: owl=0, rat=1, snake=2, swiftlet=3. R09 có tên project segmentation: phải kiểm tra định dạng nhãn thực tế; nếu là polygon thì chuyển sang bbox và rà lại trước khi dùng cho detection.
+- Chưa thêm R06–R09 vào `splits.csv`, chưa thay dữ liệu `sourced_v1`/`split_v2`. Chỉ gán chính thức sau khi kiểm tra; mỗi nguồn được chấp nhận phải nằm nguyên trong một tập.
+- Nếu R06–R09 đều được xác nhận độc lập và dùng cho test, vẫn thiếu val độc lập cho rat/snake/owl; không dùng test để chọn ngưỡng.
 
