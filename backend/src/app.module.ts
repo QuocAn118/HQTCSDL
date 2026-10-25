@@ -1,10 +1,44 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { DynamicModule, Module, Type } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import type { AppConfig } from './config/config';
+import { ConfigModule } from './config/config.module';
+import { DbModule } from './db/db.module';
+import { AuthModule } from './auth/auth.module';
+import { HealthModule } from './health/health.module';
+import { RealtimeModule } from './realtime/realtime.module';
+import { DbReadyGuard } from './common/guards/db-ready.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { RolesGuard } from './auth/roles.guard';
+import { OwnershipGuard } from './auth/ownership.guard';
+import { AllExceptionsFilter } from './common/all-exceptions.filter';
+import { SerializeInterceptor } from './common/serialize.interceptor';
+import { validationPipe } from './common/validation';
 
-@Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
-})
-export class AppModule {}
+// Moi task sau them module cua minh vao day.
+const FEATURE_MODULES: Type[] = [HealthModule, RealtimeModule];
+
+@Module({})
+export class AppModule {
+  static register(cfg: AppConfig): DynamicModule {
+    return {
+      module: AppModule,
+      imports: [
+        ConfigModule.forRoot(cfg),
+        DbModule,
+        AuthModule,
+        ...FEATURE_MODULES,
+      ],
+      providers: [
+        // Thu tu guard toan cuc = thu tu chay: san sang CSDL -> JWT -> vai tro -> so huu.
+        { provide: APP_GUARD, useExisting: DbReadyGuard },
+        DbReadyGuard,
+        { provide: APP_GUARD, useExisting: JwtAuthGuard },
+        { provide: APP_GUARD, useExisting: RolesGuard },
+        { provide: APP_GUARD, useExisting: OwnershipGuard },
+        { provide: APP_FILTER, useClass: AllExceptionsFilter },
+        { provide: APP_INTERCEPTOR, useClass: SerializeInterceptor },
+        { provide: APP_PIPE, useFactory: validationPipe },
+      ],
+    };
+  }
+}
