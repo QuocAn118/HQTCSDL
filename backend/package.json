@@ -10,18 +10,19 @@
     "prebuild": "npm run prisma:generate",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "node dist/main.js",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "pretest": "npm run prisma:generate",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:db": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testRegex \"\\.db-spec\\.ts$\""
+    "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json",
+    "test:db": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testRegex \"\\.db-spec\\.ts$\"",
+    "start:test": "set ENV_FILE=.env.test&& node dist/main.js"
   },
   "dependencies": {
     "@nestjs/common": "11.2.7",
