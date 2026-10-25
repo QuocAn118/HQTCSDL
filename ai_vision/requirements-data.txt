@@ -1,3 +1,0 @@
-# Dataset audit/preparation only; model training dependencies are separate.
-Pillow==12.0.0
-numpy==2.3.4
