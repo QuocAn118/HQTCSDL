@@ -6,6 +6,7 @@ import { DbModule } from './db/db.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { UsersModule } from './users/users.module';
 import { DbReadyGuard } from './common/guards/db-ready.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
@@ -15,7 +16,7 @@ import { SerializeInterceptor } from './common/serialize.interceptor';
 import { validationPipe } from './common/validation';
 
 // Moi task sau them module cua minh vao day.
-const FEATURE_MODULES: Type[] = [HealthModule, RealtimeModule];
+const FEATURE_MODULES: Type[] = [HealthModule, RealtimeModule, UsersModule];
 
 @Module({})
 export class AppModule {
