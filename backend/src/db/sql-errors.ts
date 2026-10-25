@@ -9,6 +9,8 @@ const PRISMA_CODES: Record<string, number> = {
 const MESSAGE_RULES: Array<[RegExp, number]> = [
   [/deadlock victim/i, 1205],
   [/conflicted with the (CHECK|FOREIGN KEY|REFERENCE) constraint/i, 547],
+  // S6: adapter khong tra so cho loi rang buoc; 2601 (chi muc duy nhat) phai dung truoc quy tac 2627.
+  [/duplicate key row .* unique index/i, 2601],
   [/duplicate key|UNIQUE KEY constraint|unique index/i, 2627],
   [/Login failed for user/i, 18456],
   [/Cannot open database/i, 4060],

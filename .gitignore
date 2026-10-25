@@ -12,6 +12,8 @@ backend/.env.test
 backend/node_modules/
 backend/dist/
 backend/storage/
+backend/src/generated/
+backend/prisma/
 # ai-vision
 ai-vision/.env
 ai-vision/.venv/

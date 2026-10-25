@@ -57,6 +57,63 @@ describe('sqlNumberOf', () => {
     expect(sqlNumberOf(err)).toBe(expected);
   });
 
+  // Hinh loi that chep tu spike S6 (Prisma 7.10.0 + adapter-mssql, CSDL that).
+  const real = (kind: string, message: string, code?: number) => ({
+    code: 'P2010',
+    message: `Raw query failed. Code: \`EREQUEST\`. Message: \`${message}\``,
+    meta: {
+      driverAdapterError: {
+        cause: { originalCode: 'EREQUEST', kind, ...(code && { code }) },
+      },
+    },
+  });
+  it.each([
+    [
+      'THROW 50030 (so o cause.code)',
+      real('mssql', 'Chuoi JSON khong hop le (can mot mang).', 50030),
+      50030,
+    ],
+    [
+      'THROW 50042',
+      real('mssql', '@StaleMinutes phai lon hon 0.', 50042),
+      50042,
+    ],
+    [
+      '547 CHECK (khong co so, chi co kind + message)',
+      real(
+        'ForeignKeyConstraintViolation',
+        'The UPDATE statement conflicted with the CHECK constraint "CK_Thresholds_MinMax".',
+      ),
+      547,
+    ],
+    [
+      '2627 UNIQUE KEY',
+      real(
+        'UniqueConstraintViolation',
+        "Violation of UNIQUE KEY constraint 'Users_Username_key'. Cannot insert duplicate key in object 'dbo.Users'.",
+      ),
+      2627,
+    ],
+    [
+      '2601 chi muc duy nhat',
+      real(
+        'UniqueConstraintViolation',
+        "Cannot insert duplicate key row in object 'dbo.Alerts' with unique index 'UX_Alerts_OpenThreshold'.",
+      ),
+      2601,
+    ],
+    [
+      '1205 deadlock',
+      real(
+        'TransactionWriteConflict',
+        'Transaction (Process ID 82) was deadlocked on lock resources with another process and has been chosen as the deadlock victim. Rerun the transaction.',
+      ),
+      1205,
+    ],
+  ])('hinh loi that S6: %s', (_label, err, expected) => {
+    expect(sqlNumberOf(err)).toBe(expected);
+  });
+
   it('khong lap vo han voi vong tham chieu', () => {
     const a: Record<string, unknown> = {};
     a.self = a;
