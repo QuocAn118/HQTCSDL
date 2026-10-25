@@ -36,7 +36,8 @@ describe('Khung ung dung (khong CSDL, khong MQTT)', () => {
     app = mod.createNestApplication();
     app.setGlobalPrefix('api');
     await app.init();
-  });
+    // K13: lan bien dich dau (ts-jest + client Prisma) co the vuot 5 s mac dinh.
+  }, 30_000);
   afterAll(() => app.close());
 
   it('route khong ton tai -> 404 dung dinh dang loi', async () => {
