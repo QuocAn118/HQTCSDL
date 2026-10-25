@@ -2,7 +2,7 @@
 
 Dữ liệu hiện dùng lấy từ 9 bộ trên Roboflow Universe, sau đó gộp thành một project gồm 4 lớp: `swiftlet`, `rat`, `snake`, `owl`.
 
-Project đã gộp: [Swiftlet and Predators Detection](https://app.roboflow.com/binhnguyen3244-gmail-com/swiftlet-and-predators-detection/browse).
+Project đã gộp: Swiftlet and Predators Detection, nằm trong workspace nhóm trên Roboflow.
 
 Ngày 24/10/2026 nhận thêm R06–R09 (bảng bên dưới), kiểm trùng và chuẩn hóa nhãn để tạo `split_v3`. Năm nguồn đầu giữ nguyên phân chia; các ảnh được giữ từ bốn nguồn mới nằm trong test.
 
@@ -49,7 +49,7 @@ URL do người phụ trách cung cấp; đã đối chiếu metadata trong ZIP 
 
 | Mã | Nguồn/đường dẫn cung cấp | Lớp đích | Ảnh trong ZIP | Ảnh giữ | Giấy phép | Ngày tải | Tập |
 |---|---|---|---:|---:|---|---|---|
-| R06 | [owl-dataset-model, bản sao workspace nhóm v1](https://app.roboflow.com/binhnguyen3244-gmail-com/owl-dataset-model-yedkr/1) | owl | 45 | 42 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | 24/10/2026 | test |
+| R06 | owl-dataset-model v1, bản sao trong workspace nhóm trên Roboflow | owl | 45 | 42 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | 24/10/2026 | test |
 | R07 | [Rat — Kwok Martin](https://universe.roboflow.com/kwok-martin-ip6on/rat-fsvlk) | rat | 225 | 212 | ZIP ghi CC BY 4.0 | 24/10/2026 | test |
 | R08 | [Snake — snake](https://universe.roboflow.com/snake-h3qp4/snake-4lxhl) | snake | 1.447 | 1.403 | Trang Universe và ZIP ghi CC BY 4.0 | 24/10/2026 | test |
 | R09 | [Swiftlet Segmentation — test](https://universe.roboflow.com/test-avhhz/swiftlet-segmentation) | swiftlet | 248 | 248 | CC BY 4.0 — người phụ trách xác nhận, khớp ZIP | 24/10/2026 | test |
@@ -71,6 +71,8 @@ R07 hiện dùng bộ `rat-fsvlk` do người phụ trách cung cấp thay cho b
 - Chuẩn hóa class ID: owl=0, rat=1, snake=2, swiftlet=3. `splits.csv` có R06–R09 → test; mọi ảnh được giữ của cùng nguồn chỉ nằm trong một tập. `sourced_v1` và `split_v2` được giữ để đối chiếu.
 - Các CSV kiểm trùng/lỗi nằm trong `data/working/source_audit_v1/` và `source_audit_R07_v2/`; các bảng ảnh đối chiếu và mẫu xem nhãn cùng thư mục. Tóm tắt số lượng và SHA-256 ZIP được lưu trong [báo cáo kiểm tra nguồn](reports/2026-10-24-source-audit.json). Các phép kiểm gần giống không bảo đảm phát hiện hết crop/cảnh video chung hoặc chứng minh nguồn gốc độc lập tuyệt đối. Mới rà mẫu nhãn, chưa duyệt toàn bộ từng đối tượng; cần hoàn tất rà nhãn trước khi đóng băng bộ test đo chính thức.
 - Đã có nguồn train/test riêng cho rat/snake/owl. Vẫn thiếu val độc lập cho ba lớp này; không dùng test để chọn ngưỡng. Các bộ ảnh mới không thay thế video test để đo đếm chim hoặc cảnh báo theo sự kiện.
+- Hạn chế: R05 chưa xác minh giấy phép trên trang gốc, chỉ dùng ở tập val; nhóm chấp nhận đây là hạn chế.
+- Hạn chế: R06 là bản sao trong workspace nhóm, chưa có link Universe gốc.
 
 ## Đối chiếu điều kiện hai nguồn cho mỗi lớp thiên địch
 
