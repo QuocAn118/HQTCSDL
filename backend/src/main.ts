@@ -6,6 +6,7 @@ import { ConfigError, loadConfig } from './config/config';
 import type { AppConfig } from './config/config';
 import { ensureStorage } from './config/storage';
 import { DbService } from './db/db.service';
+import { MqttService } from './mqtt/mqtt.service';
 import { CorsIoAdapter } from './realtime/io.adapter';
 
 async function bootstrap(): Promise<void> {
@@ -32,5 +33,6 @@ async function bootstrap(): Promise<void> {
   await app.listen(cfg.port, cfg.host);
   log.log(`Lang nghe ${cfg.host}:${cfg.port}, CSDL ${cfg.db.database}`);
   app.get(DbService).start();
+  app.get(MqttService).start();
 }
 void bootstrap();
