@@ -10,6 +10,7 @@ import { ControlLoopModule } from './control-loop/control-loop.module';
 import { ControlModule } from './control/control.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { UsersModule } from './users/users.module';
+import { HousesModule } from './houses/houses.module';
 import { DbReadyGuard } from './common/guards/db-ready.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
@@ -26,6 +27,7 @@ const FEATURE_MODULES: Type[] = [
   HealthModule,
   RealtimeModule,
   UsersModule,
+  HousesModule,
 ];
 
 @Module({})
