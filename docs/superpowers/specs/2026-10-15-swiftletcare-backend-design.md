@@ -227,7 +227,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 | Loại | Ví dụ | Xử lý |
 |---|---|---|
 | **Chưa sẵn sàng** | SQL Server chưa chạy, mất kết nối, hết thời gian; truy vấn nạp quá hạn; broker chưa chạy | Thử lại tăng dần **1, 2, 5, 10, 30 giây**, rồi mỗi 30 giây; **không giới hạn số lần**; log khi trạng thái đổi |
-| **Cấu hình sai** | SQL đăng nhập sai (lỗi **18456**), CSDL không tồn tại (lỗi **4060**); broker từ chối tài khoản (CONNACK 4 "Bad username or password" / 5 "Not authorized") | **5 lần liên tiếp** → log rõ (VD "đăng nhập SQL Server bị từ chối, kiểm tra `DB_USER`/`DB_PASSWORD`") rồi **dừng, mã thoát khác 0**. **Không in** mật khẩu hay chuỗi kết nối |
+| **Cấu hình sai** | SQL đăng nhập sai (lỗi **18456**), CSDL không tồn tại (lỗi **4060**); broker từ chối tài khoản (CONNACK 4 "Bad username or password" / 5 "Not authorized") | CSDL: **5 lần liên tiếp**; MQTT: **ngay lần đầu** (mqtt.js 5.16.1 không tự kết nối lại sau CONNACK 4/5, S9) → log rõ (VD "đăng nhập SQL Server bị từ chối, kiểm tra `DB_USER`/`DB_PASSWORD`") rồi **dừng, mã thoát khác 0**. **Không in** mật khẩu hay chuỗi kết nối |
 
 Lỗi khác tính là "chưa sẵn sàng".
 
@@ -680,6 +680,7 @@ Sự kiện phát trong lúc nhà bị ngừng dùng **không được phát bù
 | Khi nào | Việc |
 |---|---|
 | Ngày trước buổi demo thật | **Triển khai `SwiftletCare` MỘT lần**, ngày neo = hôm qua của buổi demo, **không `-Reset`** (spec ai-vision 4.6) |
+| Triển khai `SwiftletCare` | `SwiftletCare` (demo) triển khai **từ đầu** bằng `deploy.ps1` sau khi đã có migration `20261027101307_datetime2_precision0`, nên không có dữ liệu cũ để làm tròn |
 | Cài máy demo | `.env`: `DB_NAME=SwiftletCare`, **`DEMO_TOOLS=true`**, `ANOMALY_SCHEDULER=on`, `CORS_ORIGINS` thêm IP LAN của web. Mở cổng 3000 trên Windows Firewall (mạng Private). Mobile: `EXPO_PUBLIC_API_URL=http://<IP LAN>:3000` (hợp đồng 3.6) |
 | Thứ tự bật | SQL Server → Mosquitto → **simulator → backend** → AI → web, mobile. **Simulator trước backend**: dữ liệu mẫu có `LastSeenAt` 19:55 VN ngày neo; backend chạy mà simulator chưa gửi thì nhịp mỗi phút đánh dấu **6 cảm biến OFFLINE, tạo 6 `DEVICE_OFFLINE`** (nếu mục 11 của database-core còn). Bật thứ tự khác thì đây là **hành vi mong đợi**, người trình bày nói trước |
 | Kiểm tra | Điện thoại mở `http://<IP LAN>:3000/api/health` thấy `{"status":"ok",…}` |

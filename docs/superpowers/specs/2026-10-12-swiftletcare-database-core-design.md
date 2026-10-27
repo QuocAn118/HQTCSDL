@@ -78,7 +78,7 @@ Cả 5 thành viên dùng Windows → chỉ cần `scripts/deploy.ps1`, không l
 
 ### Quy ước
 
-- Thời gian: `DATETIME2(0)` lưu UTC; mặc định `@default(dbgenerated("sysutcdatetime()"))`; SP/trigger dùng `SYSUTCDATETIME()`. JSON dùng ISO 8601 có hậu tố `Z`.
+- Thời gian: `DATETIME2(0)` lưu UTC; mặc định `@default(dbgenerated("sysutcdatetime()"))`; SP/trigger dùng `SYSUTCDATETIME()`. JSON dùng ISO 8601 có hậu tố `Z`. Prisma 7 không ghi được `DATETIME2(0)` (lỗi P1012), nên `schema.prisma` giữ `@db.DateTime2` và độ chính xác `(0)` do migration viết tay `20261027101307_datetime2_precision0` đặt; cột thời gian mới do Prisma sinh sẽ là `(7)`, phải `ALTER` viết tay.
 - SP nhận JSON qua `OPENJSON` (không TVP); backend gọi bằng `$queryRaw`/`$executeRaw` có tham số.
 - **Mỗi SP trả đúng 1 tập kết quả.**
 - Lỗi nghiệp vụ: `THROW` mã 5xxxx; backend đổi sang HTTP 400/409.

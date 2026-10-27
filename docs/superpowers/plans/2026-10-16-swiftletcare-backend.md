@@ -50,7 +50,7 @@ Hết 23/10 mà Task 15 chưa xong thì TV2 báo nhóm để người hỗ trợ
 - Tên trường API camelCase, đổi ở `common/serialize.ts`; trường rỗng là `null`, không bỏ khóa; DECIMAL ra `number`; `BigInt` ra chuỗi.
 - Cảnh báo ra API đúng 14 khóa, đúng thứ tự: `alertId, houseId, zoneId, deviceId, alertType, severity, metricCode, value, detectedClass, confidence, hasSnapshot, message, status, createdAt`.
 - Định dạng lỗi: `{"error":{"code","message","sqlNumber","details"}}`; `message` lấy từ bảng câu tiếng Việt cố định; không bao giờ lộ lỗi SQL, đường dẫn máy chủ, stack.
-- Cố định trong code: JWT HS256 hạn **28800** giây; client id MQTT `swiftlet-backend`, `clean: false`; thư mục `backend/storage/`; adapter `useUTC: true`; lỗi cấu hình CSDL/MQTT **5 lần liên tiếp** thì dừng; lịch thử lại **1, 2, 5, 10, 30 giây** rồi mỗi 30 giây.
+- Cố định trong code: JWT HS256 hạn **28800** giây; client id MQTT `swiftlet-backend`, `clean: false`; thư mục `backend/storage/`; adapter `useUTC: true`; lỗi cấu hình **CSDL 5 lần liên tiếp** thì dừng, **MQTT sai tài khoản (CONNACK 4/5) dừng ngay lần đầu** (S9: mqtt.js 5.16.1 không tự kết nối lại); lịch thử lại **1, 2, 5, 10, 30 giây** rồi mỗi 30 giây.
 - Log không bao giờ chứa `Authorization`, `X-Service-Key`, mật khẩu, body `login`/`reset-password`, giá trị biến `.env`.
 - `.env` và `.env.test` không commit; chỉ commit `.env.example`, `.env.test.example`. **Không tạo hay ghi đè `.gitignore` gốc** (đã có, commit `1c308a5`); chỉ thêm dòng còn thiếu.
 - Commit message tiếng Việt, kết thúc bằng dòng `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
@@ -3783,20 +3783,38 @@ describe('MqttService', () => {
     expect(p.issuedAt).toMatch(/Z$/);
   });
 
-  it('sai tai khoan (CONNACK 4/5) 5 lan lien tiep -> exit(1); goi onConnect moi lan ket noi', () => {
+  it('goi onConnect moi lan ket noi', () => {
     const { client, connect } = fake();
-    const exit = jest.fn();
-    const m = new MqttService(cfg, connect as never, exit);
+    const m = new MqttService(cfg, connect as never, jest.fn());
     const onConnect = jest.fn();
     m.onConnect(onConnect);
     m.start();
     client.emit('connect');
     client.emit('connect');
     expect(onConnect).toHaveBeenCalledTimes(2);
-    for (let i = 0; i < 4; i++) client.emit('error', Object.assign(new Error('Connection refused: Not authorized'), { code: 5 }));
-    expect(exit).not.toHaveBeenCalled();
-    client.emit('error', Object.assign(new Error('Connection refused: Bad username or password'), { code: 4 }));
+  });
+
+  // S9: mqtt.js khong tu ket noi lai sau CONNACK 4/5, nen dung ngay lan dau.
+  it.each([
+    [5, 'Connection refused: Not authorized'],
+    [4, 'Connection refused: Bad username or password'],
+  ])('sai tai khoan (CONNACK %i) -> exit(1) ngay lan dau', (code, msg) => {
+    const { client, connect } = fake();
+    const exit = jest.fn();
+    const m = new MqttService(cfg, connect as never, exit);
+    m.start();
+    client.emit('error', Object.assign(new Error(msg), { code }));
+    expect(exit).toHaveBeenCalledTimes(1);
     expect(exit).toHaveBeenCalledWith(1);
+  });
+
+  it('loi khac (ECONNREFUSED) -> khong dung, de mqtt.js tu ket noi lai', () => {
+    const { client, connect } = fake();
+    const exit = jest.fn();
+    const m = new MqttService(cfg, connect as never, exit);
+    m.start();
+    for (let i = 0; i < 6; i++) client.emit('error', Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' }));
+    expect(exit).not.toHaveBeenCalled();
   });
 
   it('close -> het ket noi', () => {
@@ -3832,7 +3850,6 @@ export class MqttService extends MqttStatus {
   private readonly log = new Logger('MQTT');
   private client: MqttClient | null = null;
   private connected = false;
-  private authFailures = 0;
   private readingsHandler: Handler | null = null;
   private heartbeatHandler: Handler | null = null;
   private readonly connectHandlers: Array<() => void> = [];
@@ -3858,7 +3875,6 @@ export class MqttService extends MqttStatus {
     c.on('connect', () => {
       if (!this.connected) this.log.log('Da ket noi broker');
       this.connected = true;
-      this.authFailures = 0;
       c.subscribe('swiftlet/devices/+/readings', { qos: 1 });
       if (this.heartbeatHandler) c.subscribe('swiftlet/devices/+/heartbeat', { qos: 0 });
       for (const fn of this.connectHandlers) {
@@ -3870,11 +3886,10 @@ export class MqttService extends MqttStatus {
       this.connected = false;
     });
     c.on('error', (err: Error & { code?: number | string }) => {
-      // CONNACK 4 "Bad username or password" / 5 "Not authorized" (S9) -> cau hinh sai.
+      // CONNACK 4 "Bad username or password" / 5 "Not authorized": mqtt.js khong tu ket noi lai (S9) -> dung ngay.
       if (err.code === 4 || err.code === 5) {
-        this.authFailures += 1;
-        this.log.error(`Broker tu choi tai khoan (lan ${this.authFailures}/5), kiem tra MQTT_USERNAME/MQTT_PASSWORD`);
-        if (this.authFailures >= 5) this.exit(1);
+        this.log.error(`Broker tu choi tai khoan (CONNACK ${err.code}), kiem tra MQTT_USERNAME/MQTT_PASSWORD; dung backend`);
+        this.exit(1);
         return;
       }
       this.log.warn(`Loi MQTT: ${err.code ?? err.message}`);
@@ -3921,7 +3936,7 @@ Expected: PASS (e2e không gọi `start()`).
 
 - [ ] **Step 5: Kiểm tay với Mosquitto**
 
-`npm run build; npm run start`, rồi `curl.exe -s http://localhost:3000/api/health` → `{"status":"ok","db":"ok","mqtt":"connected"}`. Đổi tạm `MQTT_PASSWORD` sai trong `.env`, chạy lại → sau 5 lần log "Broker tu choi tai khoan" backend dừng mã 1. Trả `.env` về đúng.
+`npm run build; npm run start`, rồi `curl.exe -s http://localhost:3000/api/health` → `{"status":"ok","db":"ok","mqtt":"connected"}`. Đổi tạm `MQTT_PASSWORD` sai trong `.env`, chạy lại → **ngay lần đầu** log "Broker tu choi tai khoan (CONNACK 5)" backend dừng mã 1 trong vài giây. Trả `.env` về đúng.
 
 - [ ] **Step 6: Commit**
 
