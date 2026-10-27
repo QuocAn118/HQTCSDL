@@ -82,6 +82,7 @@ Dữ liệu bao gồm các tình huống:
 ## 6. Quy ước phát triển
 
 - Các bảng được định nghĩa trong `prisma/schema.prisma`.
+- Cột thời gian mới do Prisma sinh sẽ là `DATETIME2(7)` (Prisma không ghi được `@db.DateTime2(0)`); trong cùng migration phải viết tay `ALTER COLUMN ... DATETIME2(0)` (xem `20261027101307_datetime2_precision0`).
 - View, Stored Procedure và Trigger nằm trong thư mục `sql/`.
 - Các file SQL được triển khai theo thứ tự thư mục và tên file.
 - Không ghi trực tiếp vào bảng `Alerts` bằng Prisma trong luồng nghiệp vụ.

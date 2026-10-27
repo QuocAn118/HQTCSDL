@@ -8,6 +8,9 @@ datasource db {
   provider = "sqlserver"
 }
 
+// @db.DateTime2 khong nhan do chinh xac (Prisma 7, P1012) -> Prisma tao DATETIME2(7).
+// Cac cot thoi gian duoc dua ve DATETIME2(0) bang migration viet tay 20261027101307_datetime2_precision0.
+
 model Users {
   UserId       Int      @id @default(autoincrement())
   Username     String   @unique @db.VarChar(50)
