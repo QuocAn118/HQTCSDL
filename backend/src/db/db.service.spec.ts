@@ -69,6 +69,8 @@ describe('DbService', () => {
     await jest.advanceTimersByTimeAsync(1000 + 2000 + 5000 + 10000 + 1);
     expect(exit).toHaveBeenCalledWith(1);
     expect(logged.join('\n')).toContain('DB_USER');
+    // K7: CSDL khong ton tai cung ra "Login failed" (S6) -> goi y ca DB_NAME.
+    expect(logged.join('\n')).toContain('DB_NAME');
     expect(logged.join('\n')).not.toMatch(/password=|PWD=/i);
   });
 

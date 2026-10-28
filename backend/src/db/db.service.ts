@@ -30,7 +30,9 @@ export function createPrisma(cfg: AppConfig): PrismaClient {
 }
 
 const CONFIG_HINT: Record<number, string> = {
-  18456: 'dang nhap SQL Server bi tu choi, kiem tra DB_USER/DB_PASSWORD',
+  // CSDL khong ton tai cung ra "Login failed" 18456 (S6, K7).
+  18456:
+    'dang nhap SQL Server bi tu choi, kiem tra DB_USER/DB_PASSWORD va DB_NAME (CSDL co ton tai khong)',
   4060: 'CSDL khong ton tai hoac khong co quyen, kiem tra DB_NAME',
 };
 
