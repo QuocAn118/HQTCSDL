@@ -268,4 +268,36 @@ describe('IngestService', () => {
     await new Promise((r) => setImmediate(r));
     expect(err).toHaveBeenCalledWith(expect.stringContaining('vong hong'));
   });
+
+  // T21-3: tick() chay nen (lo du 200, nhip 1 giay) bi tu choi -> log, khong thanh unhandled rejection.
+  it.each(['lo du 200', 'nhip 1 giay'])(
+    'tick nen (%s) bi tu choi -> log loi',
+    async (via) => {
+      jest.useFakeTimers();
+      const { svc, db } = setup(
+        jest.fn(async () => {
+          throw new Error('timeout ghi');
+        }),
+      );
+      db.reportFailure.mockImplementation(() => {
+        throw new Error('bao loi hong');
+      });
+      const err = jest
+        .spyOn(
+          (svc as unknown as { log: { error: (m: string) => void } }).log,
+          'error',
+        )
+        .mockImplementation(() => undefined);
+      if (via === 'lo du 200') svc.receive('H1-F1-SENSOR', payload(200));
+      else {
+        svc.onModuleInit();
+        svc.receive('H1-F1-SENSOR', payload(1));
+        await jest.advanceTimersByTimeAsync(1000);
+        svc.onModuleDestroy();
+      }
+      await jest.advanceTimersByTimeAsync(0);
+      jest.useRealTimers();
+      expect(err).toHaveBeenCalledWith(expect.stringContaining('bao loi hong'));
+    },
+  );
 });

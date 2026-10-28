@@ -52,7 +52,7 @@ export class IngestService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit(): void {
     this.mqtt.onReadings((code, payload) => this.receive(code, payload));
-    this.timer = setInterval(() => void this.tick(), 1000); // gom lo moi 1 giay (hop dong 2.3)
+    this.timer = setInterval(() => this.tickInBackground(), 1000); // gom lo moi 1 giay (hop dong 2.3)
   }
 
   onModuleDestroy(): void {
@@ -79,7 +79,13 @@ export class IngestService implements OnModuleInit, OnModuleDestroy {
         `Hang cho vuot INGEST_RETRY_MAX_ITEMS: bo ${excess} so do cu nhat`,
       );
     }
-    if (this.queue.length >= BATCH_SIZE) void this.tick();
+    if (this.queue.length >= BATCH_SIZE) this.tickInBackground();
+  }
+
+  private tickInBackground(): void {
+    this.tick().catch((e: Error) =>
+      this.log.error(`Nhip ghi so do loi: ${e.message}`),
+    );
   }
 
   async tick(): Promise<void> {

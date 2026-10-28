@@ -15,6 +15,7 @@ export class MqttService extends MqttStatus {
   private readonly log = new Logger('MQTT');
   private client: MqttClient | null = null;
   private connected = false;
+  private stopping = false;
   private readingsHandler: Handler | null = null;
   private heartbeatHandler: Handler | null = null;
   private readonly connectHandlers: Array<() => void> = [];
@@ -69,7 +70,7 @@ export class MqttService extends MqttStatus {
       }
     });
     c.on('close', () => {
-      if (this.connected)
+      if (this.connected && !this.stopping)
         this.log.warn('Mat ket noi broker, mqtt.js tu ket noi lai');
       this.connected = false;
     });
@@ -116,6 +117,7 @@ export class MqttService extends MqttStatus {
   }
 
   async end(): Promise<void> {
+    this.stopping = true; // close do tat em, khong phai mat ket noi
     await this.client?.endAsync(false);
     this.connected = false;
   }

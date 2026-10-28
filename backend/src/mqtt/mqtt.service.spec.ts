@@ -143,4 +143,21 @@ describe('MqttService', () => {
     client.emit('close');
     expect(m.isConnected()).toBe(false);
   });
+
+  // T21-1: tat em khong duoc bao "mat ket noi broker".
+  it('end() -> close khong log WARN mat ket noi', async () => {
+    const { client, connect } = fake();
+    client.endAsync.mockImplementation(async () => {
+      client.emit('close');
+    });
+    const m = new MqttService(cfg, connect as never, jest.fn());
+    const warn = jest
+      .spyOn((m as unknown as { log: { warn: () => void } }).log, 'warn')
+      .mockImplementation(() => undefined);
+    m.start();
+    client.emit('connect');
+    await m.end();
+    expect(warn).not.toHaveBeenCalled();
+    expect(m.isConnected()).toBe(false);
+  });
 });
