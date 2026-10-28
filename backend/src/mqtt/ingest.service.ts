@@ -14,7 +14,12 @@ import { CLOCK, ControlCache } from '../control-loop/cache.service';
 import { ControlLoopService } from '../control-loop/control-loop.service';
 import { DbService } from '../db/db.service';
 import { IngestResult, ReadingItem, SpService } from '../db/sp';
-import { isConnectionError, sqlNumberOf } from '../db/sql-errors';
+import {
+  isConnectionError,
+  isDbConfigError,
+  isRequestTimeout,
+  sqlNumberOf,
+} from '../db/sql-errors';
 import { RealtimeService } from '../realtime/realtime.service';
 import {
   BATCH_SIZE,
@@ -155,14 +160,18 @@ export class IngestService implements OnModuleInit, OnModuleDestroy {
   private onFailure(e: unknown, size: number): void {
     const n = sqlNumberOf(e);
     const now = this.clock().getTime();
+    // 942/18456/4060: CSDL OFFLINE hoac dang RESTORE (dang nhap lai bi tu choi) -> tam thoi, giu lo (T23-2).
     if (
       isConnectionError(e) ||
+      isRequestTimeout(e) ||
       n === 1205 ||
+      n === 942 ||
+      isDbConfigError(n) ||
       (e as Error)?.message?.startsWith('timeout')
     ) {
       if (!this.failing)
         this.log.warn(
-          'Ghi so do loi (mat ket noi/het thoi gian/1205), giu lo va thu lai',
+          'Ghi so do loi (mat ket noi/het thoi gian/1205/CSDL khong mo duoc), giu lo va thu lai',
         );
       this.failing = true;
       this.nextAt = now + retryDelay(this.retryAttempt++);

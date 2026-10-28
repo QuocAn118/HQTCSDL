@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { ApiError, DB_HEALTH, MESSAGES } from './errors';
 import type { DbHealth } from './errors';
-import { isConnectionError, mapSqlError, sqlNumberOf } from '../db/sql-errors';
+import {
+  isConnectionError,
+  isRequestTimeout,
+  mapSqlError,
+  sqlNumberOf,
+} from '../db/sql-errors';
 
 const HTTP_CODES: Record<number, string> = {
   400: 'VALIDATION_ERROR',
@@ -34,7 +39,8 @@ export function toApiError(e: unknown): ApiError {
       code === 'VALIDATION_ERROR' ? { fields: ['body'] } : null,
     );
   }
-  if (isConnectionError(e)) return new ApiError(503, 'RETRY_LATER');
+  if (isConnectionError(e) || isRequestTimeout(e))
+    return new ApiError(503, 'RETRY_LATER');
   const n = sqlNumberOf(e);
   return n !== null ? mapSqlError(n) : new ApiError(500, 'INTERNAL');
 }

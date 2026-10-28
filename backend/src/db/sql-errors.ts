@@ -30,7 +30,9 @@ const CONNECTION_CODES = new Set([
   'EINSTLOOKUP',
 ]);
 const CONNECTION_MESSAGE =
-  /Failed to connect|Connection lost|ConnectionError|socket hang up|Connection is closed|Timeout: Request failed|server closed the connection/i;
+  /Failed to connect|Connection lost|ConnectionError|socket hang up|Connection is closed|server closed the connection/i;
+// mssql: "Timeout: Request failed to complete in Nms" (code ETIMEOUT, trung ma voi qua han ket noi).
+const REQUEST_TIMEOUT = /Request failed to complete/i;
 
 function* walk(
   err: unknown,
@@ -71,7 +73,16 @@ export function sqlNumberOf(err: unknown): number | null {
   return null;
 }
 
+export function isRequestTimeout(err: unknown): boolean {
+  for (const o of walk(err))
+    if (typeof o.message === 'string' && REQUEST_TIMEOUT.test(o.message))
+      return true;
+  return false;
+}
+
+// Qua han request (cau SQL cham/bi khoa) khong phai mat ket noi: khong tao lai client (T23-1).
 export function isConnectionError(err: unknown): boolean {
+  if (isRequestTimeout(err)) return false;
   for (const o of walk(err)) {
     if (typeof o.code === 'string' && CONNECTION_CODES.has(o.code)) return true;
     if (typeof o.message === 'string' && CONNECTION_MESSAGE.test(o.message))

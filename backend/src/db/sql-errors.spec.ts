@@ -1,9 +1,16 @@
 import {
   isConnectionError,
   isDbConfigError,
+  isRequestTimeout,
   mapSqlError,
   sqlNumberOf,
 } from './sql-errors';
+
+const REQUEST_TIMEOUT = {
+  code: 'ETIMEOUT',
+  message:
+    'Invalid `prisma.$queryRawUnsafe()` invocation:\nTimeout: Request failed to complete in 15000ms',
+};
 
 describe('sqlNumberOf', () => {
   it.each([
@@ -129,8 +136,28 @@ describe('isConnectionError', () => {
     [new Error('Failed to connect to localhost:1'), true],
     [{ number: 547 }, false],
     [new Error('loi khac'), false],
+    // T23-1: qua han request (hinh dang that qua Prisma) khong phai mat ket noi; qua han KET NOI van la.
+    [REQUEST_TIMEOUT, false],
+    [
+      {
+        code: 'ETIMEOUT',
+        message: 'Failed to connect to localhost:1433 in 15000ms',
+      },
+      true,
+    ],
   ])('%j -> %s', (err, expected) => {
     expect(isConnectionError(err)).toBe(expected);
+  });
+
+  it('isRequestTimeout chi nhan qua han request', () => {
+    expect(isRequestTimeout(REQUEST_TIMEOUT)).toBe(true);
+    expect(
+      isRequestTimeout({
+        code: 'ETIMEOUT',
+        message: 'Failed to connect to x in 15000ms',
+      }),
+    ).toBe(false);
+    expect(isRequestTimeout(new Error('la'))).toBe(false);
   });
 });
 

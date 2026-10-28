@@ -221,6 +221,53 @@ describe('IngestService', () => {
     expect(svc.queueLength()).toBe(0);
   });
 
+  // T23-2: CSDL OFFLINE/RESTORE -> dang nhap lai 18456 (ELOGIN, do that), sqlcmd thay 942; qua han request (T23-1).
+  it.each([
+    ['18456 ELOGIN', { code: 'ELOGIN', message: "Login failed for user 'u'." }],
+    ['942 offline', { number: 942 }],
+    [
+      'qua han request',
+      {
+        code: 'ETIMEOUT',
+        message: 'Timeout: Request failed to complete in 35000ms',
+      },
+    ],
+  ])(
+    '%s -> tam thoi: giu lo, thu lai 1, 2, 5, 10, 30 giay, khong bo',
+    async (_n, err) => {
+      const ingest = jest
+        .fn()
+        .mockRejectedValueOnce(err)
+        .mockRejectedValueOnce(err)
+        .mockRejectedValueOnce(err)
+        .mockRejectedValueOnce(err)
+        .mockRejectedValueOnce(err)
+        .mockResolvedValue(ok());
+      const { svc, advance } = setup(ingest);
+      const warn = jest
+        .spyOn(
+          (svc as unknown as { log: { warn: (m: string) => void } }).log,
+          'warn',
+        )
+        .mockImplementation(() => undefined);
+      svc.receive('H1-F1-SENSOR', payload(2));
+      await svc.tick();
+      for (const ms of [1000, 2000, 5000, 10000]) {
+        advance(ms);
+        await svc.tick();
+        expect(svc.queueLength()).toBe(2);
+      }
+      advance(29_000);
+      await svc.tick(); // chua toi 30 giay -> khong goi
+      expect(ingest).toHaveBeenCalledTimes(5);
+      advance(1000);
+      await svc.tick();
+      expect(ingest).toHaveBeenCalledTimes(6);
+      expect(svc.queueLength()).toBe(0);
+      expect(warn).toHaveBeenCalledTimes(1); // log mot lan khi doi trang thai
+    },
+  );
+
   it('khong bao gio hai lan goi SP song song; CSDL chua san sang thi khong goi', async () => {
     let release!: () => void;
     const ingest = jest.fn(

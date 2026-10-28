@@ -16,17 +16,20 @@ import { isConnectionError, isDbConfigError, sqlNumberOf } from './sql-errors';
 export const PRISMA_FACTORY = 'PRISMA_FACTORY';
 export const EXIT = 'EXIT';
 
+// Truyen tung thanh phan, khong tu ghep chuoi ket noi (mat khau co the co ky tu dac biet); useUTC co dinh (R6).
+// requestTimeout: mssql mac dinh 15 s cat truoc CALL_TIMEOUT_MS 30 s cua nhip (T23-1).
+export const adapterConfig = (cfg: AppConfig) => ({
+  server: cfg.db.server,
+  port: cfg.db.port,
+  database: cfg.db.database,
+  user: cfg.db.user,
+  password: cfg.db.password,
+  requestTimeout: 35000,
+  options: { encrypt: false, trustServerCertificate: true, useUTC: true },
+});
+
 export function createPrisma(cfg: AppConfig): PrismaClient {
-  // Truyen tung thanh phan, khong tu ghep chuoi ket noi (mat khau co the co ky tu dac biet); useUTC co dinh (R6).
-  const adapter = new PrismaMssql({
-    server: cfg.db.server,
-    port: cfg.db.port,
-    database: cfg.db.database,
-    user: cfg.db.user,
-    password: cfg.db.password,
-    options: { encrypt: false, trustServerCertificate: true, useUTC: true },
-  });
-  return new PrismaClient({ adapter });
+  return new PrismaClient({ adapter: new PrismaMssql(adapterConfig(cfg)) });
 }
 
 const CONFIG_HINT: Record<number, string> = {
@@ -44,6 +47,7 @@ export class DbService implements DbHealth, OnModuleDestroy {
   private connecting = false;
   private stopped = false;
   private configFailures = 0;
+  private everReady = false;
   private lastPing: { at: number; ok: boolean } | null = null;
   private readonly loaders: Array<{ name: string; fn: () => Promise<void> }> =
     [];
@@ -122,12 +126,14 @@ export class DbService implements DbHealth, OnModuleDestroy {
         for (const l of this.loaders)
           await withTimeout(l.fn(), 10000, `nap ${l.name}`);
         this.ready = true;
+        this.everReady = true;
         this.configFailures = 0;
         this.log.log('CSDL san sang (da nap bo nho dem)');
         return;
       } catch (e) {
         const n = sqlNumberOf(e);
-        if (isDbConfigError(n)) {
+        // Da tung san sang: 18456/4060 la CSDL OFFLINE/RESTORE tam thoi, khong dung backend (T23-2).
+        if (isDbConfigError(n) && !this.everReady) {
           this.configFailures += 1;
           this.log.error(
             `Cau hinh CSDL sai (lan ${this.configFailures}/5): ${CONFIG_HINT[n as number]}`,

@@ -87,6 +87,22 @@ describe('AllExceptionsFilter', () => {
     expect(failures).toHaveLength(1);
   });
 
+  // T23-1: SQL qua han -> 503 nhung KHONG bao mat ket noi (khong tao lai client).
+  it('qua han request -> 503 RETRY_LATER, khong bao DbHealth', () => {
+    const res = { status: jest.fn(), json: jest.fn() };
+    res.status.mockReturnValue(res);
+    const failures: unknown[] = [];
+    new AllExceptionsFilter({ reportFailure: (e) => failures.push(e) }).catch(
+      {
+        code: 'ETIMEOUT',
+        message: 'Timeout: Request failed to complete in 35000ms',
+      },
+      hostFor(res),
+    );
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(failures).toEqual([]);
+  });
+
   it('moi code trong MESSAGES la cau tieng Viet khong rong', () => {
     for (const code of [
       'VALIDATION_ERROR',

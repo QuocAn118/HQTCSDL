@@ -62,3 +62,13 @@ Máy nhóm (i7-4810MQ, Windows Defender quét thời gian thực, `node_modules`
 | K15 | CSDL chưa sẵn sàng (`DB_PORT=1`): `connect_error.data.code = RETRY_LATER` |
 | T10-1/2/3, LAST_ADMIN | tạo ADMIN `admin2` 201; hai ADMIN hạ nhau đồng thời: **200 + 409 `LAST_ADMIN`** ngay lần đầu (3 lần chạy), không cần `WAITFOR` tạm; còn ≥ 1 ADMIN. Trùng username, trùng email → 409 `DUPLICATE` |
 | Dọn ảnh | `removeNewSnapshots` xóa ảnh test sinh ra sau mỗi file test; `backend/storage` còn 0 file |
+
+## Sửa T23-1, T23-2 (28/10/2026)
+
+| Mục | Kết quả |
+|---|---|
+| Hình dạng lỗi thật qua Prisma | Quá hạn request: `code ETIMEOUT`, message `Timeout: Request failed to complete in 15000ms` (trước sửa bị tính là mất kết nối). CSDL OFFLINE nhìn từ backend: **`ELOGIN` "Login failed" → 18456**, không phải 942 (942 chỉ thấy khi truy vấn từ `master` bằng `sqlcmd`) |
+| T23-1 `requestTimeout` 35000 | `WAITFOR DELAY '00:00:17'` qua `createPrisma`: xong sau 17 026 ms, không bị cắt. Quá hạn request → 503 `RETRY_LATER`, không tạo lại client |
+| T23-2 OFFLINE 15 s | **60/60**, 0 bản ghi trùng, backend vẫn chạy, health 200; log một dòng `giu lo va thu lai` rồi `Ghi so do da hoi phuc` |
+| T23-2 OFFLINE 45 s | **60/60**, 0 trùng, backend vẫn chạy (sau khi đã sẵn sàng, 18456/4060 không còn đếm 5 lần rồi dừng) |
+| `npm run test:contract` đầy đủ | **53/53 PASS** (extras 10 + run 43), 46/50 fixture, 34,3 phút |
