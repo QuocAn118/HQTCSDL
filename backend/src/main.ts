@@ -1,13 +1,17 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { existsSync } from 'node:fs';
+import type { Server } from 'node:http';
 import { AppModule } from './app.module';
 import { ConfigError, loadConfig } from './config/config';
 import type { AppConfig } from './config/config';
 import { ensureStorage } from './config/storage';
 import { DbService } from './db/db.service';
+import { IngestService } from './mqtt/ingest.service';
 import { MqttService } from './mqtt/mqtt.service';
 import { CorsIoAdapter } from './realtime/io.adapter';
+import { AnomalyService } from './scheduler/anomaly.service';
+import { closeHttpServer, createShutdown } from './shutdown';
 
 async function bootstrap(): Promise<void> {
   const log = new Logger('Khoi dong');
@@ -34,5 +38,24 @@ async function bootstrap(): Promise<void> {
   log.log(`Lang nghe ${cfg.host}:${cfg.port}, CSDL ${cfg.db.database}`);
   app.get(DbService).start();
   app.get(MqttService).start();
+  const stop = createShutdown({
+    closeHttp: () => closeHttpServer(app.getHttpServer() as Server),
+    stopTimers: () => app.get(AnomalyService).stop(),
+    flush: (ms) => app.get(IngestService).flush(ms),
+    endMqtt: () => app.get(MqttService).end(),
+    closeApp: () => app.close(),
+    exit: (code) => process.exit(code),
+    log,
+  });
+  for (const sig of ['SIGINT', 'SIGTERM'])
+    process.on(sig, () => {
+      stop(sig).catch((e: Error) => {
+        log.error(`Tat loi: ${e.message}`);
+        process.exit(1);
+      });
+    });
 }
-void bootstrap();
+bootstrap().catch((e: Error) => {
+  new Logger('Khoi dong').error(e.message);
+  process.exit(1);
+});
