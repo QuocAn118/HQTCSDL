@@ -43,3 +43,22 @@ Máy nhóm (i7-4810MQ, Windows Defender quét thời gian thực, `node_modules`
 | T19-2 | Hai `POST /api/ai/predator-detections` cùng sự kiện gửi song song: một `created:true` (alert 4), một `created:false` `COOLDOWN`; CSDL đúng 1 cảnh báo PREDATOR mới; `storage/tmp` rỗng |
 | T18-2 | `GET /api/alerts/3/snapshot` (cảnh báo PREDATOR mẫu): 404 `NOT_FOUND` vì không có file `snapshots/seed/H1-F0-CAMERA_snake_seed.jpg` |
 | K13 | `npm run test:e2e` sau `jest --clearCache`, 3 lần: 4/4 (57 s), 4/4 (40 s), 4/4 (43 s) |
+
+## Test hộp đen ngoài fixture (Task 23, 28/10/2026)
+
+`test-contract/extras.test.mjs` trên `SwiftletCare_Test`: **10/10 PASS** (10,1 phút). Cả bộ `npm run test:contract` (extras rồi run): 52/53 ở lần chạy đủ (fixture 43/43), ca T20-1 fail do test đo mốc sai, sửa rồi chạy lại extras 10/10.
+
+| Mục | Kết quả |
+|---|---|
+| DEVICE_OFFLINE (nhịp thật) | `alert.created` DEVICE_OFFLINE của H1-F1-SENSOR sau **55–59 giây** (3 lần) |
+| K12 / T15-1: CSDL OFFLINE giữa lúc gửi số đo | `ALTER DATABASE … SET OFFLINE/ONLINE` chạy được bằng `swiftlet_dev`. OFFLINE ~7 s: đủ **60/60**, không trùng. **OFFLINE 15 s: chỉ 40/60**, log `Bo lo 20 so do (loi chua biet sau 3 lan thu lai …)`. SQL Server trả **Msg 942** (`cannot be opened because it is offline`), không phải lỗi kết nối → nhánh "lỗi chưa biết" thử 1/2/5 s rồi bỏ lô, không log trong lúc thử (T23-2) |
+| Cấu hình sai | `ANOMALY_SCHEDULER=maybe`, `DEMO_TOOLS=yes`, `JWT_SECRET` ngắn: dừng mã ≠ 0, nêu tên biến, không in giá trị |
+| K7: `DB_NAME` không tồn tại | SQL Server trả 18456 như sai mật khẩu; 5 lần trong ~22 s rồi dừng mã 1. Trước sửa: gợi ý chỉ `DB_USER/DB_PASSWORD`; sau sửa: thêm `DB_NAME (CSDL co ton tai khong)`. Log không chứa mật khẩu |
+| Endpoint admin | POPULATION_DROP H2, `createdAt` = `nowUtc`, `alert.created`, lần hai `newAlerts: []` |
+| T20-1 | Phiên `sqlcmd` giữ `TABLOCKX` trên `Devices`/`Alerts`; admin gọi ở giây 62 sau "Lang nghe": **503 `RETRY_LATER` sau 10,8–10,9 s**. Nhịp bị cắt sau **15 s** bởi `requestTimeout` mặc định của `mssql` (không phải `CALL_TIMEOUT_MS` 30 s), lỗi log với message rỗng, rồi `DbService` coi là mất kết nối (`Mat ket noi CSDL, dang ket noi lai`) (T23-1). Bỏ lượt khi nhịp trước chưa xong: không xảy ra được thật vì nhịp 60 s > hạn 15/30 s |
+| Gửi trùng thiên địch song song | một `created:true`, một `COOLDOWN`; `storage/tmp` rỗng |
+| Socket.IO | token sai `UNAUTHENTICATED`; cách ly chủ nhà; ADMIN nhận `device.state` nhà mới tạo; không phát bù khi nhà ngừng dùng; khóa owner1 → bị ngắt |
+| K16: token hết hạn | token hạn 4 s: bị ngắt sau 2,98–3,43 s kể từ lúc kết nối, đúng lúc hết hạn (±0,1 s) |
+| K15 | CSDL chưa sẵn sàng (`DB_PORT=1`): `connect_error.data.code = RETRY_LATER` |
+| T10-1/2/3, LAST_ADMIN | tạo ADMIN `admin2` 201; hai ADMIN hạ nhau đồng thời: **200 + 409 `LAST_ADMIN`** ngay lần đầu (3 lần chạy), không cần `WAITFOR` tạm; còn ≥ 1 ADMIN. Trùng username, trùng email → 409 `DUPLICATE` |
+| Dọn ảnh | `removeNewSnapshots` xóa ảnh test sinh ra sau mỗi file test; `backend/storage` còn 0 file |

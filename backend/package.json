@@ -23,7 +23,7 @@
     "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json",
     "test:db": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testRegex \"\\.db-spec\\.ts$\"",
     "start:test": "set ENV_FILE=.env.test&& node dist/main.js",
-    "test:contract": "node --test --test-concurrency=1 \"test-contract/*.test.mjs\""
+    "test:contract": "node --test --test-concurrency=1 test-contract/extras.test.mjs test-contract/run.test.mjs"
   },
   "dependencies": {
     "@nestjs/common": "11.2.7",

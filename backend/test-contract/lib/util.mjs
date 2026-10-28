@@ -1,4 +1,15 @@
 import { createHmac } from 'node:crypto';
+import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+
+const SNAP = 'storage/snapshots';
+
+export const snapshotFiles = () => new Set(existsSync(SNAP) ? readdirSync(SNAP, { recursive: true }).map(String).filter((f) => /\.jpg$/i.test(f)) : []);
+
+// Xoa anh do test sinh ra (T22-5); anh seed va anh co tu truoc giu nguyen.
+export function removeNewSnapshots(before) {
+  for (const f of snapshotFiles()) if (!before.has(f)) rmSync(join(SNAP, f));
+}
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

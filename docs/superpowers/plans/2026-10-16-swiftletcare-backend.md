@@ -6757,6 +6757,8 @@ Expected: mọi chuỗi PASS; in "Bo qua (duoi ranh gioi cat): …", thời gian
 
 Chuỗi lỗi → đọc thông báo `phan hoi lech` (danh sách đường lệch của `match`), sửa **backend**, không sửa fixture (fixture đổi phải qua PR hợp đồng). Tổng thời gian quá 15 phút do `RESTORE` → chỉ gom các chuỗi **chỉ đọc** (`rest/health`, `rest/house.invalid-not-owner`, `rest/auth-login*`, `rest/alerts-list.page`, `ai/ai.invalid-service-key`) vào một lần phục hồi, ghi danh sách gom vào plan này và RESULTS.md (spec 7.2 "chỉ gom khi chắc chắn").
 
+**Danh sách đã gom (28/10/2026, máy nhóm 21,9 phút):** `rest/health`, `rest/house.invalid-not-owner`, `rest/auth-login`, `rest/auth-login.invalid-credentials`, `rest/alerts-list.page`, `ai/ai.invalid-service-key` — một lần phục hồi + một backend (`READ_ONLY` trong `run.test.mjs`).
+
 Ghi kết quả `ParseArrayPipe` (Task 19, `bird-counts.invalid-missing-z` phải ra `fields: ["windowStart"]`).
 
 - [ ] **Step 7: Commit**

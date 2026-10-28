@@ -8,8 +8,10 @@ import { loadRefs, restore } from './lib/sql.mjs';
 import { precheck } from './lib/precheck.mjs';
 import { startBackend, stopBackend, waitHealth } from './lib/backend.mjs';
 import { runChain, transcript } from './lib/chain.mjs';
+import { removeNewSnapshots, snapshotFiles } from './lib/util.mjs';
 
 const env = loadTestEnv();
+const snapsBefore = snapshotFiles();
 
 // Fixture duoi ranh gioi cat: bo qua TUONG MINH, in trong bao cao. Lam muc 9/10 thi xoa khoi danh sach (spec 7.2).
 const SKIP_CUT = ['mqtt/heartbeat.cut', 'ai/heartbeat.cut', 'rest/harvests-post.cut', 'rest/report-env-vs-yield.cut'];
@@ -86,4 +88,7 @@ test('an toan du lieu tra ra (spec backend 7.2)', () => {
   assert.ok(!logs.includes('Bearer '), 'log chua token');
 });
 
-after(() => console.log(`Da chay ${ran.size}/${all.length} fixture`));
+after(() => {
+  console.log(`Da chay ${ran.size}/${all.length} fixture`);
+  removeNewSnapshots(snapsBefore);
+});
