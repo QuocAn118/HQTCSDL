@@ -25,3 +25,21 @@ CSDL `SwiftletCare_Dev` **chưa có** (database-core chưa giao `database/`): c�
 | S17 Multer 413 | Làm sau Task 19 | Task 19 |
 | S18 `process.loadEnvFile` | 25/10/2026 chạy lại (Node v25.8.0): in `a`, **không** ghi đè biến đã có trong `process.env` | Task 22 |
 | S19 cổng 3100 | 25/10/2026 chạy lại: không tiến trình nào nghe cổng 3000/3100; `contracts/README.md`, `infra/mosquitto/README.md` không nhắc `3100`/`3000` | Cổng test 3100 dùng được |
+
+## Test hợp đồng hộp đen (Task 22, 28/10/2026)
+
+Máy nhóm (i7-4810MQ, Windows Defender quét thời gian thực, `node_modules` 51.158 file), `SwiftletCare_Test`, Mosquitto 2.1.2 không ACL.
+
+| Mục | Kết quả |
+|---|---|
+| `npm run test:contract` | **43/43 PASS**, 46/50 fixture chạy; bỏ qua 4 fixture `.cut` (`mqtt/heartbeat.cut`, `ai/heartbeat.cut`, `rest/harvests-post.cut`, `rest/report-env-vs-yield.cut`). `do phu fixture` và `an toan du lieu` PASS. Tổng **21,9 phút** |
+| Thời gian `RESTORE` | 33 lần, 2380–4734 ms, tổng ~97 s (~1,6 phút) |
+| Vì sao quá 15 phút | **Không phải do `RESTORE`**: mỗi lần khởi động backend ~24 s, trong đó ~23 s là nạp module trước khi Nest bắt đầu (`@nestjs/core` 7 s, `@prisma/adapter-mssql` 5,5 s, `@nestjs/jwt` 4,9 s khi nạp riêng). Lần đầu với thời hạn chờ health 30 s: 22/42 chuỗi fail vì `fetch failed` → tăng lên 90 s |
+| Gom chuỗi chỉ đọc (một lần phục hồi + một backend) | `rest/health`, `rest/house.invalid-not-owner`, `rest/auth-login`, `rest/auth-login.invalid-credentials`, `rest/alerts-list.page`, `ai/ai.invalid-service-key`: cả nhóm 34,6 s (trước đây 6 × ~30 s). Tổng từ 24,5 → 21,9 phút |
+| `ParseArrayPipe` (Task 19) | `ai/bird-counts.invalid-missing-z` PASS: `details.fields = ["windowStart"]` |
+| L2 | `dist/main.js` chạy với client Prisma sinh trong `src/generated/prisma` ở mọi chuỗi |
+| L7 / K4 (S16) | `infra/mosquitto/mosquitto.conf` không có `acl_file`: ACL tắt trên máy dev/test; `contract-test` publish được vào `swiftlet/devices/H1-F1-SENSOR/readings` (chuỗi `mqtt/*` PASS). Kiểm ACL thật khi có Task 7 hợp đồng |
+| T14-3 | `sp_SetActuator` thật: điều khiển cảm biến → 409 `DEVICE_NOT_CONTROLLABLE` 50003 trong 198 / 70 / 65 ms |
+| T19-2 | Hai `POST /api/ai/predator-detections` cùng sự kiện gửi song song: một `created:true` (alert 4), một `created:false` `COOLDOWN`; CSDL đúng 1 cảnh báo PREDATOR mới; `storage/tmp` rỗng |
+| T18-2 | `GET /api/alerts/3/snapshot` (cảnh báo PREDATOR mẫu): 404 `NOT_FOUND` vì không có file `snapshots/seed/H1-F0-CAMERA_snake_seed.jpg` |
+| K13 | `npm run test:e2e` sau `jest --clearCache`, 3 lần: 4/4 (57 s), 4/4 (40 s), 4/4 (43 s) |

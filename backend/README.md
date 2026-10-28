@@ -30,7 +30,16 @@ node dist/main.js          # doc .env; cong 3000
 
 - `npm test`: Jest đơn vị, không cần CSDL/MQTT. **Phải chạy qua `npm test`** (lệnh có `node --experimental-vm-modules`): `@nestjs/jwt`/`jose` và Prisma 7 nạp module ESM động; gọi thẳng `npx jest` làm vài bộ test lỗi.
 - `npm run test:e2e`: khởi tạo app Nest trong tiến trình test (không cần CSDL thật).
-- `npm run test:contract` (Task 22): chạy fixture hợp đồng trên `SwiftletCare_Test`. **Tắt backend dev và simulator trước. Không chạy lúc đang demo hay tập demo** (spec backend 2.4, 7.4): test dùng chung broker MQTT.
+- `npm run test:contract` (Task 22): chạy fixture hợp đồng trên `SwiftletCare_Test`. **Tắt backend dev và simulator trước. Không chạy lúc đang demo hay tập demo** (spec backend 2.4, 7.4): test dùng chung broker MQTT. Mosquitto phải đang chạy.
+  - **Mỗi máy tự tạo file backup dữ liệu mẫu một lần** (file nằm trong thư mục Backup của SQL Server, ngoài repo, không commit):
+    ```powershell
+    cd ..\database
+    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy.ps1 -Database SwiftletCare_Test -Reset
+    sqlcmd -S localhost,1433 -U swiftlet_dev -d master -b -C -Q "BACKUP DATABASE SwiftletCare_Test TO DISK = N'SwiftletCare_Test_seed.bak' WITH INIT, COPY_ONLY;"
+    cd ..\backend
+    ```
+    `sqlcmd` hỏi mật khẩu của `swiftlet_dev` (hoặc đặt biến `SQLCMDPASSWORD`). `-C`: tin chứng chỉ tự ký của SQL Server Express (ODBC 18). Seed thay đổi thì làm lại hai lệnh này.
+  - Trước mỗi chuỗi fixture, test `RESTORE` file này vào `SwiftletCare_Test` (khoảng 4 giây).
 
 ## 4. SP giả
 
