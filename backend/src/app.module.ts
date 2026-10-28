@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { HousesModule } from './houses/houses.module';
 import { ReadingsModule } from './readings/readings.module';
 import { BirdsModule } from './birds/birds.module';
+import { AlertsModule } from './alerts/alerts.module';
 import { DbReadyGuard } from './common/guards/db-ready.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
@@ -32,6 +33,7 @@ const FEATURE_MODULES: Type[] = [
   HousesModule,
   ReadingsModule,
   BirdsModule,
+  AlertsModule,
 ];
 
 @Module({})
