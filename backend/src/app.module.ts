@@ -14,6 +14,7 @@ import { HousesModule } from './houses/houses.module';
 import { ReadingsModule } from './readings/readings.module';
 import { BirdsModule } from './birds/birds.module';
 import { AlertsModule } from './alerts/alerts.module';
+import { AiModule } from './ai/ai.module';
 import { DbReadyGuard } from './common/guards/db-ready.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
@@ -34,6 +35,7 @@ const FEATURE_MODULES: Type[] = [
   ReadingsModule,
   BirdsModule,
   AlertsModule,
+  AiModule,
 ];
 
 @Module({})
