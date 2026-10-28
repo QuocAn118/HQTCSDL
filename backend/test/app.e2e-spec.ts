@@ -53,6 +53,16 @@ describe('Khung ung dung (khong CSDL, khong MQTT)', () => {
     });
   });
 
+  it('DEMO_TOOLS=false -> endpoint admin la 404 nhu route khong ton tai (truoc ca kiem token)', async () => {
+    const r = await request(app.getHttpServer() as App)
+      .post('/api/admin/anomalies/detect')
+      .send({ nowUtc: '2026-10-12T13:30:00Z' });
+    expect(r.status).toBe(404);
+    expect((r.body as { error: { code: string } }).error.code).toBe(
+      'NOT_FOUND',
+    );
+  });
+
   it('health khi CSDL chua san sang -> 503 body spec 3.5', async () => {
     const r = await request(app.getHttpServer() as App).get('/api/health');
     expect(r.status).toBe(503);

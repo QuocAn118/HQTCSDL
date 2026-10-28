@@ -15,6 +15,9 @@ import { ReadingsModule } from './readings/readings.module';
 import { BirdsModule } from './birds/birds.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { AiModule } from './ai/ai.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SchedulerModule } from './scheduler/scheduler.module';
+import { AdminModule } from './admin/admin.module';
 import { DbReadyGuard } from './common/guards/db-ready.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
@@ -45,9 +48,13 @@ export class AppModule {
       module: AppModule,
       imports: [
         ConfigModule.forRoot(cfg),
+        ScheduleModule.forRoot(),
         DbModule,
         AuthModule,
         ...FEATURE_MODULES,
+        SchedulerModule,
+        // DEMO_TOOLS=false: khong dang ky route -> 404 nhu route khong ton tai (spec backend 5.8).
+        ...(cfg.demoTools ? [AdminModule] : []),
       ],
       providers: [
         // Thu tu guard toan cuc = thu tu chay: san sang CSDL -> JWT -> vai tro -> so huu.
