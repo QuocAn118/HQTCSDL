@@ -84,7 +84,11 @@ export async function runChain(name, opts) {
         await expectOne(step, () => commands.filter((c) => c.topic === f.topic && c.t >= since), (c) => match(f.payload, c.payload));
       } else if (folder === 'mqtt') {
         since = Date.now();
+        // Kiem truoc khi gui: neu LastSeenAt da >= now thi phep kiem sau la rong.
+        const seen = () => sql(env, env.DB_NAME, `SELECT CASE WHEN LastSeenAt >= CONVERT(DATETIME2(0), '${nowIso.slice(0, 19)}', 126) THEN 1 ELSE 0 END FROM dbo.Devices WHERE Code = 'H1-F1-FAN'`)[0] === '1';
+        if (step === 'mqtt/heartbeat.cut') assert.equal(seen(), false, `${step}: LastSeenAt da moi truoc khi gui`);
         await pub.publishAsync(f.topic, JSON.stringify(f.payload), { qos: 1 });
+        if (step === 'mqtt/heartbeat.cut') await waitFor(seen, 5000, `${step}: LastSeenAt cap nhat`);
         for (const [code, n] of MQTT_EXPECT[step] ?? []) {
           if (n === 0) { await sleep(3000); assert.equal(countAt(env, code, nowIso), 0, `${step}: ${code} khong duoc luu`); }
           else await waitFor(() => countAt(env, code, nowIso) === n, 5000, `${step}: ${code} luu ${n} so do`);

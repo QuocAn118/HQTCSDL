@@ -18,3 +18,8 @@ export class PredatorMetadataDto {
   @IsNumber() @Min(0) @Max(1) confidence!: number;
   @IsUtcIso() at!: string;
 }
+
+export class HeartbeatDto {
+  @Matches(CODE_RE) device!: string;
+  @IsUtcIso() at!: string;
+}

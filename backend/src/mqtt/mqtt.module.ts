@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { MqttStatus } from '../common/status';
+import { HeartbeatService } from './heartbeat.service';
 import { IngestService } from './ingest.service';
 import { MqttService } from './mqtt.service';
 
@@ -9,6 +10,7 @@ import { MqttService } from './mqtt.service';
     MqttService,
     { provide: MqttStatus, useExisting: MqttService },
     IngestService,
+    HeartbeatService,
   ],
   exports: [MqttService, MqttStatus, IngestService],
 })

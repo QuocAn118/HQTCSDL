@@ -17,7 +17,8 @@ import { validationError } from '../common/validation';
 import { DbService } from '../db/db.service';
 import { SpService } from '../db/sp';
 import { RealtimeService } from '../realtime/realtime.service';
-import { BirdCountItemDto, MAX_BIRD_ITEMS } from './dto';
+import { IngestService } from '../mqtt/ingest.service';
+import { BirdCountItemDto, HeartbeatDto, MAX_BIRD_ITEMS } from './dto';
 import { PredatorService } from './predator.service';
 
 export const birdCountsPipe = new ParseArrayPipe({
@@ -41,7 +42,18 @@ export class AiController {
     private readonly db: DbService,
     private readonly rt: RealtimeService,
     private readonly predator: PredatorService,
+    private readonly ingest: IngestService,
   ) {}
+
+  @Post('heartbeat')
+  @HttpCode(200)
+  async heartbeat(@Body() dto: HeartbeatDto) {
+    const r = await this.sp.recordHeartbeat([
+      { device: dto.device, at: dto.at },
+    ]);
+    await this.ingest.emitResolved(r.resolvedAlertIds);
+    return { accepted: r.accepted, rejected: r.rejected };
+  }
 
   @Post('bird-counts')
   @HttpCode(200)

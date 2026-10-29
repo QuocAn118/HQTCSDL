@@ -14,7 +14,7 @@ const env = loadTestEnv();
 const snapsBefore = snapshotFiles();
 
 // Fixture duoi ranh gioi cat: bo qua TUONG MINH, in trong bao cao. Lam muc 9/10 thi xoa khoi danh sach (spec 7.2).
-const SKIP_CUT = ['mqtt/heartbeat.cut', 'ai/heartbeat.cut', 'rest/harvests-post.cut', 'rest/report-env-vs-yield.cut'];
+const SKIP_CUT = ['rest/harvests-post.cut', 'rest/report-env-vs-yield.cut'];
 // Chuoi chay voi backend tro CSDL toi cong khong ai nghe (PR hop dong Task 3).
 const DB_DOWN = ['rest/health.invalid-db-down', 'rest/houses-list.invalid-db-not-ready'];
 

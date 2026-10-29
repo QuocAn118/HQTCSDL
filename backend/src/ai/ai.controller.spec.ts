@@ -58,11 +58,19 @@ function setup(upserted = 1) {
     },
   };
   const rt = { emitToHouse: jest.fn() };
+  const ingest = { emitResolved: jest.fn(async () => undefined) };
   return {
-    c: new AiController(sp as never, db as never, rt as never, {} as never),
+    c: new AiController(
+      sp as never,
+      db as never,
+      rt as never,
+      {} as never,
+      ingest as never,
+    ),
     sp,
     db,
     rt,
+    ingest,
   };
 }
 
@@ -97,5 +105,24 @@ describe('AiController.birdCounts (spec backend 5.7)', () => {
     const { c, rt } = setup(0);
     await c.birdCounts([item()] as never);
     expect(rt.emitToHouse).not.toHaveBeenCalled();
+  });
+});
+
+describe('AiController.heartbeat (hop dong 3.x, muc 11)', () => {
+  it('goi sp_RecordHeartbeat 1 phan tu, phat alert.updated, tra {accepted, rejected}', async () => {
+    const { c, sp, ingest } = setup();
+    Object.assign(sp, {
+      recordHeartbeat: jest.fn(async () => ({
+        accepted: 1,
+        rejected: 0,
+        resolvedAlertIds: [7],
+      })),
+    });
+    const dto = { device: 'H1-F0-CAMERA', at: '2026-10-12T10:40:07Z' };
+    expect(await c.heartbeat(dto)).toEqual({ accepted: 1, rejected: 0 });
+    expect(
+      (sp as unknown as { recordHeartbeat: jest.Mock }).recordHeartbeat,
+    ).toHaveBeenCalledWith([dto]);
+    expect(ingest.emitResolved).toHaveBeenCalledWith([7]);
   });
 });
