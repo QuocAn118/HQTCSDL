@@ -116,6 +116,10 @@ export function mapSqlError(n: number): ApiError {
     2627: [409, 'DUPLICATE'],
     2601: [409, 'DUPLICATE'],
     1205: [503, 'RETRY_LATER'],
+    // CSDL OFFLINE/RESTORE luc dang chay; luc khoi dong REST bi DbReadyGuard chan truoc, 18456 di qua DbService (T23F-1).
+    942: [503, 'RETRY_LATER'],
+    18456: [503, 'RETRY_LATER'],
+    4060: [503, 'RETRY_LATER'],
   };
   const [status, code] = table[n] ?? [500, 'INTERNAL'];
   return new ApiError(status, code, n);

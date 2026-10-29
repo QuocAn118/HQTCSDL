@@ -34,6 +34,14 @@ describe('toApiError', () => {
     ],
     [{ number: 50021 }, 409, 'ALERT_INVALID_TRANSITION'],
     [{ code: 'P1001' }, 503, 'RETRY_LATER'],
+    // T23F-1: hinh loi that khi CSDL OFFLINE (T23-2).
+    [
+      Object.assign(new Error("Login failed for user 'swiftlet_dev'."), {
+        code: 'ELOGIN',
+      }),
+      503,
+      'RETRY_LATER',
+    ],
     [new Error('bat ngo'), 500, 'INTERNAL'],
   ])('%p -> %i %s', (e, status, code) => {
     const a = toApiError(e);

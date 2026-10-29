@@ -180,6 +180,10 @@ describe('mapSqlError (hop dong 3.5)', () => {
     [2627, 409, 'DUPLICATE', null],
     [2601, 409, 'DUPLICATE', null],
     [1205, 503, 'RETRY_LATER', null],
+    // T23F-1: CSDL OFFLINE/RESTORE luc dang chay (REST chi toi CSDL khi da san sang).
+    [942, 503, 'RETRY_LATER', null],
+    [18456, 503, 'RETRY_LATER', null],
+    [4060, 503, 'RETRY_LATER', null],
     [8152, 500, 'INTERNAL', null],
   ])('%i -> %i %s', (n, status, code, details) => {
     const e = mapSqlError(n);
