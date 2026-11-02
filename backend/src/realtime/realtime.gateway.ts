@@ -88,6 +88,8 @@ export class RealtimeGateway
       socket.disconnect(true);
       return;
     }
+    // Ngat trong luc await: handleDisconnect da chay, hen gio dat sau se ro toi exp (CR-5).
+    if (!socket.connected) return;
     data.expiryTimer = setTimeout(
       () => socket.disconnect(true),
       Math.max(0, user.exp * 1000 - Date.now()),

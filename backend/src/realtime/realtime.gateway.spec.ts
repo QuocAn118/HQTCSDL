@@ -33,6 +33,7 @@ function setup(opts: { ready?: boolean; active?: boolean } = {}) {
 const socket = (token?: unknown) => ({
   handshake: { auth: { token } },
   data: {} as Record<string, unknown>,
+  connected: true,
   join: jest.fn(),
   disconnect: jest.fn(),
 });
@@ -92,5 +93,23 @@ describe('RealtimeGateway.handleConnection', () => {
     gw.handleDisconnect(s2 as never);
     await jest.advanceTimersByTimeAsync(120_000);
     expect(s2.disconnect).not.toHaveBeenCalled();
+  });
+
+  // CR-5: client ngat trong luc await (join) -> khong de lai hen gio ro.
+  it('ngat ket noi giua luc xep phong -> khong dat hen gio', async () => {
+    const { gw } = setup();
+    const s = socket('good');
+    s.data.user = {
+      userId: 2,
+      role: 'OWNER',
+      username: 'owner1',
+      exp: Math.floor(Date.now() / 1000) + 60,
+    };
+    s.join.mockImplementation(async () => {
+      s.connected = false;
+      gw.handleDisconnect(s as never);
+    });
+    await gw.handleConnection(s as never);
+    expect(jest.getTimerCount()).toBe(0);
   });
 });
