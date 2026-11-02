@@ -2510,7 +2510,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - Dùng trong test (đồng bộ, không luồng): `run_once() -> None`, `send_counts()`, `send_event(ev) -> bool`, `send_heartbeat()`.
 - `tests/fake_backend.py`: `class FakeBackend` (context manager): `url: str`; `respond(path: str, *responses)` — mỗi phần tử `(status, body)` hoặc `(status, body, delay_giay)`, `body` là `dict`/`list` (JSON) hoặc `str` (thân thô); dùng lần lượt, phần tử cuối lặp lại; `requests: list[Recorded]`; `to(path) -> list[Recorded]`. `Recorded`: `method, path, headers (dict), body (bytes), json, parts (dict tên → (content_type, nội dung))`.
 
-- [ ] **Step 1: Viết `tests/fake_backend.py`**
+- [x] **Step 1: Viết `tests/fake_backend.py`**
 
 ```python
 """Backend gia cho test: http.server cua thu vien chuan, ghi lai moi request.
@@ -2609,7 +2609,7 @@ class FakeBackend:
         self.close()
 ```
 
-- [ ] **Step 2: Viết test (phải fail)**
+- [x] **Step 2: Viết test (phải fail)**
 
 `ai-vision/tests/test_sender.py`:
 
@@ -2935,7 +2935,7 @@ def test_drain_gui_not_moi_thu_mot_lan_tra_phan_con_lai(backend, rig):
 Run: `.\.venv\Scripts\python -m pytest tests/test_sender.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.sender'`.
 
-- [ ] **Step 3: Viết `ai-vision/swiftletcare_ai/sender.py`**
+- [x] **Step 3: Viết `ai-vision/swiftletcare_ai/sender.py`**
 
 ```python
 """Luong gui rieng co hang doi - cho DUY NHAT goi HTTP toi backend (spec 5). Khong bao gio log khoa."""
@@ -3191,12 +3191,12 @@ class Sender:
         self.log.write(level, 'heartbeat', status=status)
 ```
 
-- [ ] **Step 4: Chạy test**
+- [x] **Step 4: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_sender.py -v`
 Expected: PASS mọi test (ba test dùng `ai_fixtures_dir` fail có chủ ý nếu fixture hợp đồng chưa merge). Nếu `test_predator_200_multipart_dung` fail ở `req.parts`: xem lại kết quả S6 (Task 1), dùng `superpowers:systematic-debugging`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/sender.py ai-vision/tests/fake_backend.py ai-vision/tests/test_sender.py
