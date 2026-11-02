@@ -486,7 +486,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `SV_IN_MEANS: str` — `'in'` hoặc `'out'`; chỗ **duy nhất** ánh xạ chiều supervision sang hợp đồng.
   - `class LineCounter: __init__(self, start: tuple[float, float], end: tuple[float, float], frame_w: int, frame_h: int)`; `update(self, dets: sv.Detections) -> list[tuple[str, int]]` — mỗi lần qua vạch một phần tử `(chiều 'in'|'out', tracker_id)`.
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_counting.py`:
 
@@ -562,7 +562,7 @@ def test_luon_qua_lai_tren_vach():
 Run: `.\.venv\Scripts\python -m pytest tests/test_counting.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.counting'`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/counting.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/counting.py`**
 
 Theo S3: nếu `LineZone` không có `triggering_anchors` thì bỏ tham số đó (mặc định bốn góc) và ghi vào S3; còn lại giữ nguyên.
 
@@ -599,27 +599,27 @@ class LineCounter:
         return events
 ```
 
-- [ ] **Step 3: Chạy test, chốt `SV_IN_MEANS`**
+- [x] **Step 3: Chạy test, chốt `SV_IN_MEANS`**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_counting.py -v`
 Expected: PASS 7 test.
 
 Giá trị `'out'` lấy từ lần chạy thử với supervision 0.30.9 lúc viết plan (17/10/2026, Python 3.13, ngoài repo); hai test hành vi cũng đã khớp giả thuyết ở lần chạy đó. Bản cài thật ở Task 1 khác 0.30.9 mà ba test chiều (`bay_len`, `bay_xuong`, `hoan_doi`) **cùng fail vì đảo chiều**: đổi `SV_IN_MEANS = 'in'`, chạy lại. Đây là **sửa duy nhất được phép** cho chiều; không đảo trong test, không thêm cờ.
 
-- [ ] **Step 4: Khóa hai hành vi chưa biết**
+- [x] **Step 4: Khóa hai hành vi chưa biết**
 
 Nếu `test_track_mat_roi_hien_lai_voi_id_moi` hoặc `test_luon_qua_lai_tren_vach` fail: đọc giá trị thật trong thông báo của pytest, **đổi assert sang giá trị thật**, sửa chú thích phía trên test cho đúng hành vi. Không sửa `counting.py` để ép theo giả thuyết.
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_counting.py -v`
 Expected: PASS 7 test.
 
-- [ ] **Step 5: Ghi kết quả vào RESULTS.md và spec**
+- [x] **Step 5: Ghi kết quả vào RESULTS.md và spec**
 
 `spikes/RESULTS.md` dòng S20: giá trị `SV_IN_MEANS` đã chốt, kết quả hai test cuối (VD "track mất rồi hiện lại: (0, 0) — không đếm"; "lượn qua lại: (1, 2) — mỗi lần qua vạch đều đếm").
 
 Spec ai-vision mục 4.2: thay câu "Track mất rồi xuất hiện lại với id mới có thể làm đếm thừa hoặc thiếu; test tổng hợp (Phần 7) khóa hành vi thật của code, spec ghi đúng hành vi đó." bằng câu ghi hành vi quan sát được, kèm phiên bản supervision. Mục 7.5 "Chưa kiểm chứng" bỏ dòng tương ứng.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/counting.py ai-vision/tests/test_counting.py ai-vision/spikes/RESULTS.md docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md

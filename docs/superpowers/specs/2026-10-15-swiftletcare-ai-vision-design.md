@@ -316,7 +316,7 @@ Mỗi camera **một tiến trình**; **không bao giờ chạy hai tiến trìn
 - Mỗi khung chỉ đưa phát hiện **lớp `swiftlet`** có độ tin cậy ≥ `swiftlet.confidence` vào ByteTrack. Thiên địch không đi qua tracker.
 - Một track qua vạch được tính 1 lần theo chiều đi qua. **Chiều nào là `out`, chiều nào là `in` lấy từ cấu hình camera** (thứ tự `start`/`end`, mục 3.4); code không ghi cứng hướng. Chim bay ra rồi quay vào tính 1 `out` + 1 `in`.
 - Điểm dùng để xét qua vạch (VD tâm khung bao) lấy theo tham số supervision ở bản cài thật.
-- Track mất rồi xuất hiện lại với id mới có thể làm đếm thừa hoặc thiếu; test tổng hợp (Phần 7) khóa hành vi thật của code, spec ghi đúng hành vi đó.
+- Kiểm chứng bằng test tổng hợp trên supervision 0.30.9: track mất trước vạch rồi xuất hiện bằng ID mới ở phía kia không được đếm (`in=0`, `out=0`); cùng track lượn lên–xuống–lên được đếm mỗi lần qua vạch (`in=1`, `out=2`). Đây là các kịch bản tổng hợp, chưa chứng minh độ chính xác trên video thật.
 
 ### 4.3 Cửa sổ đếm 5 phút
 
@@ -600,7 +600,7 @@ Cần backend thật đã có các endpoint AI (tuần 3 theo roadmap), CSDL `Sw
 **Spec ghi rõ:** test hình dạng và backend giả **không chứng minh** AI chạy đúng với backend thật; chỉ bước này chứng minh.
 
 **Chưa kiểm chứng:**
-- Hành vi "track mất rồi xuất hiện lại" và "lượn trên vạch": phụ thuộc supervision thật.
+- Hành vi vạch đếm đã kiểm chứng bằng 7 test tổng hợp trên supervision 0.30.9 (mục 4.2); ảnh hưởng trên video thật còn phải đo.
 - Bộ fixture AI chưa có trong repo (plan hợp đồng chưa thực thi); khi có, tên file và chỗ giữ chỗ thật có thể khác bản đối chiếu.
 - Tạo phát hiện giả cho tracker của supervision không cần mô hình: chưa thử.
 - Đọc multipart bằng `email.parser` trên bản Python đã ghim: chưa thử.
