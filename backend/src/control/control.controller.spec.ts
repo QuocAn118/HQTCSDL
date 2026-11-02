@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await -- gia lap ham async trong file test */
+import { Logger } from '@nestjs/common';
 import type { SetActuatorArgs } from '../db/sp';
 import { ControlController } from './control.controller';
 
@@ -27,6 +28,21 @@ function setup(isOnInDb: boolean | null = true) {
 }
 
 describe('ControlController.control', () => {
+  // CR-2: loi vong dieu khien sau AUTO khong thanh unhandled rejection.
+  it('AUTO: runZones bi tu choi -> van tra ket qua, log loi', async () => {
+    const err = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    const { c, loop } = setup(true);
+    loop.runZones.mockRejectedValue(new Error('vong hong'));
+    await expect(c.control(3, { mode: 'AUTO' }, U)).resolves.toMatchObject({
+      mode: 'AUTO',
+    });
+    await new Promise((r) => setImmediate(r));
+    expect(err).toHaveBeenCalledWith(expect.stringContaining('vong hong'));
+    err.mockRestore();
+  });
+
   it('MANUAL thieu isOn -> 400 fields [isOn]', async () => {
     const { c } = setup();
     await expect(c.control(3, { mode: 'MANUAL' }, U)).rejects.toMatchObject({

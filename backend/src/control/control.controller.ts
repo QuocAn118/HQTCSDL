@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Logger,
   Param,
   ParseIntPipe,
   Post,
@@ -19,6 +20,8 @@ import { ControlDto } from './dto';
 
 @Controller('devices/:deviceId')
 export class ControlController {
+  private readonly log = new Logger('Dieu khien');
+
   constructor(
     private readonly loop: ControlLoopService,
     private readonly db: DbService,
@@ -49,7 +52,11 @@ export class ControlController {
       reason: dto.reason ?? null,
     });
     if (dto.mode === 'AUTO' && current)
-      void this.loop.runZones([current.ZoneId]);
+      this.loop
+        .runZones([current.ZoneId])
+        .catch((e: Error) =>
+          this.log.error(`Chay vong sau AUTO loi: ${e.message}`),
+        );
     return r;
   }
 
