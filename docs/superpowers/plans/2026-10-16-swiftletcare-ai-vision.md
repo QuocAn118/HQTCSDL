@@ -3219,7 +3219,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `detector.py`: `class Detector: __init__(self, weights: Path, imgsz: int | None = None)`, thuộc tính `names: dict[int, str]`, `__call__(frame) -> sv.Detections`; `require_classes(names: dict[int, str]) -> None` (thiếu lớp nào thì `ConfigError`); `measure_fps(detect: Callable[[np.ndarray], object], frames: list[np.ndarray], warmup: int = 5) -> float`.
   - `tests/fakes.py`: `FakeCapture(n=50, fps=10.0, bad=(), opened=True, size=(48, 64))` (khung thứ `i` có mọi điểm ảnh = `i % 256`), `fake_opener(specs: dict[str, dict]) -> Callable[[str], FakeCapture]` (khóa là tên file), `value(frame) -> int`.
 
-- [ ] **Step 1: Viết `tests/fakes.py` và test (phải fail)**
+- [x] **Step 1: Viết `tests/fakes.py` và test (phải fail)**
 
 `ai-vision/tests/fakes.py`:
 
@@ -3429,7 +3429,7 @@ def test_mo_hinh_that_nap_duoc_va_du_lop(ai_fixtures_dir):
 Run: `.\.venv\Scripts\python -m pytest tests/test_video.py tests/test_detector.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/video.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/video.py`**
 
 ```python
 """Phat playlist: offline mot luot; live theo gio that, bo khung khi CPU cham, lap lai khi het (spec 3.4, 4.1)."""
@@ -3586,7 +3586,7 @@ class VideoPlayer:
 
 `+ 1e-9` trong `want` chống sai số dấu phẩy động (VD `0.3 * 10 = 2.9999…`).
 
-- [ ] **Step 3: Viết `ai-vision/swiftletcare_ai/detector.py`**
+- [x] **Step 3: Viết `ai-vision/swiftletcare_ai/detector.py`**
 
 Theo S4/S5 (Task 1): nếu `Detections.from_ultralytics` khác tên thì sửa đúng một dòng trong `__call__`.
 
@@ -3635,12 +3635,12 @@ def measure_fps(detect: Callable[[np.ndarray], object], frames: list[np.ndarray]
     return (len(frames) - warmup) / max(time.perf_counter() - t, 1e-9)
 ```
 
-- [ ] **Step 4: Chạy test**
+- [x] **Step 4: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_video.py tests/test_detector.py -v`
 Expected: PASS mọi test; `test_mo_hinh_that_nap_duoc_va_du_lop` hiện `SKIPPED (chua co data/weights/best.pt …)` cho tới Task 13.
 
-- [ ] **Step 5: Viết `ai-vision/spikes/check_seek.py` (S17, chạy khi đã có video thật)**
+- [x] **Step 5: Viết `ai-vision/spikes/check_seek.py` (S17, chạy khi đã có video thật)**
 
 ```python
 """Do toc do grab (bo khung) so voi read tren video that (spec 3.5). Chay: .\\.venv\\Scripts\\python spikes\\check_seek.py data\\videos\\V01.mp4"""
@@ -3667,7 +3667,7 @@ print(f'read {read_ms:.2f} ms/khung, grab {grab_ms:.2f} ms/khung')
 Run: `.\.venv\Scripts\python spikes\check_seek.py data\videos\V01.mp4`
 Expected: in `read … ms/khung, grab … ms/khung`. Ghi S17 vào `RESULTS.md`. Nếu `grab` không nhanh hơn `read` đáng kể và fps máy thấp hơn fps video nhiều, ghi rõ — Task 15 Step 7 (so sánh offline với live) đo ảnh hưởng.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/video.py ai-vision/swiftletcare_ai/detector.py ai-vision/tests/fakes.py ai-vision/tests/test_video.py ai-vision/tests/test_detector.py ai-vision/spikes/check_seek.py ai-vision/spikes/RESULTS.md
