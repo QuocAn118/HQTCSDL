@@ -75,13 +75,15 @@ class _Checker:
         return value
 
 
-def load_camera_config(path: Path, base_dir: Path) -> CameraConfig:
+def load_camera_config(path: Path, base_dir: Path, *, playlist_override: list[str] | None = None) -> CameraConfig:
     c = _Checker(path)
     try:
         data = yaml.safe_load(path.read_text(encoding='utf-8-sig'))
     except (OSError, UnicodeError, yaml.YAMLError) as e:
         raise ConfigError(f'{path.name}: khong doc duoc YAML ({e.__class__.__name__})') from None
     c.keys(data, _TOP, '')
+    if playlist_override is not None:
+        data['playlist'] = playlist_override
 
     camera = data['camera']
     if camera not in CAMERAS:

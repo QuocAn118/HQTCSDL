@@ -3692,7 +3692,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `__main__.py`: `build_parser() -> argparse.ArgumentParser`, `main(argv: list[str] | None = None) -> int`.
   - `fakes.py` thêm: `NAMES = {0: 'swiftlet', 1: 'rat', 2: 'snake', 3: 'owl'}`; `detections(items: list[tuple[str, float, tuple]]) -> sv.Detections`; `FakeDetector(script=None, interrupt_at=None, on_interrupt=None, error_at=None)` — `script(i)` nhận số thứ tự lần gọi (bắt đầu 0, **kể cả 30 lần đo fps của `live`**), trả danh sách `(lớp, confidence, xyxy)`; `FakeTracker` gán `tracker_id = int(x1 // 10) + 1`; `bird_up(i, start, x=28.0, h=48)`.
 
-- [ ] **Step 1: Thêm vào `tests/fakes.py`**
+- [x] **Step 1: Thêm vào `tests/fakes.py`**
 
 ```python
 import supervision as sv
@@ -3745,7 +3745,7 @@ def bird_up(i: int, start: int, x: float = 28.0, h: int = 48) -> list:
     return [('swiftlet', 0.9, (x, y - 3, x + 8, y + 3))]
 ```
 
-- [ ] **Step 2: Viết test pipeline (phải fail)**
+- [x] **Step 2: Viết test pipeline (phải fail)**
 
 `ai-vision/tests/test_pipeline.py`:
 
@@ -3850,7 +3850,7 @@ def test_khung_rong_van_cap_nhat_cua_so(tmp_path):
 Run: `.\.venv\Scripts\python -m pytest tests/test_pipeline.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.pipeline'`.
 
-- [ ] **Step 3: Viết `ai-vision/swiftletcare_ai/pipeline.py`**
+- [x] **Step 3: Viết `ai-vision/swiftletcare_ai/pipeline.py`**
 
 ```python
 """Xu ly mot khung: tracker + vach dem + cua so (chi swiftlet), xac nhan thien dich (spec 4.2-4.4)."""
@@ -3924,12 +3924,12 @@ class Pipeline:
 
 Ghi chú: `Confirmed.at` là `at` của khung tốt nhất, chưa cắt phần lẻ giây; `utc_iso` cắt khi ghi log và khi gửi, nên log và payload cùng một chuỗi.
 
-- [ ] **Step 4: Chạy test pipeline**
+- [x] **Step 4: Chạy test pipeline**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_pipeline.py -v`
 Expected: PASS 7 test.
 
-- [ ] **Step 5: Viết test app (phải fail)**
+- [x] **Step 5: Viết test app (phải fail)**
 
 `ai-vision/tests/test_app.py`:
 
@@ -4164,7 +4164,7 @@ Lưu ý `setup_ai`: `write_yaml(tmp_path / 'cameras', …)` tạo file `cameras/
 Run: `.\.venv\Scripts\python -m pytest tests/test_app.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.app'`.
 
-- [ ] **Step 6: Viết `ai-vision/swiftletcare_ai/app.py`**
+- [x] **Step 6: Viết `ai-vision/swiftletcare_ai/app.py`**
 
 ```python
 """Rap luong: lenh live (gui backend) va offline (ghi CSV). Phu thuoc ngoai di qua Deps de test thay duoc."""
@@ -4392,7 +4392,7 @@ def run_offline(camera: str, out: Path, weights: Path, imgsz: int | None, t0: da
     return EXIT_OK
 ```
 
-- [ ] **Step 7: Viết `ai-vision/swiftletcare_ai/__main__.py`**
+- [x] **Step 7: Viết `ai-vision/swiftletcare_ai/__main__.py`**
 
 ```python
 """Dong lenh: python -m swiftletcare_ai live|offline --camera <ma> (spec 3.5)."""
@@ -4441,7 +4441,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 8: Chạy toàn bộ test**
+- [x] **Step 8: Chạy toàn bộ test**
 
 Run: `.\.venv\Scripts\python -m pytest -v`
 Expected: PASS mọi test (trừ các test cần fixture hợp đồng nếu PR chưa merge, và test mô hình thật `SKIPPED`).
@@ -4457,7 +4457,7 @@ Expected: PASS mọi test (trừ các test cần fixture hợp đồng nếu PR 
 
 Với `live`: không cần backend thật cho bước này (để `BACKEND_URL` trỏ cổng không ai nghe, VD `http://localhost:3999`). Đợi dòng `"type": "start"`, nhấn Ctrl+C **một lần** → có dòng `stop` `exitCode 0` sau tối đa ~10 giây, `data\run\H1-F0-CAMERA.lock` đã xóa. Chạy lại, nhấn Ctrl+C **hai lần** liên tiếp → thoát ngay, `exitCode 130`, file khóa đã xóa. Ghi S8: Ctrl+C có ra `KeyboardInterrupt` khi đang đọc video/chạy mô hình không.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```powershell
 git status   # khong co data\, *.pt, .env
