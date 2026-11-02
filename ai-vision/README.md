@@ -1,5 +1,20 @@
 # AI Vision
 
+## Task 3: thời gian UTC và cửa sổ 5 phút
+
+`swiftletcare_ai/timeutil.py` cung cấp định dạng UTC có `Z`, đọc thời gian UTC,
+làm tròn xuống cửa sổ 5 phút, `SystemClock` và `FakeClock`. Giá trị datetime
+thiếu múi giờ bị từ chối; giờ có múi giờ khác được đổi sang UTC trước khi chia
+cửa sổ. `FakeClock.jump()` mô phỏng đồng hồ máy nhảy mà không đổi thời gian
+đã trôi qua (`monotonic`).
+
+Chạy từ thư mục `ai-vision`:
+
+```powershell
+.venv/Scripts/python -m pytest tests/test_timeutil.py -q
+.venv/Scripts/python -m pytest tests -q
+```
+
 ## Trọng số train thử trên Colab
 
 Notebook hiện tại: `train/colab-setup.ipynb`. Metadata của file tải về nằm trong

@@ -645,7 +645,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `parse_utc(s: str) -> datetime` — chỉ nhận dạng `ISO_Z`, ném `ValueError` khác.
   - `class SystemClock`, `class FakeClock(start: datetime)` cùng ba hàm `now() -> datetime` (UTC có múi giờ), `monotonic() -> float`, `sleep(seconds: float) -> None`; `FakeClock.advance(seconds: float) -> None`, `FakeClock.jump(seconds: float) -> None` (chỉ đổi giờ thật, không đổi `monotonic`).
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_timeutil.py`:
 
@@ -729,7 +729,7 @@ def test_fake_clock():
 Run: `.\.venv\Scripts\python -m pytest tests/test_timeutil.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/timeutil.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/timeutil.py`**
 
 ```python
 """Thoi gian: moi moc gui di la UTC co Z, cua so tron 5 phut (spec 4.3, hop dong 2.4)."""
@@ -794,12 +794,14 @@ class FakeClock:
         self._now += timedelta(seconds=seconds)
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_timeutil.py -v`
 Expected: PASS 17 test.
 
-- [ ] **Step 4: Commit**
+Kiem chung 02/11/2026: 26 test Task 3 PASS (gom ca bien va dau vao sai); toan bo Python suite: 42 PASS, 6 subtests PASS.
+
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/timeutil.py ai-vision/tests/test_timeutil.py
