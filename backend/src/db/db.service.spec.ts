@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { AppConfig } from '../config/config';
 import { adapterConfig, DbService } from './db.service';
 
@@ -139,6 +140,27 @@ describe('DbService', () => {
     );
     expect(exit).not.toHaveBeenCalled();
     expect(db.isReady()).toBe(true);
+  });
+
+  // CR-8: loi thoat ra khoi connectLoop (VD exit nem) -> log, khong thanh unhandled rejection.
+  it('connectLoop nem loi -> log loi', async () => {
+    const err = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    const prisma = fakePrisma([
+      Object.assign(new Error("Login failed for user 'u'."), { number: 18456 }),
+    ]);
+    const db = new DbService(
+      cfg,
+      () => prisma as never,
+      () => {
+        throw new Error('exit hong');
+      },
+    );
+    db.start();
+    await jest.advanceTimersByTimeAsync(1000 + 2000 + 5000 + 10000 + 1);
+    expect(err).toHaveBeenCalledWith(expect.stringContaining('exit hong'));
+    err.mockRestore();
   });
 
   it('ping luu tam 5 giay', async () => {

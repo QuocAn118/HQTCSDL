@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await -- gia lap ham async trong file test */
+import { Logger } from '@nestjs/common';
 import type { SetActuatorArgs } from '../db/sp';
 import { ControlLoopService } from './control-loop.service';
 import { ControlCache } from './cache.service';
@@ -268,6 +269,22 @@ describe('ControlLoopService.requestResync', () => {
     expect(mqtt.publishCommand).toHaveBeenCalledTimes(4);
     await jest.advanceTimersByTimeAsync(5000);
     expect(mqtt.publishCommand).toHaveBeenCalledTimes(8);
+    jest.useRealTimers();
+  });
+  // CR-8: loi ngoai vong publish (VD doc bo nho dem) -> log, khong thanh unhandled rejection.
+  it('resync nem loi -> log loi', async () => {
+    jest.useFakeTimers();
+    const err = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    const { loop, cache } = setup();
+    jest.spyOn(cache, 'actuators').mockImplementation(() => {
+      throw new Error('cache hong');
+    });
+    loop.requestResync();
+    await jest.advanceTimersByTimeAsync(6000);
+    expect(err).toHaveBeenCalledWith(expect.stringContaining('cache hong'));
+    err.mockRestore();
     jest.useRealTimers();
   });
 });

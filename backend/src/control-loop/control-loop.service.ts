@@ -63,7 +63,9 @@ export class ControlLoopService implements OnModuleInit {
         return;
       }
       this.lastResync = this.clock().getTime();
-      void this.resync();
+      this.resync().catch((e: Error) =>
+        this.log.error(`Dong bo lenh loi: ${e.message}`),
+      );
     }, wait);
   }
 

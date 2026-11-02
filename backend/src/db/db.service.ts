@@ -78,9 +78,13 @@ export class DbService implements DbHealth, OnModuleDestroy {
   start(): void {
     if (this.connecting || this.stopped) return;
     this.connecting = true;
-    void this.connectLoop().finally(() => {
-      this.connecting = false;
-    });
+    this.connectLoop()
+      .catch((e: Error) =>
+        this.log.error(`Vong ket noi CSDL loi: ${e.message}`),
+      )
+      .finally(() => {
+        this.connecting = false;
+      });
   }
 
   reportFailure(err: unknown): void {
