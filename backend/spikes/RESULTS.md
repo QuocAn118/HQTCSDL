@@ -72,3 +72,16 @@ Máy nhóm (i7-4810MQ, Windows Defender quét thời gian thực, `node_modules`
 | T23-2 OFFLINE 15 s | **60/60**, 0 bản ghi trùng, backend vẫn chạy, health 200; log một dòng `giu lo va thu lai` rồi `Ghi so do da hoi phuc` |
 | T23-2 OFFLINE 45 s | **60/60**, 0 trùng, backend vẫn chạy (sau khi đã sẵn sàng, 18456/4060 không còn đếm 5 lần rồi dừng) |
 | `npm run test:contract` đầy đủ | **53/53 PASS** (extras 10 + run 43), 46/50 fixture, 34,3 phút |
+
+## Hạn chế: Task 25 (thu hoạch, báo cáo sản lượng) bị cắt (01/11/2026)
+
+Chồng (TV2) quyết cắt Task 25 (mục 9 của backend, dưới ranh giới cắt). Backend **không có** `POST /api/harvests` và `GET /api/reports/env-vs-yield`; hai fixture `rest/harvests-post.cut`, `rest/report-env-vs-yield.cut` vẫn nằm trong `SKIP_CUT` của `test-contract/run.test.mjs`. Web/mobile không có màn hình thu hoạch, báo cáo sản lượng gọi backend. Phần CSDL (bảng, `sp_Report_EnvStabilityVsYield` nếu database-core đã làm) không bị ảnh hưởng, vẫn trình bày được trực tiếp trên SQL Server.
+
+## Kiểm tra cuối cùng (02/11/2026)
+
+| Mục | Kết quả |
+|---|---|
+| `npm test` / `test:e2e` / `test:db` | 297/297 (34 bộ) / 4/4 / 16/16 (`test:db` trên `SwiftletCare_Dev`, chỉ SP đọc). Không có `test:scripts` (Task 24 chưa làm) |
+| build, lint | đạt, 0 lỗi |
+| `npm run test:contract` đầy đủ | **55/55 PASS** (extras 10 + run 45), **48/50 fixture**, bỏ qua `rest/harvests-post.cut`, `rest/report-env-vs-yield.cut`; 2369 s (39,5 phút); RESTORE 2,7–4,1 s × 35; DEVICE_OFFLINE sau 60 s |
+| T26-1 DEVICE_OFFLINE tự đóng | `SwiftletCare_Test`: `H1-F1-FAN`, `H1-F0-CAMERA` để `LastSeenAt` cũ 10 phút, `EXEC sp_DetectAnomalies` → 2 cảnh báo `DEVICE_OFFLINE` NEW, thiết bị OFFLINE. Heartbeat MQTT (FAN) + `POST /api/ai/heartbeat` (CAMERA, 200 `{accepted:1, rejected:0}`) → cả 2 cảnh báo **RESOLVED**, `resolvedBy null`, thiết bị ONLINE; Socket.IO phát 2 `alert.updated` |
