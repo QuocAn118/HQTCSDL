@@ -1,5 +1,20 @@
 # AI Vision
 
+## Task 4: cấu hình camera và môi trường
+
+Hai mẫu nằm trong `cameras/H1-F0-CAMERA.yaml` và `cameras/H2-F0-CAMERA.yaml`.
+Playlist và tọa độ vạch đang là ví dụ; thay bằng video thật và chọn vạch trên
+tập val trước khi chạy. Không tạo video giả để vượt kiểm tra cấu hình.
+Đường dẫn playlist tính từ `ai-vision/`, dùng tên file/thư mục ASCII.
+
+Chép `.env.example` thành `.env` khi cần chạy với backend, điền khóa dịch vụ
+do người chạy backend cung cấp. Không commit `.env`. Chế độ offline không
+bắt buộc file này. Bộ đọc hỗ trợ UTF-8 BOM; thông báo lỗi và `repr` cấu hình
+môi trường không in khóa dịch vụ.
+
+`check_confirm_fps()` kiểm tra điều kiện xác nhận thiên địch. Hàm chưa tự đo
+FPS; phần đo và phát video được triển khai ở các task sau.
+
 ## Task 3: thời gian UTC và cửa sổ 5 phút
 
 `swiftletcare_ai/timeutil.py` cung cấp định dạng UTC có `Z`, đọc thời gian UTC,

@@ -829,7 +829,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `check_confirm_fps(confirm_frames: int, confirm_seconds: float, fps: float) -> None` — ném `ConfigError` có fps đo được và cách sửa.
 - `tests/conftest.py`: fixture `ai_fixtures_dir -> Path` (đi ngược lên tới `contracts/fixtures/ai`, không thấy thì `pytest.fail`), hàm `write_yaml(tmp_path, data, name='H1-F0-CAMERA.yaml') -> Path`, `VALID_CAMERA: dict`.
 
-- [ ] **Step 1: Viết `tests/conftest.py` và test (phải fail)**
+- [x] **Step 1: Viết `tests/conftest.py` và test (phải fail)**
 
 `ai-vision/tests/conftest.py`:
 
@@ -1105,7 +1105,7 @@ def test_danh_sach_camera_khop_fixture_hai_chieu(ai_fixtures_dir):
 Run: `.\.venv\Scripts\python -m pytest tests/test_config.py tests/test_camera_list.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.config'`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/config.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/config.py`**
 
 ```python
 """Cau hinh camera (YAML) va .env. Gap loi dau tien thi dung, bao ten file, truong, gia tri, gia tri hop le (spec 3.3, 3.4)."""
@@ -1303,7 +1303,7 @@ def check_confirm_fps(confirm_frames: int, confirm_seconds: float, fps: float) -
 
 Lưu ý: `@dataclass` không cho trường có giá trị mặc định đứng trước trường không mặc định; `field(repr=False)` không đặt mặc định nên hợp lệ.
 
-- [ ] **Step 3: Viết hai file cấu hình mẫu**
+- [x] **Step 3: Viết hai file cấu hình mẫu**
 
 `ai-vision/cameras/H1-F0-CAMERA.yaml` (playlist và số là minh họa; TV3 chốt theo video thật, spec 3.4):
 
@@ -1331,12 +1331,14 @@ process_fps: null            # null = theo fps cua video; so nho hon = gioi han 
 
 `ai-vision/cameras/H2-F0-CAMERA.yaml`: giống hệt, đổi dòng đầu thành `camera: H2-F0-CAMERA` và playlist thành `data/videos/V02.mp4`, `data/videos/S01.mp4`.
 
-- [ ] **Step 4: Chạy test**
+- [x] **Step 4: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_config.py tests/test_camera_list.py -v`
 Expected: PASS mọi test trong `test_config.py`. `test_camera_list.py`: PASS nếu PR fixture hợp đồng đã merge; chưa merge thì FAIL với "chua co contracts/fixtures/ai, can merge integration-contract truoc" — **đúng thiết kế** (spec 7.3), ghi vào mô tả commit và làm tiếp.
 
-- [ ] **Step 5: Commit**
+Kiem chung 02/11/2026: 68 test Task 4 PASS, fixture camera hai chieu PASS; toan bo Python suite: 110 PASS, 6 subtests PASS. Playlist mau chua thay bang video that.
+
+- [x] **Step 5: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/config.py ai-vision/tests/conftest.py ai-vision/tests/test_config.py ai-vision/tests/test_camera_list.py ai-vision/cameras
