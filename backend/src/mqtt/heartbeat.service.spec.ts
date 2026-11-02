@@ -30,7 +30,7 @@ describe('HeartbeatService', () => {
     // eslint-disable-next-line @typescript-eslint/require-await -- gia lap ham async
     const ingest = { emitResolved: jest.fn(async () => undefined) };
     const svc = new HeartbeatService(
-      { isReady: () => true } as never,
+      { isReady: () => true, reportFailure: jest.fn() } as never,
       { recordHeartbeat } as never,
       ingest as never,
       { onHeartbeat: jest.fn() } as never,
@@ -47,6 +47,27 @@ describe('HeartbeatService', () => {
     await svc.tick();
     await svc.tick();
     expect(recordHeartbeat).toHaveBeenCalledTimes(2);
+  });
+
+  // CR-3: mat ket noi luc chi co heartbeat -> bao DbService de ket noi lai.
+  it('loi ket noi -> goi db.reportFailure voi loi do', async () => {
+    const lost = { code: 'P1001' };
+    const reportFailure = jest.fn();
+    const svc = new HeartbeatService(
+      { isReady: () => true, reportFailure } as never,
+      { recordHeartbeat: jest.fn().mockRejectedValue(lost) } as never,
+      {} as never,
+      { onHeartbeat: jest.fn() } as never,
+    );
+    jest
+      .spyOn(
+        (svc as unknown as { log: { warn: (m: string) => void } }).log,
+        'warn',
+      )
+      .mockImplementation(() => undefined);
+    svc.receive('H1-F1-FAN', buf({ device: 'H1-F1-FAN', at: AT }));
+    await svc.tick();
+    expect(reportFailure).toHaveBeenCalledWith(lost);
   });
 
   it('CSDL chua san sang -> giu hang cho, khong goi SP', async () => {

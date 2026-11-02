@@ -72,6 +72,7 @@ export class HeartbeatService implements OnModuleInit, OnModuleDestroy {
       const r = await this.sp.recordHeartbeat(batch);
       await this.ingest.emitResolved(r.resolvedAlertIds);
     } catch (e) {
+      this.db.reportFailure(e); // tu bo qua neu khong phai mat ket noi
       this.log.warn(`Bo ${batch.length} heartbeat: ${(e as Error).message}`);
     } finally {
       this.busy = false;
