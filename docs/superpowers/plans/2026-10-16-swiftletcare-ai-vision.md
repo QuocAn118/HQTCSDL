@@ -1627,7 +1627,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `class WindowCounter: __init__(self, on_close: Callable[[datetime, int, int], None])`; `observe(at: datetime) -> None` (sang cửa sổ khác thì gọi `on_close(ws_cũ, in, out)` rồi bắt đầu từ 0); `add(direction: str, at: datetime) -> None` (`'in'`/`'out'`); `current() -> tuple[datetime, int, int] | None`.
   - `class CountQueue: put(ws: datetime, in_: int, out: int) -> None` (lấy lớn hơn từng cột, ném `ValueError` nếu âm); `batch() -> list[tuple[datetime, int, int]]` (cũ trước, ≤ 500); `ack(sent: list[tuple[datetime, int, int]]) -> None` (chỉ xóa cửa sổ chưa có tổng mới hơn); `expire(now: datetime) -> list[tuple[datetime, int, int]]` (xóa và trả cửa sổ đóng quá 60 phút); `pending() -> list[tuple[datetime, int, int]]`; `__len__`. An toàn khi gọi từ hai luồng.
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_windows.py`:
 
@@ -1743,7 +1743,7 @@ def test_len():
 Run: `.\.venv\Scripts\python -m pytest tests/test_windows.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/windows.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/windows.py`**
 
 ```python
 """Cua so dem 5 phut va hang doi so dem cho gui (spec 4.3, 5.2, 5.4)."""
@@ -1822,12 +1822,12 @@ class CountQueue:
             return len(self._d)
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_windows.py -v`
 Expected: PASS 12 test.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/windows.py ai-vision/tests/test_windows.py
