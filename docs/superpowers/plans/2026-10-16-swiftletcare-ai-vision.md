@@ -2204,7 +2204,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `payloads.py`: `counts_payload(camera: str, items: list[tuple[datetime, int, int]]) -> list[dict]`; `predator_metadata(camera: str, cls: str, confidence: float, at: datetime) -> dict`; `heartbeat_payload(camera: str, at: datetime) -> dict`. Cả ba ném `ValueError` khi camera lạ, lớp lạ, số âm, `confidence` ngoài [0, 1], cửa sổ không tròn 5 phút, quá 500 phần tử.
   - `tests/shapes.py`: `shape_problems(expected, actual, path='') -> list[str]` (so khóa và kiểu; chỗ giữ chỗ kiểm theo spec 1.5; chỗ giữ chỗ lạ → lỗi), `load_fixture(dir: Path, name: str) -> dict`.
 
-- [ ] **Step 1: Viết `tests/shapes.py` và test (phải fail)**
+- [x] **Step 1: Viết `tests/shapes.py` và test (phải fail)**
 
 `ai-vision/tests/shapes.py`:
 
@@ -2430,7 +2430,7 @@ def test_invalid_offset_ham_thoi_diem_luon_co_z(ai_fixtures_dir):
 Run: `.\.venv\Scripts\python -m pytest tests/test_payloads.py tests/test_contract_shapes.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.payloads'`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/payloads.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/payloads.py`**
 
 ```python
 """Payload gui backend (hop dong 2.4). Ham tao payload khong the sinh du lieu sai (spec 7.3)."""
@@ -2478,12 +2478,12 @@ def heartbeat_payload(camera: str, at: datetime) -> dict:
     return {'device': _camera(camera), 'at': utc_iso(at)}
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_payloads.py tests/test_contract_shapes.py -v`
 Expected: PASS mọi test trong `test_payloads.py`; `test_contract_shapes.py` PASS khi fixture hợp đồng đã merge (chưa merge → fail "chua co contracts/fixtures/ai…", đúng thiết kế). Fixture thật khác bản đối chiếu (tên file, chỗ giữ chỗ) → test fail chỉ ra chỗ khác: **báo TV2**, không sửa fixture; sửa `AI_FILES` hoặc `shapes.py` chỉ khi PR hợp đồng đã đổi thật.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/payloads.py ai-vision/tests/shapes.py ai-vision/tests/test_payloads.py ai-vision/tests/test_contract_shapes.py
