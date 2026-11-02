@@ -1360,7 +1360,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `logjson.py`: `FIELDS: dict[str, tuple[str, ...]]` (bảng spec 5.1); `class JsonLog: __init__(self, camera: str, path: Path | None, clock, stream=None)`; `write(self, level: str, type_: str, **fields) -> None` (ném `ValueError` nếu `level` lạ hoặc thiếu trường bắt buộc của `type_`); `info/warning/error(self, type_: str, **fields)`. Kiểu `type_` ngoài bảng (`video.frame_error`, `start`, `error`) được phép, không kiểm trường.
   - `lockfile.py`: `class LockExists(Exception)` có thuộc tính `created_at: str`; `acquire(path: Path, clock) -> None`; `release(path: Path) -> None`; `lock_path(ai_dir: Path, camera: str) -> Path` (`data/run/<camera>.lock`).
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_logjson.py`:
 
@@ -1499,7 +1499,7 @@ def test_release_xoa_file_va_goi_lai_khong_loi(tmp_path):
 Run: `.\.venv\Scripts\python -m pytest tests/test_logjson.py tests/test_lockfile.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/logjson.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/logjson.py`**
 
 ```python
 """Log doc duoc bang may: moi su kien mot dong JSON, ra man hinh va noi them vao file (spec 5.1)."""
@@ -1558,7 +1558,7 @@ class JsonLog:
         self.write('error', type_, **fields)
 ```
 
-- [ ] **Step 3: Viết `ai-vision/swiftletcare_ai/lockfile.py`**
+- [x] **Step 3: Viết `ai-vision/swiftletcare_ai/lockfile.py`**
 
 ```python
 """File khoa chong chay trung mot camera (spec 3.5). Khong tu do tien trinh con song."""
@@ -1599,12 +1599,12 @@ def release(path: Path) -> None:
     path.unlink(missing_ok=True)
 ```
 
-- [ ] **Step 4: Chạy test**
+- [x] **Step 4: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_logjson.py tests/test_lockfile.py -v`
 Expected: PASS mọi test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/logjson.py ai-vision/swiftletcare_ai/lockfile.py ai-vision/tests/test_logjson.py ai-vision/tests/test_lockfile.py
