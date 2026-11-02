@@ -1,5 +1,29 @@
 # AI Vision
 
+## Trọng số train thử trên Colab
+
+Notebook hiện tại: `train/colab-setup.ipynb`. Metadata của file tải về nằm trong
+`weights.json`; đây là trọng số **train thử**, val chỉ có swiftlet. Chưa đóng băng
+mô hình để đánh giá chính thức bốn lớp. Không dùng tập test để chọn cấu hình.
+
+Đặt file tải từ Drive vào `ai-vision/data/weights/best.pt`. Từ gốc repo chạy:
+
+```powershell
+ai-vision/.venv/Scripts/python ai-vision/scripts/download_weights.py --verify-only
+ai-vision/.venv/Scripts/python -m unittest discover -s ai-vision/tests -p test_download_weights.py -v
+```
+
+Script kiểm SHA-256 trước khi nạp mô hình và kiểm đủ bốn tên lớp. File sai hash
+không được nạp; tải sai hash không ghi đè trọng số đang có. `--verify-only` dùng
+được khi chưa có URL công khai. Chế độ tải cần URL HTTPS trong `weights.json`;
+hiện URL để `null` vì file được tải thủ công từ Drive, chưa tạo Release.
+
+Môi trường đã nạp thử: Python 3.12.10, torch 2.15.0+cpu, Ultralytics 8.4.178,
+supervision 0.30.9. Colab dùng torch 2.11.0+cu130, khác máy Windows.
+Chưa có `requirements.txt` hoàn chỉnh theo Task 1; `requirements-data.txt` chỉ
+phục vụ chuẩn bị dữ liệu. Task 13 còn thiếu kho tải chung và việc đồng bộ đầy đủ
+với các thành phần Task 1/4/11 chưa có trong checkout hiện tại.
+
 Dataset hiện dùng: **data/working/split_v3/**, cập nhật 24/10/2026. Có 5.945 ảnh và 5.945 file nhãn YOLO detection. Các ảnh mới giữ kích thước gốc; Ultralytics resize lúc train/inference. Chia theo nguồn dataset Universe, đúng spec §2.4; ảnh trùng/lỗi đã loại không thuộc bộ chia.
 
 | Lớp (class ID) | Train | Val | Test | Tổng |
