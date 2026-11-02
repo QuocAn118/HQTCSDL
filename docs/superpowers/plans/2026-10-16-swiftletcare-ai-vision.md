@@ -2063,7 +2063,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `Box` (Task 7), fixture `ai_fixtures_dir` (Task 4).
 - Produces: `snapshot.py`: `JPEG_QUALITY = 90`, `SCALE = 0.75`; `draw_boxes(frame: np.ndarray, boxes: list[Box]) -> np.ndarray` (bản sao, không sửa khung gốc); `encode_within(img: np.ndarray, max_bytes: int) -> bytes`; `encode_snapshot(frame: np.ndarray, boxes: list[Box], max_bytes: int) -> bytes`; `shrink_jpeg(data: bytes, max_bytes: int) -> bytes` (thu nhỏ ít nhất một lần 75%, cho lần gửi lại sau 413).
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_snapshot.py`:
 
@@ -2124,7 +2124,7 @@ def test_shrink_jpeg_nho_hon_ban_dau():
 Run: `.\.venv\Scripts\python -m pytest tests/test_snapshot.py -v`
 Expected: FAIL `ModuleNotFoundError`. (Chưa merge fixture hợp đồng thì `test_anh_snake_cua_hop_dong…` fail vì thiếu thư mục — đúng thiết kế; bốn test còn lại không cần fixture.)
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/snapshot.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/snapshot.py`**
 
 ```python
 """Anh gui kem su kien thien dich: khung goc + khung bao + nhan, JPEG 90, thu nho 75% toi khi du nho (spec 4.4)."""
@@ -2175,12 +2175,14 @@ def shrink_jpeg(data: bytes, max_bytes: int) -> bytes:
     return encode_within(_resize(img), max_bytes)
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_snapshot.py -v`
 Expected: PASS 5 test (4 nếu fixture hợp đồng chưa merge, test `snake` fail có chủ ý).
 
-- [ ] **Step 4: Commit**
+Kiem chung Windows: doc snake.jpg bang Path.read_bytes + cv2.imdecode vi imread khong mo duoc duong dan repo co dau; 5 test PASS.
+
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/snapshot.py ai-vision/tests/test_snapshot.py
