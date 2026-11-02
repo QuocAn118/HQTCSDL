@@ -196,6 +196,40 @@ describe('IngestService', () => {
     expect(svc.queueLength()).toBe(5);
   });
 
+  // CR-1: cat dau hang luc SP dang ghi khong duoc lam lech splice sau do (mat so do chua gui).
+  it.each([
+    ['ghi xong', () => Promise.resolve(ok())],
+    [
+      'loi 547 bo lo',
+      () => Promise.reject(Object.assign(new Error('x'), { number: 547 })),
+    ],
+  ])(
+    'vuot INGEST_RETRY_MAX_ITEMS luc dang ghi (%s) -> giu dung so do chua gui',
+    async (_label, result) => {
+      let release!: () => void;
+      const ingest = jest
+        .fn(async () => ok())
+        .mockImplementationOnce(
+          () =>
+            new Promise((r, j) => {
+              release = () => {
+                result().then(r, j).catch(j);
+              };
+            }),
+        );
+      const { svc } = setup(ingest, { max: 5 });
+      svc.receive('H1-F1-SENSOR', payload(4, 0));
+      const t = svc.tick();
+      svc.receive('H1-F1-SENSOR', payload(3, 10));
+      release();
+      await t;
+      await svc.tick();
+      expect(
+        ingest.mock.calls[1][0].map((x: { value: number }) => x.value),
+      ).toEqual([10, 11, 12]);
+    },
+  );
+
   it.each([50030, 50042, 547])('%i -> bo lo, khong thu lai', async (n) => {
     const ingest = jest
       .fn()

@@ -35,6 +35,8 @@ export class IngestService implements OnModuleInit, OnModuleDestroy {
   private readonly log = new Logger('Thu nhan');
   private queue: ReadingItem[] = [];
   private busy = false;
+  // So phan tu dau hang dang nam trong lo SP dang ghi: khong duoc cat (CR-1).
+  private inFlight = 0;
   private nextAt = 0;
   private retryAttempt = 0;
   private unknownFailures = 0;
@@ -77,9 +79,11 @@ export class IngestService implements OnModuleInit, OnModuleDestroy {
       });
     }
     this.queue.push(...items);
-    const excess = this.queue.length - this.cfg.ingestRetryMaxItems;
+    // Gioi han tinh tren so do chua gui; lo dang ghi khong bi cat.
+    const excess =
+      this.queue.length - this.inFlight - this.cfg.ingestRetryMaxItems;
     if (excess > 0) {
-      this.queue.splice(0, excess);
+      this.queue.splice(this.inFlight, excess);
       this.log.warn(
         `Hang cho vuot INGEST_RETRY_MAX_ITEMS: bo ${excess} so do cu nhat`,
       );
@@ -101,12 +105,15 @@ export class IngestService implements OnModuleInit, OnModuleDestroy {
     try {
       while (this.queue.length) {
         const batch = this.queue.slice(0, BATCH_SIZE);
+        this.inFlight = batch.length;
         let res: IngestResult;
         try {
           res = await this.sp.ingestReadings(batch);
         } catch (e) {
           this.onFailure(e, batch.length);
           return;
+        } finally {
+          this.inFlight = 0;
         }
         this.queue.splice(0, batch.length);
         if (this.failing) this.log.log('Ghi so do da hoi phuc');
