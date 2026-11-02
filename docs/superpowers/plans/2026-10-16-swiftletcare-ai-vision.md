@@ -1853,7 +1853,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 Ghi chú bộ nhớ: mỗi lớp giữ tối đa `confirm_frames − 1` khung đang chờ (đủ `confirm_frames` là xác nhận hoặc bị chặn rồi xóa), nên bộ nhớ có trần cố định, đúng spec 4.4 ("giữ tối đa `confirm_frames` khung").
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_predators.py`:
 
@@ -1964,7 +1964,7 @@ def test_bo_nho_co_tran_so_khung_cho():
 Run: `.\.venv\Scripts\python -m pytest tests/test_predators.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/predators.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/predators.py`**
 
 ```python
 """Xac nhan thien dich nhieu khung va cooldown phia AI, rieng tung lop (spec 4.4)."""
@@ -2038,12 +2038,12 @@ class PredatorConfirmer:
             self._until[cls] = None
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_predators.py -v`
 Expected: PASS 10 test.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/predators.py ai-vision/tests/test_predators.py
