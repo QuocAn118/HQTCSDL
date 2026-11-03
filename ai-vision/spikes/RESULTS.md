@@ -21,11 +21,11 @@ minh; không suy ra module đã chạy đầu-cuối trên video thật.
 | S14 | Kho tải trọng số | Tải thủ công từ Drive; chưa có Release. Lệnh gh chưa có trên PATH, chưa kiểm quyền tạo Release. |
 | S15 | Nạp trọng số máy nhóm | Hash đúng metadata; best.pt nạp bốn lớp trên CPU. Torch Windows 2.15.0+cpu khác Colab; Ultralytics cùng bản. |
 | S16 | Ảnh nền | Train có 0/3104 nhãn rỗng, backgroundRatio=0.0. Chưa xác minh nguồn khuyến nghị mặc định 10%. |
-| S17 | Đọc/bỏ khung thật | Chưa có video thật để so sánh read/grab; video tổng hợp không thay thế phép đo này. |
+| S17 | Đọc/bỏ khung thật | V01.webm: 1280×720, 25 FPS, 2933 khung. Spike 300 lượt read và 300 lượt grab: read 0,79 ms/khung, grab 0,52 ms/khung. Chỉ là tốc độ giải mã/bỏ khung, không phải FPS nhận dạng hay số đo chất lượng đếm. |
 | S18 | Ngưỡng và MIN_BOX_PX | Chưa chốt trên val; val chỉ có swiftlet, chưa đủ chọn ngưỡng thiên địch độc lập. |
 | S19 | Giới hạn ảnh | backend/.env.example và AI cùng SNAPSHOT_MAX_BYTES=2097152. Chưa kiểm cấu hình backend đang chạy. |
 | S20 | Vạch đếm | 7 test đạt; SV_IN_MEANS=out. Mất track trước vạch rồi ID mới phía kia: in=0/out=0. Lượn lên–xuống–lên: in=1/out=2, đếm mỗi lần qua vạch. |
-| S21 | Video đúng góc | Chưa thấy video trong ai-vision/data; cần TV3 cung cấp/xác nhận video và nguồn. |
+| S21 | Video đúng góc | Đã nhận V01.webm và V02.ogv (video én/martin thay thế). Ảnh mẫu V01 có đổi góc quay, V02 có chuyển động camera. Chưa duyệt nguồn nào để đo đếm qua vạch; chưa gán train/val/test hoặc chạy đánh giá mô hình trên chúng. |
 | S22 | 404 backend thật | Backend giả đạt; chưa gọi NestJS thật. |
 | S23 | API metrics | Bản cài có Metric.ap_class_index và Metric.class_result(). Chưa chạy đánh giá test chính thức. |
 

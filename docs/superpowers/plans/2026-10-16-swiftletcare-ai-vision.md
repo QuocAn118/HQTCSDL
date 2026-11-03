@@ -3662,7 +3662,7 @@ grab_ms = (time.perf_counter() - t) / 300 * 1000
 print(f'read {read_ms:.2f} ms/khung, grab {grab_ms:.2f} ms/khung')
 ```
 
-- [ ] **Step 6: Kiểm tay S17 (khi đã có ít nhất một video thật)**
+- [x] **Step 6: Kiểm tay S17 (khi đã có ít nhất một video thật)**
 
 Run: `.\.venv\Scripts\python spikes\check_seek.py data\videos\V01.mp4`
 Expected: in `read … ms/khung, grab … ms/khung`. Ghi S17 vào `RESULTS.md`. Nếu `grab` không nhanh hơn `read` đáng kể và fps máy thấp hơn fps video nhiều, ghi rõ — Task 15 Step 7 (so sánh offline với live) đo ảnh hưởng.
