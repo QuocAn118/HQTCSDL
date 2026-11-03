@@ -14,7 +14,7 @@ export const MESSAGES: Record<string, string> = {
 export const GENERIC_MESSAGE = 'Đã có lỗi, vui lòng thử lại.';
 
 export function messageFor(code: string | null | undefined): string {
-  return (code && MESSAGES[code]) || GENERIC_MESSAGE;
+  return code && Object.hasOwn(MESSAGES, code) ? MESSAGES[code] : GENERIC_MESSAGE;
 }
 
 export class ApiError extends Error {

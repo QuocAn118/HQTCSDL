@@ -16,6 +16,11 @@ describe('errors (spec web 2.2)', () => {
     expect(messageFor(null)).toBe(GENERIC_MESSAGE);
   });
 
+  it('khoa san co cua Object khong phai ma loi -> cau chung', () => {
+    expect(messageFor('constructor')).toBe(GENERIC_MESSAGE);
+    expect(messageFor('toString')).toBe(GENERIC_MESSAGE);
+  });
+
   it('toApiError doc dinh dang hop dong 3.4, khong giu message tho', () => {
     const e = toApiError(400, { error: { code: 'VALIDATION_ERROR', message: 'SQL loi …', sqlNumber: null, details: { fields: ['minValue'] } } });
     expect(e.code).toBe('VALIDATION_ERROR');
