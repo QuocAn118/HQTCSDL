@@ -107,6 +107,13 @@ supervision 0.30.9. Colab dùng torch 2.11.0+cu130, khác máy Windows.
 phục vụ chuẩn bị dữ liệu. Task 13 còn thiếu kho tải trọng số chung và lượt
 kiểm chứng mô hình chính thức sau khi bổ sung val cho thiên địch.
 
+Task 13 có thêm `scripts/split_dataset.py` cho export YOLO mới với tên ảnh bắt
+đầu bằng mã nguồn. Script đọc `splits.csv`, giữ nguyên thứ tự class ID, từ chối
+nguồn trùng/lạ, tên đầu ra trùng, export rỗng và thư mục đầu ra đã có. Thiếu
+file nhãn được coi là ảnh nền theo định dạng export; cần duyệt nhãn trước train.
+Không chạy script này ghi vào `split_v3` đang dùng. Quy trình dựng lại
+`split_v3` vẫn dùng `scripts/split_dataset.ps1` như hướng dẫn dữ liệu bên dưới.
+
 Dataset hiện dùng: **data/working/split_v3/**, cập nhật 24/10/2026. Có 5.945 ảnh và 5.945 file nhãn YOLO detection. Các ảnh mới giữ kích thước gốc; Ultralytics resize lúc train/inference. Chia theo nguồn dataset Universe, đúng spec §2.4; ảnh trùng/lỗi đã loại không thuộc bộ chia.
 
 | Lớp (class ID) | Train | Val | Test | Tổng |
