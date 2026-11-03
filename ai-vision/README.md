@@ -5,7 +5,9 @@
 Đã triển khai phần code Task 2–12 và công cụ đo của Task 15. Kiểm tay video
 thật (Task 11 S17, Task 12 S8), đo test chính thức (Task 15) và đầu-cuối với
 backend thật (Task 16) còn chờ dữ liệu/cấu hình. Task 13 chưa có Release chung;
-Task 1 chưa kiểm đủ mọi spike. Notebook train đang được dùng trong `train/`.
+Task 1 chưa kiểm đủ mọi spike. Notebook sạch để dùng lại là
+`train/train.ipynb`; notebook thao tác hiện tại và output giữ ở
+`train/colab-setup.ipynb` trên máy bạn.
 
 Chạy các lệnh dưới đây từ `ai-vision/`, sau khi đặt video thật và sửa playlist:
 

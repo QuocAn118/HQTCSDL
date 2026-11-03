@@ -4842,7 +4842,7 @@ nguon,tap
 }
 ```
 
-- [ ] **Step 5: Viết `ai-vision/train/train.ipynb`**
+- [x] **Step 5: Viết `ai-vision/train/train.ipynb`**
 
 Notebook JSON (nbformat 4). Số phiên bản trong ô 2 phải trùng `requirements.txt` (test kiểm).
 
