@@ -28,7 +28,7 @@ export default function HousesPage() {
   }, [router]);
 
   useEffect(() => {
-    void load(true);
+    void load(true).catch(() => {});
   }, [load]);
 
   async function create(e: FormEvent) {
