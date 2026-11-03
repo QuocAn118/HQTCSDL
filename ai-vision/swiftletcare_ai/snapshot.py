@@ -44,3 +44,20 @@ def encode_snapshot(frame: np.ndarray, boxes: list[Box], max_bytes: int) -> byte
 def shrink_jpeg(data: bytes, max_bytes: int) -> bytes:
     img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
     return encode_within(_resize(img), max_bytes)
+
+_LINE_COLOR = (0, 255, 255)
+_SWIFT_COLOR = (0, 200, 0)
+
+
+def annotate(frame: np.ndarray, boxes: list[Box], line) -> np.ndarray:
+    """Khung cho video dau ra: vach dem + moi khung bao (chim mau xanh, thien dich mau do)."""
+    img = draw_boxes(frame, [b for b in boxes if b.cls != 'swiftlet'])
+    h, w = img.shape[:2]
+    p1 = (int(line.start[0] * w), int(line.start[1] * h))
+    p2 = (int(line.end[0] * w), int(line.end[1] * h))
+    cv2.line(img, p1, p2, _LINE_COLOR, 2)
+    for b in boxes:
+        if b.cls == 'swiftlet':
+            x1, y1, x2, y2 = (int(round(v)) for v in b.xyxy)
+            cv2.rectangle(img, (x1, y1), (x2, y2), _SWIFT_COLOR, 1)
+    return img

@@ -23,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
     off.add_argument('--out', type=Path, required=True)
     off.add_argument('--t0', default=None, help='moc bat dau dang YYYY-MM-DDTHH:MM:SSZ (mac dinh: gio chay)')
     off.add_argument('--playlist', nargs='+', default=None, help='thay playlist trong YAML (duong dan tinh tu ai-vision/)')
+    off.add_argument('--annotated-video', action='store_true', help='ghi them out/annotated.mp4 co khung bao va vach dem')
     return p
 
 
@@ -38,7 +39,7 @@ def main(argv: list[str] | None = None) -> int:
         t0 = parse_utc(args.t0) if args.t0 else None
     except ValueError as e:
         parser.error(str(e))
-    return run_offline(args.camera, args.out, args.weights, args.imgsz, t0, args.playlist, Deps())
+    return run_offline(args.camera, args.out, args.weights, args.imgsz, t0, args.playlist, Deps(), annotated=args.annotated_video)
 
 
 if __name__ == '__main__':

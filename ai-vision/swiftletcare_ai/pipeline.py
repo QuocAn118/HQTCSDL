@@ -34,13 +34,17 @@ class Pipeline:
         self._tracker = self._make_tracker(fps)
         self._line = None
 
-    def process(self, frame: np.ndarray, dets: sv.Detections, at: datetime) -> None:
+    def process(self, frame: np.ndarray, dets: sv.Detections, at: datetime) -> list[Box]:
         self.windows.observe(at)
         n = len(dets)
         names = np.array([self._names[int(c)] for c in dets.class_id], dtype=object) if n else np.array([], dtype=object)
         conf = dets.confidence if n else np.array([], dtype=float)
 
         swift = dets[(names == SWIFTLET) & (conf >= self._cfg.swiftlet_confidence)] if n else dets
+        swift_boxes = [
+            Box(SWIFTLET, float(confidence), tuple(float(value) for value in xyxy))
+            for xyxy, confidence in zip(swift.xyxy, swift.confidence if len(swift) else [])
+        ]
         tracked = self._tracker.update_with_detections(swift)
         if self._line is None:
             h, w = frame.shape[:2]
@@ -65,3 +69,4 @@ class Pipeline:
             elif isinstance(result, Blocked):
                 self._log.info('predator.cooldown_blocked', **{'class': cls}, at=utc_iso(result.at),
                                remainingSeconds=result.remaining_seconds)
+        return swift_boxes + boxes

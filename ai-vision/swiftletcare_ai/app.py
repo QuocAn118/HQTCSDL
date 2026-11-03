@@ -19,7 +19,7 @@ from .logjson import JsonLog
 from .pipeline import Pipeline
 from .predators import Confirmed, PredatorConfirmer
 from .sender import RETRY_DELAYS, PendingEvent, Sender
-from .snapshot import encode_snapshot
+from .snapshot import annotate, encode_snapshot
 from .timeutil import SystemClock, utc_iso
 from .video import VideoOpenError, VideoPlayer
 from .windows import CountQueue, WindowCounter
@@ -170,7 +170,7 @@ def _finish(log: JsonLog, queue: CountQueue, windows, sender, timing: Timing, re
 
 
 def run_offline(camera: str, out: Path, weights: Path, imgsz: int | None, t0: datetime | None,
-                playlist: list[str] | None, deps: Deps) -> int:
+                playlist: list[str] | None, deps: Deps, annotated: bool = False) -> int:
     clock = deps.clock
     try:
         cfg, env = _load(camera, deps, need_backend=False, playlist=playlist)
@@ -206,11 +206,29 @@ def run_offline(camera: str, out: Path, weights: Path, imgsz: int | None, t0: da
         pipe = Pipeline(cfg, detector.names, windows, PredatorConfirmer(cfg.predator), log,
                         lambda at, d, tid: crossings.writerow([utc_iso(at), d, tid]), on_confirmed, deps.make_tracker)
         started = time.perf_counter()
-        for frame in player.offline():
-            if frame.new_video:
-                pipe.new_video(frame.fps)
-            at = t0 + timedelta(seconds=frame.pos)
-            pipe.process(frame.image, detector(frame.image), at)
+        writer, size = None, None
+        try:
+            for frame in player.offline():
+                if frame.new_video:
+                    pipe.new_video(frame.fps)
+                at = t0 + timedelta(seconds=frame.pos)
+                drawn = pipe.process(frame.image, detector(frame.image), at)
+                if annotated:
+                    image = annotate(frame.image, drawn, cfg.line)
+                    if writer is None:
+                        size = (image.shape[1], image.shape[0])
+                        writer = cv2.VideoWriter(str(out / 'annotated.mp4'), cv2.VideoWriter_fourcc(*'mp4v'), frame.fps, size)
+                        if not writer.isOpened():
+                            raise VideoOpenError(f'khong ghi duoc video {out / "annotated.mp4"}')
+                    if (image.shape[1], image.shape[0]) != size:
+                        image = cv2.resize(image, size)
+                    writer.write(image)
+        except VideoOpenError as error:
+            log.error('stop', reason=str(error), exitCode=EXIT_STOP)
+            return EXIT_STOP
+        finally:
+            if writer is not None:
+                writer.release()
         if windows.current() is not None:
             counts.writerow([camera, utc_iso(windows.current()[0]), *windows.current()[1:]])
     elapsed = max(time.perf_counter() - started, 1e-9)

@@ -1,5 +1,9 @@
 # AI Vision
 
+Spec: [AI Vision](../docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md).
+Plan: [triển khai](../docs/superpowers/plans/2026-10-16-swiftletcare-ai-vision.md).
+Chạy `git status` trước mỗi lần commit; không commit video, ảnh, trọng số hoặc `.env`.
+
 ## Cài môi trường Windows
 
 Đã kiểm trên Python 3.12.10. Từ thư mục `ai-vision/`, dùng Python 3.12 hoặc
@@ -23,9 +27,10 @@ xác nhận đồng bộ UTC, cần kiểm tra trước kiểm thử live với 
 
 ## Chạy AI và trạng thái triển khai
 
-Đã triển khai phần code Task 2–12 và công cụ đo của Task 15. Kiểm tay video
-thật (Task 11 S17, Task 12 S8), đo test chính thức (Task 15) và đầu-cuối với
-backend thật (Task 16) còn chờ dữ liệu/cấu hình. Task 13 chưa có Release chung;
+Đã triển khai code Task 2–15, gồm phần Nên có của Task 14. Spike đọc/bỏ khung
+Task 11 S17 đã đo trên V01.webm. Kiểm tay Ctrl+C với video thật (Task 12 S8),
+đo test chính thức (Task 15) và đầu-cuối với backend thật (Task 16) còn chờ
+dữ liệu/cấu hình. Task 13 chưa có Release chung;
 Các mục Task 1 đã/chưa kiểm được ghi đủ S1–S23 trong
 [spikes/RESULTS.md](spikes/RESULTS.md). Notebook sạch để dùng lại là
 `train/train.ipynb`; notebook thao tác hiện tại và output giữ ở
@@ -36,12 +41,17 @@ Chạy các lệnh dưới đây từ `ai-vision/`, sau khi đặt video thật 
 ```powershell
 .venv/Scripts/python -m swiftletcare_ai offline --camera H1-F0-CAMERA --out data/out/H1
 .venv/Scripts/python -m swiftletcare_ai offline --camera H1-F0-CAMERA --playlist data/videos/V01.mp4 --t0 2000-01-01T00:00:00Z --imgsz 640 --out data/out/V01
+.venv/Scripts/python -m swiftletcare_ai offline --camera H1-F0-CAMERA --playlist data/videos/V01.mp4 --out data/out/preview --annotated-video
 .venv/Scripts/python -m swiftletcare_ai live --camera H1-F0-CAMERA
 .venv/Scripts/python -m pytest tests -q
 ```
 
 `offline` ghi `counts.csv`, `crossings.csv`, `predators.csv`, ảnh JPEG và log;
-không gọi backend. `live` gửi HTTP với khóa trong `.env`. Chỉ bật `--heartbeat`
+không gọi backend. `--annotated-video` ghi thêm `annotated.mp4` có vạch vàng,
+khung chim xanh và khung thiên địch đỏ. Video đầu ra dùng FPS/kích thước của
+video đầu trong playlist; nếu giảm process_fps hoặc trộn video khác FPS thì
+thời lượng đầu ra có thể khác nguồn, không dùng đồng hồ video đầu ra để đo sự kiện.
+`live` gửi HTTP với khóa trong `.env`. Chỉ bật `--heartbeat`
 khi backend đã triển khai route tương ứng; 404 sẽ dừng AI.
 
 Mã thoát: `0` bình thường/Ctrl+C một lần, `1` lỗi bất ngờ, `2` lỗi cấu hình,
@@ -50,8 +60,18 @@ khởi động hoặc 401/404, `130` Ctrl+C lần hai. Log live nằm ở
 Nếu khóa đã có, kiểm tra không còn tiến trình chạy camera rồi mới xóa tay.
 
 Hướng dẫn số đo: [results/README.md](results/README.md). Chưa chạy đánh giá test
-chính thức. Chưa triển khai các mục Nên có của Task 14 vì các bước Bắt buộc còn
-chờ kiểm chứng thực tế.
+chính thức. Các đường dẫn V01.mp4 trong lệnh là ví dụ cho video đã duyệt; hai
+file V01.webm/V02.ogv mới tải vẫn là ứng viên, chưa được gán tập để đánh giá.
+
+Chạy nhiều camera sau khi cấu hình backend và từng camera đã hợp lệ:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-cameras.ps1
+powershell -ExecutionPolicy Bypass -File scripts/start-cameras.ps1 -Cameras H1-F0-CAMERA
+```
+
+Script mở cửa sổ tương tác riêng cho mỗi camera để dừng bằng Ctrl+C. Tham số
+`-Heartbeat` chỉ dùng khi backend có route heartbeat; mặc định không bật.
 
 ## Task 4: cấu hình camera và môi trường
 
@@ -60,6 +80,21 @@ Playlist và tọa độ vạch đang là ví dụ; thay bằng video thật và
 tập val trước khi chạy. Không tạo video giả để vượt kiểm tra cấu hình.
 Đường dẫn playlist tính từ `ai-vision/`, dùng tên file/thư mục ASCII.
 
+| Trường | Ý nghĩa/điều kiện |
+|---|---|
+| `camera` | Một trong hai mã hợp đồng, trùng tên file YAML |
+| `playlist` | Danh sách file video tồn tại, không rỗng |
+| `line.start`, `line.end` | Hai điểm khác nhau, tọa độ chuẩn hóa trong [0,1] |
+| `swiftlet.confidence` | Ngưỡng tin cậy chim, trong (0,1] |
+| `predator.confidence` | Ngưỡng thiên địch trong [0.5,1] |
+| `predator.confirm_frames` | Số khung đã xử lý để xác nhận, số nguyên dương |
+| `predator.confirm_seconds` | Khoảng thời gian chứa các khung xác nhận, số dương |
+| `predator.cooldown_seconds` | Khoảng chặn báo lặp theo từng lớp, số dương |
+| `process_fps` | null theo video, hoặc số dương giới hạn tốc độ xử lý |
+
+Với đầu vạch bên trái và cuối vạch bên phải: bay lên là out, bay xuống là in.
+Đảo chiều bằng cách hoán đổi `start` và `end`, không có cờ flip.
+
 Chép `.env.example` thành `.env` khi cần chạy với backend, điền khóa dịch vụ
 do người chạy backend cung cấp. Không commit `.env`. Chế độ offline không
 bắt buộc file này. Bộ đọc hỗ trợ UTF-8 BOM; thông báo lỗi và `repr` cấu hình
@@ -67,6 +102,11 @@ môi trường không in khóa dịch vụ.
 
 `check_confirm_fps()` kiểm tra điều kiện xác nhận thiên địch. Lệnh live đo FPS
 khởi động trên 30 khung đầu, bỏ 5 khung warmup trước khi kiểm điều kiện này.
+
+Khi tập dượt: dùng SwiftletCare_Dev; không reset CSDL demo SwiftletCare.
+Theo spec, chạy demo AI trước 20:00 giờ Việt Nam. Thứ tự hệ thống: SQL Server,
+Mosquitto, simulator, backend, AI, rồi web/mobile. Video đầu ra và log không
+thay thế bằng chứng đầu-cuối với backend thật.
 
 ## Task 3: thời gian UTC và cửa sổ 5 phút
 

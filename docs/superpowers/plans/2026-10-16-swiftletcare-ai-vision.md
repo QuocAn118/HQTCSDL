@@ -4965,7 +4965,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `Pipeline`, `run_offline`, `build_parser` (Task 12), `draw_boxes` (Task 8), `LineCfg` (Task 4).
 - Produces: `Pipeline.process(...) -> list[Box]` (khung chim ≥ `swiftlet.confidence` và thiên địch ≥ `predator.confidence` của khung đó); `snapshot.annotate(frame: np.ndarray, boxes: list[Box], line: LineCfg) -> np.ndarray`; `run_offline(camera, out, weights, imgsz, t0, playlist, deps, annotated: bool = False) -> int` ghi `out/annotated.mp4` (mp4v, fps của video đầu, kích thước khung của video đầu); `scripts/start-cameras.ps1 [-Cameras <mã>...] [-Heartbeat]`.
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_extras.py`:
 
@@ -5041,7 +5041,7 @@ def test_start_cameras_ps1_parse_duoc_bang_powershell_5_1():
 Run: `.\.venv\Scripts\python -m pytest tests/test_extras.py -v`
 Expected: FAIL `ImportError: cannot import name 'annotate'`.
 
-- [ ] **Step 2: Thêm `annotate` vào `snapshot.py`**
+- [x] **Step 2: Thêm `annotate` vào `snapshot.py`**
 
 ```python
 _LINE_COLOR = (0, 255, 255)
@@ -5062,7 +5062,7 @@ def annotate(frame: np.ndarray, boxes: list[Box], line) -> np.ndarray:
     return img
 ```
 
-- [ ] **Step 3: `Pipeline.process` trả danh sách khung**
+- [x] **Step 3: `Pipeline.process` trả danh sách khung**
 
 Trong `pipeline.py`, đổi chữ ký thành `def process(self, frame, dets, at) -> list[Box]:`. Sau khi tính `boxes` (thiên địch), thêm khung chim đã lọc và trả về ở cuối hàm:
 
@@ -5081,7 +5081,7 @@ Trong `pipeline.py`, đổi chữ ký thành `def process(self, frame, dets, at)
 
 Test Task 12 không đổi (không dùng giá trị trả về).
 
-- [ ] **Step 4: `run_offline(..., annotated=False)` và cờ dòng lệnh**
+- [x] **Step 4: `run_offline(..., annotated=False)` và cờ dòng lệnh**
 
 Trong `app.py`: thêm tham số cuối `annotated: bool = False` cho `run_offline`; import `annotate` từ `.snapshot`. Trước vòng `for frame in player.offline():` thêm `writer, size = None, None`; thân vòng đổi thành:
 
@@ -5105,7 +5105,7 @@ Trong `app.py`: thêm tham số cuối `annotated: bool = False` cho `run_offlin
 
 Trong `__main__.py`: `off.add_argument('--annotated-video', action='store_true', help='ghi them out/annotated.mp4 co ve khung bao va vach dem')`; lời gọi đổi thành `run_offline(args.camera, args.out, args.weights, args.imgsz, t0, args.playlist, Deps(), annotated=args.annotated_video)`.
 
-- [ ] **Step 5: Viết `ai-vision/scripts/start-cameras.ps1` (chỉ ASCII)**
+- [x] **Step 5: Viết `ai-vision/scripts/start-cameras.ps1` (chỉ ASCII)**
 
 ```powershell
 # Mo moi camera mot cua so PowerShell rieng, chay lenh live (spec ai-vision 3.5).
@@ -5129,7 +5129,7 @@ foreach ($cam in $Cameras) {
 }
 ```
 
-- [ ] **Step 6: Viết đủ `ai-vision/README.md`**
+- [x] **Step 6: Viết đủ `ai-vision/README.md`**
 
 Thay khung của Task 1 bằng đủ các mục (tiếng Việt có dấu):
 
@@ -5143,12 +5143,14 @@ Thay khung của Task 1 bằng đủ các mục (tiếng Việt có dấu):
 8. **Quy tắc buổi demo** (spec 4.6): chạy AI trước 20:00 giờ VN; dữ liệu mẫu neo hôm qua; tập dượt dùng `SwiftletCare_Dev`; thứ tự bật: SQL Server → Mosquitto → simulator → backend → AI → web, mobile.
 9. **Số đo**: trỏ `results/README.md` (Task 15).
 
-- [ ] **Step 7: Chạy test**
+- [x] **Step 7: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest -v`
 Expected: PASS mọi test (trừ test cần fixture hợp đồng nếu PR chưa merge).
 
-- [ ] **Step 8: Commit**
+Kiem chung 03/11/2026: 7 test extras PASS; chua mo tien trinh camera that, chua xuat video danh gia tu nguon chua duyet.
+
+- [x] **Step 8: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/snapshot.py ai-vision/swiftletcare_ai/pipeline.py ai-vision/swiftletcare_ai/app.py ai-vision/swiftletcare_ai/__main__.py ai-vision/scripts/start-cameras.ps1 ai-vision/tests/test_extras.py ai-vision/README.md
