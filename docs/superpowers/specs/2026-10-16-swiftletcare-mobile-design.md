@@ -27,7 +27,7 @@
 - Phiên bản các gói Expo (`expo-router`, `expo-secure-store`, `expo-splash-screen`, `react-native`, …) **do `npx expo install` chọn cho SDK 58**. Plan ghi lại phiên bản thật đã cài, và `package.json` ghim chính xác. Không tự đoán.
 - `socket.io-client` **4.8.3** (khớp server). `vitest` **5.0.5** (giống web).
 - Chạy bằng **Expo Go** trên điện thoại thật hoặc Android Emulator. **Không build EAS.**
-- Skill hỗ trợ: `expo-router`, `expo-ui`, `expo-data-fetching` (plugin expo); thiết kế theo `frontend-design`, `taste-skill`; kiểm thử bằng `mobile-mcp`.
+- Skill hỗ trợ: `expo-router`, `expo-ui`, `expo-data-fetching` (plugin expo); thiết kế theo `impeccable`, `ui-ux-pro-max`; kiểm thử bằng `mobile-mcp`.
 
 **Ràng buộc Expo Go:**
 - Expo Go trên store thường chỉ chạy SDK mới nhất. SDK 59 ra trước 09/11 mà Expo Go tự cập nhật thì app không mở được.

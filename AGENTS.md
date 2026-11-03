@@ -101,7 +101,8 @@ Cài plugin bằng `/plugin install <tên>@<marketplace>`. Marketplace ngoài `c
 | `superpowers@claude-plugins-official` | Quy trình: `brainstorming` → spec, `writing-plans`, `executing-plans`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`, `requesting-code-review` |
 | `code-review@claude-plugins-official` | Rà PR trước khi nhờ người duyệt |
 | `ponytail@ponytail` | Giữ code tối thiểu, không thêm thứ không ai yêu cầu |
-| `frontend-design@claude-plugins-official`, `taste-skill@taste-skill` | Thiết kế giao diện web/mobile |
+| `impeccable@impeccable` | Thiết kế, rà và chỉnh giao diện web/mobile (bố cục, chữ, màu, chuyển động, khả năng truy cập, `DESIGN.md`) |
+| `ui-ux-pro-max@ui-ux-pro-max-skill` | Tra cứu UI/UX: kiểu giao diện, bảng màu, cặp phông, biểu đồ, hướng dẫn UX, design token |
 | `playwright@claude-plugins-official` (MCP) | Mở trình duyệt kiểm thử web |
 | `expo@claude-plugins-official` (MCP + skill) | Expo Router, UI, gọi dữ liệu, EAS |
 | `mobile-mcp@mobile-mcp` (MCP) | Điều khiển emulator/điện thoại thật để kiểm thử app |
@@ -115,5 +116,5 @@ Cài plugin bằng `/plugin install <tên>@<marketplace>`. Marketplace ngoài `c
 | `backend` | superpowers, codebase-memory-mcp, code-review, ponytail |
 | `simulator` | superpowers, ponytail |
 | `ai-vision` | superpowers (`systematic-debugging` khi mô hình cho kết quả lạ), ponytail |
-| `web` | superpowers, frontend-design, taste-skill, stitch, playwright |
-| `mobile` | superpowers, expo (skill `expo-router`, `expo-ui`, `expo-data-fetching`), mobile-mcp, frontend-design, taste-skill |
+| `web` | superpowers, impeccable, ui-ux-pro-max, stitch, playwright |
+| `mobile` | superpowers, expo (skill `expo-router`, `expo-ui`, `expo-data-fetching`), mobile-mcp, impeccable, ui-ux-pro-max |

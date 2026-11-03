@@ -107,7 +107,7 @@ web/
 Cập nhật 17/10/2026 theo plan (thêm `components/` và các file `lib/` tách trách nhiệm); không đổi màn hình hay luồng dữ liệu.
 
 - Giao diện bằng **tiếng Việt**.
-- Khi thiết kế màn hình: phác bằng `stitch`, làm theo `frontend-design` và `taste-skill`. Kiểm thử bằng `playwright` (CLAUDE.md).
+- Khi thiết kế màn hình: phác bằng `stitch`, làm theo `impeccable` và `ui-ux-pro-max`. Kiểm thử bằng `playwright` (CLAUDE.md).
 
 ### 1.5 Bước 1 của plan: kiểm trước khi viết code
 
