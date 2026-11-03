@@ -19,7 +19,9 @@ class Detector:
         self.names: dict[int, str] = dict(self._model.names)
 
     def __call__(self, frame: np.ndarray) -> sv.Detections:
-        kwargs = {'verbose': False}
+        # Pipeline ap dung nguong rieng moi lop tu YAML (swiftlet co the < 0.25).
+        # Khong de nguong mac dinh cua YOLO loai detection truoc buoc nay.
+        kwargs = {'verbose': False, 'conf': 0.0}
         if self._imgsz:
             kwargs['imgsz'] = self._imgsz
         return sv.Detections.from_ultralytics(self._model.predict(frame, **kwargs)[0])
