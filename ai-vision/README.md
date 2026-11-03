@@ -1,5 +1,34 @@
 # AI Vision
 
+## Chạy AI và trạng thái triển khai
+
+Đã triển khai phần code Task 2–12 và công cụ đo của Task 15. Kiểm tay video
+thật (Task 11 S17, Task 12 S8), đo test chính thức (Task 15) và đầu-cuối với
+backend thật (Task 16) còn chờ dữ liệu/cấu hình. Task 13 chưa có Release chung;
+Task 1 chưa kiểm đủ mọi spike. Notebook train đang được dùng trong `train/`.
+
+Chạy các lệnh dưới đây từ `ai-vision/`, sau khi đặt video thật và sửa playlist:
+
+```powershell
+.venv/Scripts/python -m swiftletcare_ai offline --camera H1-F0-CAMERA --out data/out/H1
+.venv/Scripts/python -m swiftletcare_ai offline --camera H1-F0-CAMERA --playlist data/videos/V01.mp4 --t0 2000-01-01T00:00:00Z --imgsz 640 --out data/out/V01
+.venv/Scripts/python -m swiftletcare_ai live --camera H1-F0-CAMERA
+.venv/Scripts/python -m pytest tests -q
+```
+
+`offline` ghi `counts.csv`, `crossings.csv`, `predators.csv`, ảnh JPEG và log;
+không gọi backend. `live` gửi HTTP với khóa trong `.env`. Chỉ bật `--heartbeat`
+khi backend đã triển khai route tương ứng; 404 sẽ dừng AI.
+
+Mã thoát: `0` bình thường/Ctrl+C một lần, `1` lỗi bất ngờ, `2` lỗi cấu hình,
+khởi động hoặc 401/404, `130` Ctrl+C lần hai. Log live nằm ở
+`data/logs/<camera>.log`; khóa chống trùng ở `data/run/<camera>.lock`.
+Nếu khóa đã có, kiểm tra không còn tiến trình chạy camera rồi mới xóa tay.
+
+Hướng dẫn số đo: [results/README.md](results/README.md). Chưa chạy đánh giá test
+chính thức. Chưa triển khai các mục Nên có của Task 14 vì các bước Bắt buộc còn
+chờ kiểm chứng thực tế.
+
 ## Task 4: cấu hình camera và môi trường
 
 Hai mẫu nằm trong `cameras/H1-F0-CAMERA.yaml` và `cameras/H2-F0-CAMERA.yaml`.
@@ -12,8 +41,8 @@ do người chạy backend cung cấp. Không commit `.env`. Chế độ offline
 bắt buộc file này. Bộ đọc hỗ trợ UTF-8 BOM; thông báo lỗi và `repr` cấu hình
 môi trường không in khóa dịch vụ.
 
-`check_confirm_fps()` kiểm tra điều kiện xác nhận thiên địch. Hàm chưa tự đo
-FPS; phần đo và phát video được triển khai ở các task sau.
+`check_confirm_fps()` kiểm tra điều kiện xác nhận thiên địch. Lệnh live đo FPS
+khởi động trên 30 khung đầu, bỏ 5 khung warmup trước khi kiểm điều kiện này.
 
 ## Task 3: thời gian UTC và cửa sổ 5 phút
 

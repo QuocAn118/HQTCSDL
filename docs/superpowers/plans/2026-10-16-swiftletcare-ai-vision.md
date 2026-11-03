@@ -5172,7 +5172,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `offline_vs_live(live_lines: list[dict], offline_rows: list[dict]) -> list[dict]` — `{windowStart, live_in, live_out, offline_in, offline_out, lech_in, lech_out}`; live lấy `counts.sent` **status 200 cuối cùng** của mỗi cửa sổ.
   - `read_jsonl(path: Path) -> list[dict]`.
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_metrics.py`:
 
@@ -5264,7 +5264,7 @@ def test_evaluate_counting_ghi_csv(tmp_path):
 Run: `.\.venv\Scripts\python -m pytest tests/test_metrics.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.metrics'`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/metrics.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/metrics.py`**
 
 ```python
 """Chi so cho bao cao (spec Phan 6). Ham thuan, khong doc file tru read_jsonl."""
@@ -5340,7 +5340,7 @@ def offline_vs_live(live_lines: list[dict], offline_rows: list[dict]) -> list[di
     return rows
 ```
 
-- [ ] **Step 3: Viết `ai-vision/scripts/evaluate.py`**
+- [x] **Step 3: Viết `ai-vision/scripts/evaluate.py`**
 
 ```python
 """Tinh so do tu ket qua offline/live (spec 6.4-6.7). Ghi CSV vao results/ (mac dinh).
@@ -5461,7 +5461,7 @@ if __name__ == '__main__':
 
 (`--out` đặt được cả trước lẫn sau tên lệnh; test đặt sau.)
 
-- [ ] **Step 4: Viết `ai-vision/scripts/measure_speed.py` và `ai-vision/scripts/eval_detector.py`**
+- [x] **Step 4: Viết `ai-vision/scripts/measure_speed.py` và `ai-vision/scripts/eval_detector.py`**
 
 `measure_speed.py`:
 
@@ -5571,12 +5571,12 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 5: Chạy test**
+- [x] **Step 5: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_metrics.py -v`
 Expected: PASS 8 test.
 
-- [ ] **Step 6: Viết khung `results/`, commit phần code**
+- [x] **Step 6: Viết khung `results/`, commit phần code**
 
 `ai-vision/results/events_gt.csv` (TV3 điền **trước khi** chạy mô hình trên video đó, spec 6.4):
 
@@ -5619,6 +5619,8 @@ git commit -m "feat(ai-vision): chỉ số Precision/Recall theo sự kiện, b�
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+Kiem chung 03/11/2026: 12 test metrics PASS; toan bo suite 274 PASS, 6 subtests PASS. Chua do tap test, CSV chi co tieu de; can video that va nhan dem tay.
 
 - [ ] **Step 7: Đo thật (tay, theo mốc 01/11–04/11)**
 
