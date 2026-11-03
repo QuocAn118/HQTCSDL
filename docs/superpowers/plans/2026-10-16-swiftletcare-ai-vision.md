@@ -1827,6 +1827,8 @@ class CountQueue:
 Run: `.\.venv\Scripts\python -m pytest tests/test_windows.py -v`
 Expected: PASS 12 test.
 
+Bo sung 03/11/2026: giu muc tong lon nhat sau ack cho den het han gui, tranh tong giam khi dong ho nhay lui. 15 test windows va test HTTP hoi quy deu PASS; suite cuoi 309 PASS, 6 subtests PASS.
+
 - [x] **Step 4: Commit**
 
 ```powershell

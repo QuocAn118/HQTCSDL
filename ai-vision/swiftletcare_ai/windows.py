@@ -42,14 +42,18 @@ class CountQueue:
 
     def __init__(self):
         self._d: dict[datetime, tuple[int, int]] = {}
+        # Acknowledging delivery must not forget the window's highest totals.
+        # Entries expire after the same 60-minute delivery window as pending data.
+        self._highest: dict[datetime, tuple[int, int]] = {}
         self._lock = threading.Lock()
 
     def put(self, ws: datetime, in_: int, out: int) -> None:
         if in_ < 0 or out < 0:
             raise ValueError('so dem am')
         with self._lock:
-            old_in, old_out = self._d.get(ws, (0, 0))
+            old_in, old_out = self._highest.get(ws, (0, 0))
             self._d[ws] = (max(old_in, in_), max(old_out, out))
+            self._highest[ws] = self._d[ws]
 
     def pending(self) -> list[tuple[datetime, int, int]]:
         with self._lock:
@@ -67,6 +71,9 @@ class CountQueue:
     def expire(self, now: datetime) -> list[tuple[datetime, int, int]]:
         with self._lock:
             old = [ws for ws in self._d if now - (ws + WINDOW) > EXPIRE_AFTER]
+            for ws in list(self._highest):
+                if now - (ws + WINDOW) > EXPIRE_AFTER:
+                    del self._highest[ws]
             return [(ws, *self._d.pop(ws)) for ws in sorted(old)]
 
     def __len__(self) -> int:

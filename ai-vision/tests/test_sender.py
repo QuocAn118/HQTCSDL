@@ -126,6 +126,20 @@ def test_counts_200_than_khong_phai_json_van_xoa(backend, rig):
     assert len(rig.queue) == 0
 
 
+def test_counts_da_gui_200_khong_giam_khi_quay_lai_cua_so(backend, rig):
+    rig.queue.put(WS, 0, 5)
+    rig.counts_now()
+    assert len(rig.queue) == 0
+    rig.clock.jump(-300)
+    rig.queue.put(WS - timedelta(minutes=5), 1, 0)
+    rig.counts_now()
+    rig.clock.jump(300)
+    rig.queue.put(WS, 0, 1)
+    rig.counts_now()
+    payloads = [request.json for request in backend.to(COUNTS)]
+    assert payloads[0][0]['out'] == payloads[2][0]['out'] == 5
+
+
 # ---- predator-detections ----
 
 def test_predator_200_multipart_dung(backend, rig):

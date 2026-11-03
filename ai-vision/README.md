@@ -103,6 +103,11 @@ môi trường không in khóa dịch vụ.
 `check_confirm_fps()` kiểm tra điều kiện xác nhận thiên địch. Lệnh live đo FPS
 khởi động trên 30 khung đầu, bỏ 5 khung warmup trước khi kiểm điều kiện này.
 
+Hàng đợi giữ mức tổng lớn nhất của từng cửa sổ kể cả sau khi gửi thành công,
+đến khi hết hạn gửi (60 phút sau lúc cửa sổ đóng). Nhờ vậy đồng hồ nhảy lùi
+không làm payload gửi lại có tổng nhỏ hơn; đây vẫn là trạng thái trong bộ nhớ,
+không khôi phục được phần đếm đã mất khi khởi động lại tiến trình.
+
 Khi tập dượt: dùng SwiftletCare_Dev; không reset CSDL demo SwiftletCare.
 Theo spec, chạy demo AI trước 20:00 giờ Việt Nam. Thứ tự hệ thống: SQL Server,
 Mosquitto, simulator, backend, AI, rồi web/mobile. Video đầu ra và log không

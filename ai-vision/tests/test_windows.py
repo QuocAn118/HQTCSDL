@@ -104,3 +104,35 @@ def test_len():
     q = CountQueue()
     q.put(at(0), 0, 0)
     assert len(q) == 1
+
+
+def test_ack_roi_dong_ho_nhay_lui_khong_gui_tong_nho_hon():
+    q = CountQueue()
+    q.put(at(5), 0, 5)
+    sent = q.batch()
+    q.ack(sent)
+    assert q.pending() == []
+    # The counter revisits this window after a clock correction and restarts at 1.
+    q.put(at(5), 0, 1)
+    assert q.batch() == [(at(5), 0, 5)]
+
+
+def test_ack_khong_lam_giam_tung_cot_da_gui():
+    q = CountQueue()
+    q.put(at(0), 5, 2)
+    q.ack(q.batch())
+    q.put(at(0), 3, 4)
+    assert q.batch() == [(at(0), 5, 4)]
+
+
+def test_moc_tong_lon_nhat_het_han_cung_cua_so():
+    q = CountQueue()
+    q.put(at(0), 5, 0)
+    q.ack(q.batch())
+    q.expire(at(65))
+    q.put(at(0), 1, 0)
+    assert q.batch() == [(at(0), 5, 0)]
+    q.ack(q.batch())
+    q.expire(at(65.01))
+    q.put(at(0), 1, 0)
+    assert q.expire(at(65.01)) == [(at(0), 1, 0)]
