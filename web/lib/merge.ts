@@ -68,3 +68,29 @@ export function applyDeviceState(devices: Device[], ev: Pick<DeviceState, 'devic
 export function replayDeviceStates(restDevices: Device[], held: DeviceState[]): Device[] {
   return held.reduce(applyDeviceState, restDevices);
 }
+
+// Giu su kien trong luc REST tai (T4W-3). Tai lai khi mount va khi connect co the chong nhau:
+// chi lan tai moi nhat duoc ap ket qua va tat giu; lan cu nhan null (bo ket qua REST cu).
+export function createLoadGate<E>() {
+  let seq = 0;
+  let loading = false;
+  let held: E[] = [];
+  return {
+    begin(): number {
+      loading = true;
+      held = [];
+      return ++seq;
+    },
+    hold(ev: E): boolean {
+      if (loading) held.push(ev);
+      return loading;
+    },
+    end(id: number): E[] | null {
+      if (id !== seq) return null;
+      const out = held;
+      held = [];
+      loading = false;
+      return out;
+    },
+  };
+}

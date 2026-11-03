@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appendLive, applyDeviceState, latestKey, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates } from '../lib/merge';
+import { appendLive, applyDeviceState, createLoadGate, latestKey, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates } from '../lib/merge';
 import type { Alert, Device, DeviceState, LatestReading } from '../lib/types';
 
 const reading = (value: number, at: string): LatestReading => ({
@@ -133,5 +133,38 @@ describe('ca bien', () => {
     const r1 = replayDeviceStates([device], held);
     expect(replayDeviceStates(r1, held)).toEqual(r1);
     expect(r1[0]).toMatchObject({ mode: 'AUTO', isOn: false, level: 0 });
+  });
+});
+
+// T4W-3: giu device.state trong luc REST tai; hai lan tai chong nhau (mount + connect) chi lan moi nhat ap.
+describe('createLoadGate', () => {
+  it('ngoai luc tai -> khong giu; trong luc tai -> giu theo thu tu den, ket thuc tra danh sach roi xoa', () => {
+    const g = createLoadGate<number>();
+    expect(g.hold(1)).toBe(false);
+    const id = g.begin();
+    expect(g.hold(2)).toBe(true);
+    expect(g.hold(3)).toBe(true);
+    expect(g.end(id)).toEqual([2, 3]);
+    expect(g.hold(4)).toBe(false);
+  });
+
+  it('hai lan tai chong nhau: lan cu ket thuc truoc khong tat giu, tra null; lan moi nhat nhan du su kien', () => {
+    const g = createLoadGate<string>();
+    const a = g.begin();
+    const b = g.begin();
+    g.hold('x');
+    expect(g.end(a)).toBeNull();
+    expect(g.hold('y')).toBe(true);
+    expect(g.end(b)).toEqual(['x', 'y']);
+    expect(g.hold('z')).toBe(false);
+  });
+
+  it('lan cu ket thuc sau lan moi -> null, khong mo lai giu', () => {
+    const g = createLoadGate<string>();
+    const a = g.begin();
+    const b = g.begin();
+    expect(g.end(b)).toEqual([]);
+    expect(g.end(a)).toBeNull();
+    expect(g.hold('z')).toBe(false);
   });
 });
