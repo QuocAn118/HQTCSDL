@@ -155,6 +155,17 @@ Tên lớp trên Roboflow viết **đúng chữ thường như trên**, để AI
 
 ### 3.1 Môi trường
 
+**Kiểm chứng 03/11/2026:** môi trường Windows hiện có dùng Python 3.12.10,
+torch 2.15.0+cpu, torchvision 0.29.2, Ultralytics 8.4.178, supervision 0.30.9,
+requests 2.32.5, PyYAML 6.0.3, pytest 9.1.1, opencv-python 5.0.0.93,
+numpy 2.3.4. Đã nạp trọng số và chạy test; chưa xác nhận cài mới trên máy sạch.
+`requirements.txt` ghim theo lần kiểm này; thông tin lần tra/lần chạy ngoài
+repo dưới đây là lịch sử.
+
+ByteTrack ở supervision 0.30.9 có FutureWarning deprecated và dự kiến bỏ từ
+0.31; API đang dùng đã kiểm bằng tracker thật. Giữ ghim 0.30.9, chưa đổi gói
+theo dõi; nâng bản/chuyển API cần cập nhật spec và kiểm lại vạch đếm.
+
 Python **3.12 hoặc 3.13** trên Windows (bản nào cài được torch, ultralytics, supervision; bước 1 của plan kiểm trên máy TV3; **ghim bản đã dùng** và ghi vào `weights.json`, khóa `localPython`), môi trường ảo `ai-vision\.venv` (không vào git). Mọi lệnh gọi thẳng `.\.venv\Scripts\python`, không dùng `Activate.ps1`. Chạy trong `ai-vision\`:
 
 ```

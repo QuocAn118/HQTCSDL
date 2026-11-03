@@ -1,11 +1,33 @@
 # AI Vision
 
+## Cài môi trường Windows
+
+Đã kiểm trên Python 3.12.10. Từ thư mục `ai-vision/`, dùng Python 3.12 hoặc
+3.13 đã cài để tạo môi trường riêng, rồi cài đúng bản ghim:
+
+```powershell
+py -3.12 -m venv .venv
+.venv/Scripts/python -X utf8 -m pip install -r requirements.txt
+.venv/Scripts/python -m pip check
+.venv/Scripts/python -m pytest
+```
+
+Nếu Python Launcher (`py`) chưa có, dùng đường dẫn Python 3.12 đã cài để tạo
+venv. Không tạo lại hoặc xóa venv đang dùng chỉ để chạy các lệnh mẫu này.
+Môi trường hiện tại đã có từ trước và cho phép đọc gói hệ thống; cài mới bằng
+lệnh trên sẽ tạo venv riêng. Chưa xác nhận cài lại trên máy sạch.
+
+Giữ `supervision==0.30.9`: ByteTrack vẫn hoạt động nhưng có cảnh báo bị bỏ từ
+0.31. Chưa chuyển sang gói tracker khác. Windows Time hiện chưa chạy nên chưa
+xác nhận đồng bộ UTC, cần kiểm tra trước kiểm thử live với backend.
+
 ## Chạy AI và trạng thái triển khai
 
 Đã triển khai phần code Task 2–12 và công cụ đo của Task 15. Kiểm tay video
 thật (Task 11 S17, Task 12 S8), đo test chính thức (Task 15) và đầu-cuối với
 backend thật (Task 16) còn chờ dữ liệu/cấu hình. Task 13 chưa có Release chung;
-Task 1 chưa kiểm đủ mọi spike. Notebook sạch để dùng lại là
+Các mục Task 1 đã/chưa kiểm được ghi đủ S1–S23 trong
+[spikes/RESULTS.md](spikes/RESULTS.md). Notebook sạch để dùng lại là
 `train/train.ipynb`; notebook thao tác hiện tại và output giữ ở
 `train/colab-setup.ipynb` trên máy bạn.
 
@@ -81,9 +103,9 @@ hiện URL để `null` vì file được tải thủ công từ Drive, chưa t�
 
 Môi trường đã nạp thử: Python 3.12.10, torch 2.15.0+cpu, Ultralytics 8.4.178,
 supervision 0.30.9. Colab dùng torch 2.11.0+cu130, khác máy Windows.
-Chưa có `requirements.txt` hoàn chỉnh theo Task 1; `requirements-data.txt` chỉ
-phục vụ chuẩn bị dữ liệu. Task 13 còn thiếu kho tải chung và việc đồng bộ đầy đủ
-với các thành phần Task 1/4/11 chưa có trong checkout hiện tại.
+`requirements.txt` ghim chín thư viện runtime; `requirements-data.txt` chỉ
+phục vụ chuẩn bị dữ liệu. Task 13 còn thiếu kho tải trọng số chung và lượt
+kiểm chứng mô hình chính thức sau khi bổ sung val cho thiên địch.
 
 Dataset hiện dùng: **data/working/split_v3/**, cập nhật 24/10/2026. Có 5.945 ảnh và 5.945 file nhãn YOLO detection. Các ảnh mới giữ kích thước gốc; Ultralytics resize lúc train/inference. Chia theo nguồn dataset Universe, đúng spec §2.4; ảnh trùng/lỗi đã loại không thuộc bộ chia.
 

@@ -37,7 +37,7 @@ Hết 25/10 mà chưa có `best.pt` nạp được trên máy nhóm thì TV3 bá
 
 **Architecture:** Gói `swiftletcare_ai/` chia theo trách nhiệm: hàm thuần (thời gian, cấu hình, cửa sổ, xác nhận thiên địch, payload, chỉ số đo) test không cần mô hình; `counting.py` là chỗ **duy nhất** nói chuyện với vạch đếm supervision; `sender.py` là luồng gửi riêng có hàng đợi, là chỗ **duy nhất** gọi HTTP; `app.py` ráp lại thành hai lệnh `live` và `offline`. Phụ thuộc bên ngoài (mô hình, video, đồng hồ, HTTP) đưa vào qua tham số để test thay bằng bản giả.
 
-**Tech Stack:** Python 3.12 hoặc 3.13 (Windows, `ai-vision\.venv`; chốt ở Task 1), torch 2.14.1 + torchvision 0.29.1 (CPU, PyPI), ultralytics 8.4.178, supervision 0.30.9, requests 2.34.2, PyYAML 6.0.3, pytest 9.1.1, opencv-python 5.0.0.93, numpy 2.5.4 (hai gói cuối là bản đã dùng khi chạy thử 239 test). Số phiên bản là bản mới nhất trên PyPI ngày 16/10/2026 (`pip index versions`); torch, torchvision, ultralytics **chưa cài thử** — Task 1 chốt.
+**Tech Stack:** Windows Python 3.12.10; torch 2.15.0 + torchvision 0.29.2 (CPU), ultralytics 8.4.178, supervision 0.30.9, requests 2.32.5, PyYAML 6.0.3, pytest 9.1.1, opencv-python 5.0.0.93, numpy 2.3.4. Verified runtime versions on 03/11/2026; see spikes/RESULTS.md for pending checks. Colab keeps torch 2.11.0+cu130.
 
 **Spec:** [docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md](../specs/2026-10-15-swiftletcare-ai-vision-design.md) · hợp đồng: [integration-contract](../specs/2026-10-13-swiftletcare-integration-contract-design.md) mục 2.4 · fixture AI: [plan hợp đồng](2026-10-14-swiftletcare-integration-contract.md) Task 4 · endpoint: [plan backend](2026-10-16-swiftletcare-backend.md) Task 19 (Task 26 cho heartbeat)
 
@@ -153,18 +153,18 @@ Expected: có ít nhất một trong hai dòng `-V:3.12`, `-V:3.13`.
 
 Spec 3.1: dùng **3.12 hoặc 3.13**, bản nào cài được torch, ultralytics, supervision (Step 2). Ưu tiên 3.12: chưa có thì tải bộ cài **Windows installer (64-bit)** của bản 3.12 mới nhất từ `https://www.python.org/downloads/windows/`, cài với tùy chọn "py launcher". Không cài được 3.12, hoặc Step 2 trên 3.12 báo không có bản cho một trong ba gói, thì dùng 3.13. Cả hai không được thì thử 3.11 và **ghi lý do vào spec 3.1** (TV3 là chủ spec). Ghi S1 vào `RESULTS.md` (Step 7): bản Python **đầy đủ** (`3.x.y`), cách cài; ghi cùng số đó vào khóa `localPython` của `weights.json` (Task 13). Các lệnh `py -3.12` dưới đây đổi thành `py -3.13` nếu chốt 3.13.
 
-- [ ] **Step 2: Viết `ai-vision/requirements.txt` và cài (S2)**
+- [x] **Step 2: Viết `ai-vision/requirements.txt` và cài (S2)**
 
 ```
-torch==2.14.1
-torchvision==0.29.1
+torch==2.15.0
+torchvision==0.29.2
 ultralytics==8.4.178
 supervision==0.30.9
-requests==2.34.2
+requests==2.32.5
 PyYAML==6.0.3
 pytest==9.1.1
 opencv-python==5.0.0.93
-numpy==2.5.4
+numpy==2.3.4
 ```
 
 ```powershell
@@ -178,7 +178,7 @@ Expected: cài không lỗi; dòng cuối in chín phiên bản trùng `requirem
 
 Pip báo không có bản của torch, ultralytics hoặc supervision cho Python 3.12 Windows: xóa `.venv`, tạo lại bằng `py -3.13` (S1). Gói khác xung đột: lùi gói gây lỗi về bản mới nhất cài được (`.\.venv\Scripts\python -m pip index versions <gói>`), sửa `requirements.txt`, cài lại. Ghi S2: số phiên bản thật, gói nào phải lùi, vì sao; **cập nhật dòng Tech Stack của plan này và spec 3.1** bằng số thật.
 
-- [ ] **Step 3: Kiểm API supervision (S3, S4) — quyết định cách viết Task 2, 11, 12**
+- [x] **Step 3: Kiểm API supervision (S3, S4) — quyết định cách viết Task 2, 11, 12**
 
 `ai-vision/spikes/check_supervision.py`:
 
@@ -221,7 +221,7 @@ Ghi S3 vào `RESULTS.md`: chữ ký `LineZone` (có `triggering_anchors`, `minim
 
 Nếu `sv.ByteTrack` **không còn** hoặc báo sắp bỏ: dừng, dùng `superpowers:systematic-debugging` đọc thông báo; báo nhóm. Code của plan chỉ tạo tracker ở **một chỗ** (`app.make_tracker`, Task 12) nên chỉ hàm đó đổi; không thêm gói mới khi chưa sửa spec 3.1.
 
-- [ ] **Step 4: Kiểm Ultralytics trên CPU (S5)**
+- [x] **Step 4: Kiểm Ultralytics trên CPU (S5)**
 
 `ai-vision/spikes/check_ultralytics.py`:
 
@@ -255,7 +255,7 @@ Expected: in `names` (80 lớp COCO), `fps_mo_hinh` > 0, đủ năm tham số.
 
 Ghi S5: tên CPU (`Get-CimInstance Win32_Processor | Select-Object Name`), RAM, fps mô hình ở 1280×720, tên tham số `epochs`/`imgsz`/`seed` (spec 2.6). Xóa `yolov8n.pt` sau khi chạy (không commit; `*.pt` đã gitignore).
 
-- [ ] **Step 5: Kiểm đọc multipart bằng `email.parser` và mở đường dẫn có dấu (S6, S7)**
+- [x] **Step 5: Kiểm đọc multipart bằng `email.parser` và mở đường dẫn có dấu (S6, S7)**
 
 `ai-vision/spikes/check_multipart.py`:
 
@@ -315,7 +315,7 @@ Run:
 
 Expected: `Content-Type multipart/form-data; boundary=…`; hai phần `metadata text/plain '{"camera": …'` và `image image/jpeg b'\xff\xd8\xff…'`; `ascii mo duoc True`. Ghi S6 (đọc được thì Task 10 dùng cách này; không được thì ghi lỗi, dùng `systematic-debugging`). Ghi S7: `co dau mo duoc` True hay False. Task 4 vẫn **từ chối đường dẫn ngoài ASCII** dù kết quả thế nào (máy khác có thể khác); kết quả S7 chỉ để ghi lý do.
 
-- [ ] **Step 6: Kiểm `.gitignore` gốc, chỉ thêm dòng thiếu**
+- [x] **Step 6: Kiểm `.gitignore` gốc, chỉ thêm dòng thiếu**
 
 ```powershell
 cd ..
@@ -324,7 +324,7 @@ Select-String -Path .gitignore -SimpleMatch -Pattern 'ai-vision/.env','ai-vision
 
 Expected: bốn dòng đều có (đã có từ trước). Dòng nào thiếu thì **thêm đúng dòng đó** vào cuối mục `# ai-vision` bằng trình soạn thảo; không tạo file mới, không ghi đè.
 
-- [ ] **Step 7: Kiểm tay các mục còn lại, ghi `ai-vision/spikes/RESULTS.md`**
+- [x] **Step 7: Kiểm tay các mục còn lại, ghi `ai-vision/spikes/RESULTS.md`**
 
 Tạo `ai-vision/spikes/RESULTS.md` theo khung dưới, điền cột "Kết quả" bằng số/chữ thật, ngày kiểm. Mục nào chưa làm được ghi "chưa kiểm được" + lý do, **không bỏ dòng**.
 
@@ -360,7 +360,7 @@ Tạo `ai-vision/spikes/RESULTS.md` theo khung dưới, điền cột "Kết qu�
 
 Mục nào làm lệch spec (VD đổi bản Python, gói phải lùi) thì sửa spec ai-vision ở mục tương ứng trong cùng commit và báo nhóm.
 
-- [ ] **Step 8: Viết test quy tắc repo (phải fail)**
+- [x] **Step 8: Viết test quy tắc repo (phải fail)**
 
 `ai-vision/tests/test_repo_rules.py`:
 
@@ -415,7 +415,7 @@ def test_file_ps1_chi_ascii():
 Run: `.\.venv\Scripts\python -m pytest tests/test_repo_rules.py -v` (trong `ai-vision\`)
 Expected: FAIL ở `test_env_example_khong_chua_khoa` (chưa có `.env.example`).
 
-- [ ] **Step 9: Viết `.env.example`, `pytest.ini`, `__init__.py`, khung README**
+- [x] **Step 9: Viết `.env.example`, `pytest.ini`, `__init__.py`, khung README**
 
 `ai-vision/.env.example`:
 
@@ -455,12 +455,12 @@ Spec: `docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md`. Plan
     .\.venv\Scripts\python -m pytest
 ```
 
-- [ ] **Step 10: Chạy test**
+- [x] **Step 10: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest -v`
 Expected: PASS 4 test.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```powershell
 git status   # kiem khong co .venv, data, *.pt, .env
