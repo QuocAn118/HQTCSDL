@@ -92,7 +92,7 @@ Tên lớp trên Roboflow viết **đúng chữ thường như trên**, để AI
 ### 2.2 Nguồn dữ liệu, giấy phép và `SOURCES.md`
 
 - Chỉ dùng video và ảnh **công khai, có giấy phép cho phép dùng**. Dataset Roboflow Universe dùng được nếu giấy phép cho phép.
-- **Gói Roboflow miễn phí để project công khai**, nên tải video/ảnh lên Roboflow cũng là **phát tán lại**. Chỉ tải lên Roboflow nguồn có giấy phép **cho phép chia sẻ lại** (ví dụ CC BY, CC0). Nguồn không cho chia sẻ lại thì **không dùng**, hoặc gán nhãn bằng một công cụ chạy trên máy (TV3 chọn, ghi tên và phiên bản vào `SOURCES.md`), không tải lên đâu cả.
+- **Đối chiếu 03/11/2026:** [trang giá Roboflow](https://roboflow.com/pricing) hiện ghi Free Tier có project riêng tư mặc định, còn Research plan có project công khai trên Universe. Giả định cũ “miễn phí luôn công khai” không áp dụng chung; chưa xác nhận gói/visibility thực tế của workspace nhóm. Nhóm vẫn chỉ tải lên nguồn có giấy phép **cho phép chia sẻ lại** (ví dụ CC BY, CC0), ghi nguồn và kiểm visibility trước khi publish. Nguồn không cho chia sẻ lại thì không dùng hoặc gán nhãn cục bộ bằng công cụ được ghi trong `SOURCES.md`, không tải lên dịch vụ.
 - `ai-vision/SOURCES.md` có **một dòng mỗi nguồn**, các cột: mã nguồn (VD `V01`, `R01`), người đăng, URL, giấy phép, **cho phép chia sẻ lại (có/không)**, ngày tải, lớp có trong nguồn, tập (train/val/test), công cụ gán nhãn (Roboflow/trên máy). Một dòng riêng ghi Ultralytics: AGPL-3.0.
 - URL và giấy phép do TV3 điền khi tìm được nguồn. Spec không ghi trước nguồn nào.
 - **Không đưa vào git:** video gốc, ảnh, bộ dữ liệu đã export (dung lượng lớn, giấy phép có thể không cho phát tán). Git chỉ có `SOURCES.md` và file chia tập (mục 2.4).
@@ -141,12 +141,12 @@ Tên lớp trên Roboflow viết **đúng chữ thường như trên**, để AI
   - Nạp thử trọng số bằng Ultralytics trên máy nhóm. Bản Ultralytics trên Colab khác máy nhóm thì ghi chênh lệch vào spec.
 
 **Chưa kiểm chứng:**
-- Giới hạn gói Roboflow miễn phí (số ảnh, số project) và việc project miễn phí luôn công khai: TV3 tra và ghi vào spec.
+- Đã tra trang giá ngày 03/11/2026: Free Tier có 10 credit/tháng, project private mặc định; bảng Core gồm Free Tier ghi 20 project, dataset không có giới hạn cứng và dùng credit. Research plan công khai. Chưa đối chiếu gói cũ/Research và hạn mức thực tế trong workspace nhóm.
 - Tên định dạng export "YOLOv8" trên Roboflow và cấu trúc thư mục sau giải nén; script chia tập viết theo bản export thật.
 - Colab có sẵn Ultralytics không; bản torch trên Colab; GPU miễn phí và thời lượng phiên.
 - Có đủ nguồn **cho phép chia sẻ lại** cho từng lớp không, nhất là `swiftlet` đúng góc và `owl`; mỗi lớp có đủ hai nguồn không.
 - Giấy phép từng dataset Roboflow Universe.
-- Mức 10% ảnh nền là mức khởi đầu theo khuyến nghị của Ultralytics (nhớ lại, chưa tra lại tài liệu).
+- Mức ảnh nền 0–10% được nêu trong [hướng dẫn train YOLOv5 của Ultralytics](https://docs.ultralytics.com/yolov5/tutorials/tips-for-best-training-results), đã tra 03/11/2026; đây là gợi ý tham khảo, không phải kết quả tối ưu đã đo cho YOLOv8n/chim yến.
 - Nhóm có quyền tạo Release trên repo GitHub không.
 - Trọng số train trên Colab có nạp được trên máy nhóm không.
 - Tên tham số seed, epoch, kích thước ảnh của Ultralytics: lấy từ bản cài thật.
