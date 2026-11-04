@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-04",
+  "weights": "data/weights/best.pt",
+  "weightsSha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "checkpoint": "best.pt",
+  "epochsCompleted": 50,
+  "data": "data/working/split_v3/data.yaml",
+  "imgsz": [
+    640,
+    320
+  ],
+  "swiftletConfidence": 0.4,
+  "predatorConfidence": 0.5,
+  "confirmFrames": 3,
+  "confirmSeconds": 2,
+  "cooldownSeconds": 300,
+  "matchingIou": 0.5,
+  "nmsIou": 0.7,
+  "files": {
+    "cameras/H1-F0-CAMERA.yaml": "a093ca1f5c24b4ba37f51daf820ebf2d5e4cadc16810ffd8036bf281b6aa68af",
+    "cameras/H2-F0-CAMERA.yaml": "824410bc25ad88bffca81b09003f59562791837ecbe749c0e85866ccefe787c8",
+    "data/working/split_v3/data.yaml": "ec51ce43d4ea91473c63f582c3d2ae5310c6ff390ce2a73e598482bb32b26126",
+    "data/working/split_v3/split_manifest.csv": "e79fb22224b99eeddcbf5d6ae2c1ff81ccc72c56b714b0e3a4986bd02e185199",
+    "scripts/eval_fixed_detector.py": "562d4f672162679c177319a7db147a77745c5962922b67776de290427b0277f7",
+    "swiftletcare_ai/metrics.py": "df96189f18a9f5d71dba8fb3ace72f84a04d795220d3b3820bfe518bf0168d42"
+  },
+  "notes": [
+    "Frozen before test inference; deployment defaults retained without predator validation tuning.",
+    "V01/V02 are smoke-test playback only, not approved counting or false-alarm test videos.",
+    "No threshold changes after inspecting test results. Fixed score-greedy one-to-one class-aware IoU matching.",
+    "Initial evaluation startup stopped before first processed batch to replace eager image-list loading with bounded directory batches; weights and thresholds unchanged, no metrics inspected."
+  ]
+}

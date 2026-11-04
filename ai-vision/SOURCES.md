@@ -17,6 +17,15 @@ chuyển động camera trong ảnh mẫu. Cần duyệt đoạn liên tục tr�
 Chỉ dùng V01 cho spike read/grab, không xem kết quả suy luận để chọn nguồn.
 Ảnh xem mẫu và metadata: `data/out/source-review/` (không vào Git).
 
+Cập nhật 04/11: duyệt bổ sung 30 ảnh mẫu V01 cách 4 giây và 17 ảnh mẫu V02
+cách 1 giây, phủ suốt thời lượng (không phải xem đầy đủ từng khung). V01 đổi
+góc khoảng 28–52 giây; V02 lia/zoom rõ ở khoảng 9–16 giây. Chưa đủ cơ sở dùng
+làm phép đo đếm qua vạch cố định hoặc khẳng định video chỉ có chim yến.
+Playlist chạy thử đã thống nhất H1 → `data/videos/V01.webm`, H2 →
+`data/videos/V02.ogv`, đúng file gốc, không đổi đuôi hay chuyển mã. Không còn
+tham chiếu video `R02.mp4`/`S01.mp4`; R02 chỉ là mã nguồn dataset ảnh chuột.
+Hai video vẫn **chỉ dùng chạy thử**, chưa gán tập test và chưa có nhãn đếm tay.
+
 Dữ liệu hiện dùng lấy từ 9 bộ trên Roboflow Universe, sau đó gộp thành một project gồm 4 lớp: `swiftlet`, `rat`, `snake`, `owl`.
 
 Project đã gộp: Swiftlet and Predators Detection, nằm trong workspace nhóm trên Roboflow.

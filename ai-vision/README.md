@@ -30,11 +30,11 @@ xác nhận đồng bộ UTC, cần kiểm tra trước kiểm thử live với 
 Đã triển khai code Task 2–15, gồm phần Nên có của Task 14. Spike đọc/bỏ khung
 Task 11 S17 đã đo trên V01.webm. Kiểm tay Ctrl+C với video thật (Task 12 S8),
 đo test chính thức (Task 15) và đầu-cuối với backend thật (Task 16) còn chờ
-dữ liệu/cấu hình. Task 13 chưa có Release chung;
+dữ liệu/cấu hình. Task 13 đã có Release và đóng băng `best.pt` ngày 04/11;
 Các mục Task 1 đã/chưa kiểm được ghi đủ S1–S23 trong
 [spikes/RESULTS.md](spikes/RESULTS.md). Notebook sạch để dùng lại là
-`train/train.ipynb`; notebook thao tác hiện tại và output giữ ở
-`train/colab-setup.ipynb` trên máy bạn.
+`train/train.ipynb`; `train/colab-setup.ipynb` đã xóa output và số thứ tự chạy.
+Lịch sử train được giữ ở `results/training_history.csv`.
 
 Chạy các lệnh dưới đây từ `ai-vision/`, sau khi đặt video thật và sửa playlist:
 
@@ -128,13 +128,16 @@ Chạy từ thư mục `ai-vision`:
 .venv/Scripts/python -m pytest tests -q
 ```
 
-## Trọng số train thử trên Colab
+## Trọng số đã đóng băng trên Colab
 
 Notebook hiện tại: `train/colab-setup.ipynb`. Metadata của file tải về nằm trong
-`weights.json`; đây là trọng số **train thử**, val chỉ có swiftlet. Chưa đóng băng
-mô hình để đánh giá chính thức bốn lớp. Không dùng tập test để chọn cấu hình.
+`weights.json`; dùng **best.pt**, đã chạy đủ **50 epoch**, đối chiếu lịch sử
+trong checkpoint và log notebook. Đóng băng ngày 04/11/2026 trước lượt đo test.
+Val chỉ có swiftlet; ngưỡng thiên địch giữ mặc định 0,50, chưa tối ưu trên val.
+Không dùng tập test để chọn lại cấu hình. Xem `results/freeze.json`.
 
-Đặt file tải từ Drive vào `ai-vision/data/weights/best.pt`. Từ gốc repo chạy:
+Tải từ [GitHub Release](https://github.com/QuocAn118/HQTCSDL/releases/tag/ai-vision-v1-2026-11-04).
+Từ gốc repo chạy (bỏ `--verify-only` để tải lại từ Release):
 
 ```powershell
 ai-vision/.venv/Scripts/python ai-vision/scripts/download_weights.py --verify-only
@@ -143,14 +146,14 @@ ai-vision/.venv/Scripts/python -m unittest discover -s ai-vision/tests -p test_d
 
 Script kiểm SHA-256 trước khi nạp mô hình và kiểm đủ bốn tên lớp. File sai hash
 không được nạp; tải sai hash không ghi đè trọng số đang có. `--verify-only` dùng
-được khi chưa có URL công khai. Chế độ tải cần URL HTTPS trong `weights.json`;
-hiện URL để `null` vì file được tải thủ công từ Drive, chưa tạo Release.
+được cho file có sẵn. URL HTTPS trong `weights.json` đã kiểm tải đủ byte và
+SHA-256 khớp bản gốc; trọng số chỉ ở Release, không nằm trong Git.
 
 Môi trường đã nạp thử: Python 3.12.10, torch 2.15.0+cpu, Ultralytics 8.4.178,
 supervision 0.30.9. Colab dùng torch 2.11.0+cu130, khác máy Windows.
 `requirements.txt` ghim chín thư viện runtime; `requirements-data.txt` chỉ
-phục vụ chuẩn bị dữ liệu. Task 13 còn thiếu kho tải trọng số chung và lượt
-kiểm chứng mô hình chính thức sau khi bổ sung val cho thiên địch.
+phục vụ chuẩn bị dữ liệu. Đánh giá test hiện giữ rõ hạn chế val thiếu thiên địch;
+train lại hoặc đổi cấu hình phải tạo phiên bản đóng băng và đo mới.
 
 Task 13 có thêm `scripts/split_dataset.py` cho export YOLO mới với tên ảnh bắt
 đầu bằng mã nguồn. Script đọc `splits.csv`, giữ nguyên thứ tự class ID, từ chối

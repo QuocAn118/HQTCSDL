@@ -29,7 +29,7 @@ minh; không suy ra module đã chạy đầu-cuối trên video thật.
 | S22 | 404 backend thật | Đã thử POST route sai tại 127.0.0.1:3000 với khóa thử x: ConnectTimeout, chưa nhận status/body HTTP. Chưa có ai-vision/.env. Backend giả đạt; tích hợp thật vẫn chờ. |
 | S23 | API metrics | Bản cài có Metric.ap_class_index và Metric.class_result(). Chưa chạy đánh giá test chính thức. |
 
-Lượt suite cuối ngày 03/11: **310 test và 6 subtest đạt**, có một FutureWarning
+Lượt suite cuối ngày 04/11: **313 test và 6 subtest đạt**, có một FutureWarning
 ByteTrack đã nêu ở S4. Test `test_offline_smoke.py` đọc MP4 tổng hợp qua OpenCV,
 suy luận bằng best.pt, tạo ByteTrack thật và ghi CSV/log offline. Đây không
 phải đánh giá video chim hoặc đầu-cuối với backend thật.

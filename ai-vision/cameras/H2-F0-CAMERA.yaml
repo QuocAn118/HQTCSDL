@@ -1,7 +1,7 @@
 camera: H2-F0-CAMERA
 playlist:                     # duong dan tinh tu ai-vision/, chi ky tu ASCII
-  - data/videos/V02.mp4
-  - data/videos/S01.mp4
+  - data/videos/V02.ogv
+# Video thay the de smoke test; chua du dieu kien do dem chinh thuc.
 # Vach dem nam ngang, toa do chuan hoa [0,1] theo khung hinh.
 # Ra = chim bay tu duoi len, qua vach, sang phia TREN khung hinh.
 # Vao = chim bay tu tren xuong, sang phia DUOI khung hinh.

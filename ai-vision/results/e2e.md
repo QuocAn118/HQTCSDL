@@ -4,6 +4,13 @@ Ngày chuẩn bị: 03/11/2026. **Đây là bảng kiểm đang chờ chạy, kh
 chứng đã tích hợp thành công.** Test backend giả và video tổng hợp không thay
 thế các bước bên dưới (spec 7.5).
 
+Cập nhật 04/11/2026: route heartbeat đã có theo xác nhận nhóm. Kiểm GET
+`http://127.0.0.1:3000/health` và `/api/health` với session bỏ proxy môi trường,
+timeout 2 giây: cả hai báo `ConnectTimeout`. Chưa có `backend/.env` và
+`ai-vision/.env` trên máy này. Vì vậy chưa thể bắt đầu lượt live 10 phút hoặc
+xác nhận CSDL đích là Dev. Không coi sự hiện diện route trong code là kết quả
+kiểm thử heartbeat thực tế. Trọng số nay đã đóng băng, xem `freeze.json`.
+
 Kiểm tra ban đầu trên máy:
 
 - Chưa có `ai-vision/.env`; chưa cấu hình URL/khóa dịch vụ cho AI.
@@ -12,7 +19,7 @@ Kiểm tra ban đầu trên máy:
   `ConnectTimeout`. Chưa ghi nhận được status/body 401 hoặc 404 từ NestJS thật.
 - Không gửi dữ liệu đếm, ảnh thiên địch hoặc heartbeat vào CSDL.
 - Video V01/V02 hiện vẫn là ứng viên, chưa có playlist hợp lệ gồm đoạn thiên
-  địch ở đầu để kiểm cooldown. Trọng số vẫn là bản trial trong `weights.json`.
+  địch ở đầu để kiểm cooldown. Ngày 04/11 đã đóng băng `best.pt` trong `weights.json`.
 - Chưa xác nhận backend dùng `SwiftletCare_Dev` hoặc đã có seed camera.
 
 ## Chuẩn bị trước khi chạy
@@ -33,7 +40,7 @@ Kiểm tra ban đầu trên máy:
 | Thiên địch | Cảnh báo PREDATOR và ảnh có khung bao; ghi at | Chưa kiểm | Chờ |
 | Cooldown | Khởi động lại trong 5 phút, nhận skipReason=COOLDOWN, không thêm cảnh báo | Chưa kiểm | Chờ |
 | Dừng | Tổng cuối đến backend và file khóa được xóa | Chưa kiểm với backend thật | Chờ |
-| Heartbeat | LastSeenAt cập nhật, chỉ bật nếu backend có route | Chưa kiểm | Chờ xác nhận Task 26 backend |
+| Heartbeat | LastSeenAt cập nhật; route đã có theo nhóm | Chưa kiểm | Chờ backend dev chạy |
 
 Khi chạy xong mới thay các ô chờ bằng bằng chứng thật và đánh dấu Task 16.
 Không đưa ảnh/video hoặc dữ liệu cá nhân vào repo.

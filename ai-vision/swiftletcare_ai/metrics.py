@@ -14,6 +14,35 @@ def _ratio(a: float, b: float):
     return a / b if b else None
 
 
+def frame_counts(predictions, ground_truth, n_classes: int, iou_threshold: float = 0.5):
+    """TP/FP/FN per class at a fixed confidence, greedy highest-score first.
+
+    Predictions: (class_id, score, xyxy); GT: (class_id, xyxy).
+    Each GT may match once, only to the same class, at IoU >= threshold.
+    """
+    counts = [[0, 0, 0] for _ in range(n_classes)]
+    used = set()
+    for cls, score, box in sorted(predictions, key=lambda p: p[1], reverse=True):
+        best, best_iou = None, -1.0
+        for index, (gt_cls, gt_box) in enumerate(ground_truth):
+            if index in used or gt_cls != cls:
+                continue
+            intersection = max(0, min(box[2], gt_box[2]) - max(box[0], gt_box[0])) * max(0, min(box[3], gt_box[3]) - max(box[1], gt_box[1]))
+            area = max(0, box[2] - box[0]) * max(0, box[3] - box[1])
+            gt_area = max(0, gt_box[2] - gt_box[0]) * max(0, gt_box[3] - gt_box[1])
+            union = area + gt_area - intersection
+            iou = intersection / union if union else 0
+            if iou >= iou_threshold and iou > best_iou:
+                best, best_iou = index, iou
+        counts[cls][0 if best is not None else 1] += 1
+        if best is not None:
+            used.add(best)
+    for index, (cls, _) in enumerate(ground_truth):
+        if index not in used:
+            counts[cls][2] += 1
+    return [tuple(c) for c in counts]
+
+
 def event_metrics(events, gt) -> dict[str, dict]:
     result = {}
     for cls in PREDATOR_CLASSES:
