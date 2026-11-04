@@ -1,0 +1,322 @@
+{
+  "selected": [
+    {
+      "source": "R11",
+      "class": "rat",
+      "pageId": 166232832,
+      "title": "File:Brown Rat (Rattus norvegicus) also called Norway Rat or Common Rat -with food container - Mathias Baldwin Park, Philadelphia, Pennsylvania, USA.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Brown_Rat_(Rattus_norvegicus)_also_called_Norway_Rat_or_Common_Rat_-with_food_container_-_Mathias_Baldwin_Park,_Philadelphia,_Pennsylvania,_USA.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/68/Brown_Rat_%28Rattus_norvegicus%29_also_called_Norway_Rat_or_Common_Rat_-with_food_container_-_Mathias_Baldwin_Park%2C_Philadelphia%2C_Pennsylvania%2C_USA.jpg",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Needsmoreritalin\" title=\"User:Needsmoreritalin\">Chuck Homler d/b/a Focus On Wildlife</a>",
+      "originalSha256": "7d9724be0962d707bea89d78046365edbaa6bae4e71dd1323cfb977a4d14dfa1",
+      "reviewImage": "R11_rat_166232832.jpg",
+      "reviewSha256": "a2d2e63c4876db071bbfd84d3321eff27d2e3c566605f1d25d1efebae605e169",
+      "boxesNormalizedXyxy": [
+        [
+          0.4,
+          0.19,
+          0.66,
+          0.7
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "rat",
+      "pageId": 65025873,
+      "title": "File:Brown Rat Swimming Across Santragachi Jheel - Howrah 2017-12-25 5624.JPG",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Brown_Rat_Swimming_Across_Santragachi_Jheel_-_Howrah_2017-12-25_5624.JPG",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/65/Brown_Rat_Swimming_Across_Santragachi_Jheel_-_Howrah_2017-12-25_5624.JPG",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Gangulybiswarup\" title=\"User:Gangulybiswarup\">Biswarup Ganguly</a>",
+      "originalSha256": "c188a06582904e468475da6519bf920615ae8beb2fd2e81bf4867a1d92667e0f",
+      "reviewImage": "R11_rat_65025873.jpg",
+      "reviewSha256": "7a4df800289e1099fef2d58a60e2cb08144e0230d41d033805173682c8ff2897",
+      "boxesNormalizedXyxy": [
+        [
+          0.22,
+          0.4,
+          0.82,
+          0.65
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "rat",
+      "pageId": 304424,
+      "title": "File:London Scruffy Rat.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:London_Scruffy_Rat.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/27/London_Scruffy_Rat.jpg",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "artist": null,
+      "originalSha256": "a30847f0a52fc5f637d5dd57590d11c96bf55877a4581e4d82446484cfec0808",
+      "reviewImage": "R11_rat_304424.jpg",
+      "reviewSha256": "c619fc5883442a07187e8ebc826c6866af67669ece3f1946150011052cd52548",
+      "boxesNormalizedXyxy": [
+        [
+          0.03,
+          0.08,
+          0.68,
+          0.94
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "rat",
+      "pageId": 2957455,
+      "title": "File:Rattus norvegicus-Rochefort.JPG",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Rattus_norvegicus-Rochefort.JPG",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Rattus_norvegicus-Rochefort.JPG",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Salix\" title=\"User:Salix\">Salix</a>",
+      "originalSha256": "96144efcb94a9957977bf6f7b80f2b5e2c77d7255f025cedfd6e13edc1287758",
+      "reviewImage": "R11_rat_2957455.jpg",
+      "reviewSha256": "18a870f9ccd82a4e7b45a0c56cb97bb18bdb92a17302b72741a3d32238e08456",
+      "boxesNormalizedXyxy": [
+        [
+          0.075,
+          0.18,
+          0.995,
+          0.86
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "owl",
+      "pageId": 75445606,
+      "title": "File:20181203 - 22.11 Kerkuil (Tyto alba) 22.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:20181203_-_22.11_Kerkuil_(Tyto_alba)_22.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/47/20181203_-_22.11_Kerkuil_%28Tyto_alba%29_22.jpg",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Rolf_Tuinstra&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Rolf Tuinstra (page does not exist)\">Rolf Tuinstra</a>",
+      "originalSha256": "71c970dcf3cfbb719fc96930a095a83e7d1667407d756fab02a528f61b51c421",
+      "reviewImage": "R11_owl_75445606.jpg",
+      "reviewSha256": "07eda5e9362c01b81b51ac17644f1acb4282d43d09198da15ba3d54a99880cf2",
+      "boxesNormalizedXyxy": [
+        [
+          0.14,
+          0.2,
+          0.95,
+          0.94
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "owl",
+      "pageId": 31517017,
+      "title": "File:Barn Owl, Lancashire.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Barn_Owl,_Lancashire.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/17/Barn_Owl%2C_Lancashire.jpg",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "artist": "Steven Ward",
+      "originalSha256": "b8a97ccc3d66bc3710cdd864019ce37b156fc48279eff5a684e377d32c7ea837",
+      "reviewImage": "R11_owl_31517017.jpg",
+      "reviewSha256": "71a442ac57a2c4070e2408cfafd0df7f69a715bb040c23f10b4629951d6e5f89",
+      "boxesNormalizedXyxy": [
+        [
+          0.19,
+          0.035,
+          0.98,
+          0.94
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "owl",
+      "pageId": 20283834,
+      "title": "File:Tyto alba (Scopoli, 1769).jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Tyto_alba_(Scopoli,_1769).jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d4/Tyto_alba_%28Scopoli%2C_1769%29.jpg",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Michael_G%C3%A4bler\" title=\"User:Michael Gäbler\">Michael Gäbler</a>",
+      "originalSha256": "c60bcf8096c5e9eee566acd6d1f6548afb5486d4ad69ee5c282b90796ac38c21",
+      "reviewImage": "R11_owl_20283834.jpg",
+      "reviewSha256": "6057493b5eda0cea050dd34803b39839ac027007c171560030c9bfc07fa54c65",
+      "boxesNormalizedXyxy": [
+        [
+          0.055,
+          0.13,
+          0.89,
+          1.0
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "owl",
+      "pageId": 84474132,
+      "title": "File:Сипуха (Tyto alba) в Чорноморському біосферному заповіднику.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B8%D0%BF%D1%83%D1%85%D0%B0_(Tyto_alba)_%D0%B2_%D0%A7%D0%BE%D1%80%D0%BD%D0%BE%D0%BC%D0%BE%D1%80%D1%81%D1%8C%D0%BA%D0%BE%D0%BC%D1%83_%D0%B1%D1%96%D0%BE%D1%81%D1%84%D0%B5%D1%80%D0%BD%D0%BE%D0%BC%D1%83_%D0%B7%D0%B0%D0%BF%D0%BE%D0%B2%D1%96%D0%B4%D0%BD%D0%B8%D0%BA%D1%83.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e7/%D0%A1%D0%B8%D0%BF%D1%83%D1%85%D0%B0_%28Tyto_alba%29_%D0%B2_%D0%A7%D0%BE%D1%80%D0%BD%D0%BE%D0%BC%D0%BE%D1%80%D1%81%D1%8C%D0%BA%D0%BE%D0%BC%D1%83_%D0%B1%D1%96%D0%BE%D1%81%D1%84%D0%B5%D1%80%D0%BD%D0%BE%D0%BC%D1%83_%D0%B7%D0%B0%D0%BF%D0%BE%D0%B2%D1%96%D0%B4%D0%BD%D0%B8%D0%BA%D1%83.jpg",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Yu_Moskalenko\" title=\"User:Yu Moskalenko\">Yu Moskalenko</a>",
+      "originalSha256": "6a67d8670bae0e13fd4b29da1d344984b3ebc27d4913f899cab87b6540a089cf",
+      "reviewImage": "R11_owl_84474132.jpg",
+      "reviewSha256": "4a79e10428d3171c2a94d2c15c1df03e792c4da4ae8b0a51bc13f84f6baafd00",
+      "boxesNormalizedXyxy": [
+        [
+          0.08,
+          0.12,
+          0.82,
+          0.94
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "snake",
+      "pageId": 91372159,
+      "title": "File:Butter-Tessera-Corn-Snake.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Butter-Tessera-Corn-Snake.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/96/Butter-Tessera-Corn-Snake.jpg",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Novelyst&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Novelyst (page does not exist)\">Novelyst</a>",
+      "originalSha256": "85603b3d1490615b28eb99d675811fc59f8d9e2d0f5be69dbfc9b5a7f18e4c64",
+      "reviewImage": "R11_snake_91372159.jpg",
+      "reviewSha256": "a97b7f755c05d651c3a8868ec845ba4153ff29352594d8e502368e8faf74fdb5",
+      "boxesNormalizedXyxy": [
+        [
+          0.21,
+          0.18,
+          0.89,
+          0.96
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "snake",
+      "pageId": 469093,
+      "title": "File:Kornnatter.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Kornnatter.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c6/Kornnatter.jpg",
+      "license": "Public domain",
+      "licenseUrl": null,
+      "artist": null,
+      "originalSha256": "284b386756263aaac059b7a4d59f44845f98301823d9dec92f511a362c12c937",
+      "reviewImage": "R11_snake_469093.jpg",
+      "reviewSha256": "368a7da90ada8de69d0b3b39fefbc18f81185d133b3524b1b0bb1ba056856d64",
+      "boxesNormalizedXyxy": [
+        [
+          0,
+          0.12,
+          1,
+          0.98
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "snake",
+      "pageId": 159059613,
+      "title": "File:Kornnatter (Pantherophis guttatus), Seitenansicht.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Kornnatter_(Pantherophis_guttatus),_Seitenansicht.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Kornnatter_%28Pantherophis_guttatus%29%2C_Seitenansicht.jpg",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "artist": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/2ndpeter/\">Peter Paplanus</a> <span class=\"mw-valign-text-top noprint\" typeof=\"mw:File/Frameless\"><a href=\"//commons.wikimedia.org/wiki/File:Kornnatter_(Pantherophis_guttatus),_Seitenansicht.jpg#P170\" title=\"Edit this at Structured Data on Commons\"><img alt=\"Edit this at Structured Data on Commons\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"10\" height=\"10\" class=\"mw-file-element\" data-file-width=\"20\" data-file-height=\"20\"></a></span>",
+      "originalSha256": "ae71d859b23c27afd97904f6882b0e31550450a9c431e6b007db76bc9e860c1e",
+      "reviewImage": "R11_snake_159059613.jpg",
+      "reviewSha256": "92a9d78abc563df5930ef0a1fe3bcfec8d40373226d8f15691bf408dc4057b0d",
+      "boxesNormalizedXyxy": [
+        [
+          0.04,
+          0.08,
+          0.97,
+          0.95
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "swiftlet",
+      "pageId": 18278100,
+      "title": "File:Glossy Swiftlet ( Collocalia esculenta).jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Glossy_Swiftlet_(_Collocalia_esculenta).jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Glossy_Swiftlet_%28_Collocalia_esculenta%29.jpg",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "artist": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/64565252@N00\">Lip Kee</a>",
+      "originalSha256": "44662c850ccec4f4411b186cea1b830658fcf956a068dd39ea0e72c199f2e60b",
+      "reviewImage": "R11_swiftlet_18278100.jpg",
+      "reviewSha256": "aaeb041bba5178a2418f9b7df2c88fd5a42fa26f300263df02c12d59352d2148",
+      "boxesNormalizedXyxy": [
+        [
+          0.29,
+          0.2,
+          0.76,
+          0.79
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    },
+    {
+      "source": "R11",
+      "class": "swiftlet",
+      "pageId": 39716142,
+      "title": "File:Glossy Swiftlets (Collocalia esculenta) (8127975211).jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Glossy_Swiftlets_(Collocalia_esculenta)_(8127975211).jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Glossy_Swiftlets_%28Collocalia_esculenta%29_%288127975211%29.jpg",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "artist": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/65695019@N07\">Bernard DUPONT</a> from FRANCE",
+      "originalSha256": "9f915dd119d0bc75010b4f0a2f9c652b8308c7fec38df7a6fbcc5f89b5ef814e",
+      "reviewImage": "R11_swiftlet_39716142.jpg",
+      "reviewSha256": "a96ad2e5c433f7f97fc7da529a8c32de230f424d0757618a756347db1c266ef6",
+      "boxesNormalizedXyxy": [
+        [
+          0.32,
+          0.07,
+          0.65,
+          0.91
+        ]
+      ],
+      "annotationMethod": "agent visual annotation, not model predictions",
+      "reviewStatus": "initial labels; second human review requested"
+    }
+  ],
+  "excluded": {
+    "23258925": "Same photograph/crop as 18278100",
+    "63636513": "Overlapping birds require additional human annotation review",
+    "130598310": "Strong occlusion prevents a reliable whole-animal box without additional review"
+  },
+  "note": "Small validation pilot, not sufficient for stable model-selection estimates."
+}

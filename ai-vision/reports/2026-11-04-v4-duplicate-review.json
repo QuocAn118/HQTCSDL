@@ -1,0 +1,6 @@
+{
+  "algorithm": "64-bit difference hash; <=6 flags for visual review, not automatic proof",
+  "trainImages": 3104,
+  "testImagesRead": 0,
+  "matches": []
+}

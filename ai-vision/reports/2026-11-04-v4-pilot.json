@@ -1,0 +1,55 @@
+{
+  "dataset": {
+    "status": "pilot_for_retraining_not_frozen",
+    "trainImages": 3106,
+    "valImages": 13,
+    "quarantinedTrainingImages": 3,
+    "backgroundImages": 5,
+    "backgroundRatio": 0.0016097875080489374,
+    "classes": [
+      "owl",
+      "rat",
+      "snake",
+      "swiftlet"
+    ],
+    "sources": {
+      "train": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "V01"
+      ],
+      "val": [
+        "R11"
+      ]
+    },
+    "notes": [
+      "No test images included or read.",
+      "Small validation pilot; labels need a second human review.",
+      "V01 is training data for this iteration and cannot serve as independent evaluation.",
+      "Frozen v3 weights, results and dataset remain unchanged."
+    ]
+  },
+  "zip": "swiftletcare_train_val_v4_pilot.zip",
+  "zipBytes": 128358155,
+  "zipSha256": "105cd8cbecadbbc416ced0ec5346453cc4a0f73ea3374905a8315d2e0299f55c",
+  "status": "ready_for_colab_pilot_not_trained",
+  "valClassImages": {
+    "owl": 4,
+    "rat": 4,
+    "snake": 3,
+    "swiftlet": 2
+  },
+  "secondHumanLabelReview": "pending",
+  "settings": {
+    "model": "yolov8n.pt",
+    "epochs": 50,
+    "imgsz": 1280,
+    "batch": 4,
+    "mosaic": 0.0,
+    "close_mosaic": 0,
+    "seed": 42,
+    "patience": 15
+  }
+}

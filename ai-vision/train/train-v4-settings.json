@@ -1,0 +1,10 @@
+{
+  "model": "yolov8n.pt",
+  "epochs": 50,
+  "imgsz": 1280,
+  "batch": 4,
+  "mosaic": 0.0,
+  "close_mosaic": 0,
+  "seed": 42,
+  "patience": 15
+}

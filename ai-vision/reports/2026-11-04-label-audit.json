@@ -1,0 +1,64 @@
+{
+  "imagesReviewedTechnically": 4040,
+  "testImagesRead": 0,
+  "errors": [],
+  "note": "Flags require visual review; no label edits or exclusions performed.",
+  "classes": [
+    {
+      "class": "owl",
+      "split": "train",
+      "objects": 605,
+      "medianMinSidePx": 280.0,
+      "tinyBoxesLt8px": 0
+    },
+    {
+      "class": "owl",
+      "split": "val",
+      "objects": 0,
+      "medianMinSidePx": null,
+      "tinyBoxesLt8px": 0
+    },
+    {
+      "class": "rat",
+      "split": "train",
+      "objects": 1772,
+      "medianMinSidePx": 213.5,
+      "tinyBoxesLt8px": 0
+    },
+    {
+      "class": "rat",
+      "split": "val",
+      "objects": 0,
+      "medianMinSidePx": null,
+      "tinyBoxesLt8px": 0
+    },
+    {
+      "class": "snake",
+      "split": "train",
+      "objects": 789,
+      "medianMinSidePx": 236.0,
+      "tinyBoxesLt8px": 0
+    },
+    {
+      "class": "snake",
+      "split": "val",
+      "objects": 0,
+      "medianMinSidePx": null,
+      "tinyBoxesLt8px": 0
+    },
+    {
+      "class": "swiftlet",
+      "split": "train",
+      "objects": 2411,
+      "medianMinSidePx": 7.0,
+      "tinyBoxesLt8px": 1389
+    },
+    {
+      "class": "swiftlet",
+      "split": "val",
+      "objects": 4877,
+      "medianMinSidePx": 8.5,
+      "tinyBoxesLt8px": 2223
+    }
+  ]
+}

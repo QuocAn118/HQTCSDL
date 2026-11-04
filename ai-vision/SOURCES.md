@@ -1,5 +1,22 @@
 # Nguồn dữ liệu
 
+## Vòng cải thiện v4, chuẩn bị ngày 04/11/2026
+
+Snapshot v3 bên dưới giữ nguyên. `splits_v4.csv` dành riêng bộ thử v4:
+R01–R04 train; V01 thêm 5 khung nền train; **R11** là collection ảnh Wikimedia
+Commons mới cho val, không dùng lại mã nguồn chuột R10 cũ. Val mới có 13 ảnh,
+đủ bốn lớp, nhãn ban đầu do agent quan sát, chưa có người thứ hai duyệt.
+Nguồn/tác giả, URL ảnh gốc, giấy phép, SHA-256 và bbox theo từng ảnh ở
+[attribution v4](reports/2026-11-04-v4-val-attribution.json). Giữ yêu cầu ghi
+công/chia sẻ tương tự của từng ảnh CC BY/CC BY-SA. Ảnh không nằm trong Git.
+
+V01: Pristurus, CC BY-SA 3.0, trích giây 10/30/60/90/110, không đổi góc hay
+gán nhãn chim én thành swiftlet. Đây là ảnh không chứa bốn lớp mục tiêu,
+không phải chứng minh cảnh nền nhà yến thật. Từ vòng v4 không dùng V01 làm
+test độc lập. R05 không đưa vào v4 vì giấy phép gốc chưa xác minh; không lấy
+nguồn test R06–R09 làm val. Chi tiết giới hạn và các ảnh cách ly trong
+[báo cáo rà dữ liệu](reports/2026-11-04-retraining-review.md).
+
 ## Video ứng viên nhận ngày 03/11/2026
 
 Khi nhận ngày 03/11, hai file dưới đây mới được xem ảnh mẫu và kiểm tra khả năng mở bằng OpenCV.

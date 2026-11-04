@@ -1,0 +1,4 @@
+image,decision,reason,reviewer,originalDataset
+train/images/R04_00664_00664_21102294731_35619a8e33_z_jpg.rf.8269269439c64f0e04badea6ef3ed7bc.jpg,quarantine_v4_only,Illustration rather than a camera photograph,agent_visual_review,split_v3 (unchanged)
+train/images/R02_01725_01725_freudensprung-rats_jpg.rf.16b9a5b3dae9afde3f4478973d8eb4b7.jpg,quarantine_v4_only,Illustration rather than a camera photograph,agent_visual_review,split_v3 (unchanged)
+train/images/R03_01304_01304_9_jpg.rf.4aa5fbe321886d7983621679d4f689cb.jpg,quarantine_v4_only,Scale-texture macro with no identifiable whole animal,agent_visual_review,split_v3 (unchanged)

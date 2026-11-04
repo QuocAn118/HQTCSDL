@@ -1,6 +1,7 @@
 import re
 import json
 import hashlib
+import pytest
 from pathlib import Path
 
 AI = Path(__file__).resolve().parent.parent
@@ -47,9 +48,10 @@ def test_file_ps1_chi_ascii():
         p.read_bytes().decode('ascii')
 
 
-def test_notebook_ghim_cung_ban_ultralytics_va_supervision():
+@pytest.mark.parametrize('filename', ['train.ipynb', 'train-v4-pilot.ipynb'])
+def test_notebook_ghim_cung_ban_ultralytics_va_supervision(filename):
     pins = read_pins(AI / 'requirements.txt')
-    notebook = json.loads((AI / 'train' / 'train.ipynb').read_text(encoding='utf-8'))
+    notebook = json.loads((AI / 'train' / filename).read_text(encoding='utf-8'))
     code = '\n'.join(''.join(cell['source']) for cell in notebook['cells'] if cell['cell_type'] == 'code')
     for name in ('ultralytics', 'supervision'):
         assert f'{name}=={pins[name]}' in code

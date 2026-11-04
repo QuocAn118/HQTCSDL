@@ -4473,6 +4473,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ### Task 13: Dữ liệu và trọng số — `SOURCES.md`, chia tập theo nguồn, notebook Colab, tải và kiểm trọng số
 
+Cập nhật vòng cải thiện 04/11: đã chuẩn bị bộ v4 pilot riêng (3.106 train,
+13 val đủ bốn lớp), `splits_v4.csv`, notebook `train-v4-pilot.ipynb` và ZIP
+cục bộ để chạy Colab. **Chưa train v4**, val nhỏ/nhãn cần người thứ hai duyệt;
+không thay snapshot v3 đã đóng băng hoặc dùng lại test để chọn tham số. Xem
+`ai-vision/reports/2026-11-04-retraining-review.md` để biết dữ liệu, giới hạn
+và bước cần người dùng thực hiện trên Colab.
+
 **Files:**
 - Create: `ai-vision/SOURCES.md`, `ai-vision/splits.csv`, `ai-vision/weights.json`, `ai-vision/scripts/split_dataset.py`, `ai-vision/scripts/download_weights.py`, `ai-vision/train/train.ipynb`, `ai-vision/tests/test_data_scripts.py`
 

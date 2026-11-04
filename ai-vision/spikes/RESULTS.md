@@ -29,7 +29,7 @@ minh; không suy ra module đã chạy đầu-cuối trên video thật.
 | S22 | 404 backend thật | 04/11: POST /api/ai/khong-co với khóa đúng trả 404 NOT_FOUND, sqlNumber=null/details=null. Sai khóa ở bird-counts trả 401 UNAUTHENTICATED. GET health 200; heartbeat object đúng trả 200 accepted=1/rejected=0. |
 | S23 | API metrics | Metric.ap_class_index/class_result tồn tại. Đã đo P/R từng lớp tại ngưỡng cố định, IoU 0,5, 1905 ảnh test ở 640/320 bằng eval_fixed_detector.py; detector.csv có TP/FP/FN. Chưa đo mAP/chỉ số sự kiện video. |
 
-Lượt suite cuối ngày 04/11: **314 test và 6 subtest đạt**, có một FutureWarning
+Lượt suite cuối ngày 04/11: **326 test và 6 subtest đạt**, có một FutureWarning
 ByteTrack đã nêu ở S4. Test `test_offline_smoke.py` đọc MP4 tổng hợp qua OpenCV,
 suy luận bằng best.pt, tạo ByteTrack thật và ghi CSV/log offline. Đây không
 phải đánh giá video chim hoặc đầu-cuối với backend thật.

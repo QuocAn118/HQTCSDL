@@ -4,6 +4,16 @@ Spec: [AI Vision](../docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-de
 Plan: [triển khai](../docs/superpowers/plans/2026-10-16-swiftletcare-ai-vision.md).
 Chạy `git status` trước mỗi lần commit; không commit video, ảnh, trọng số hoặc `.env`.
 
+## Vòng train cải thiện đang chuẩn bị
+
+Đã có bộ **v4 pilot riêng** (3.106 train, 13 val đủ bốn lớp), loại 3 ảnh nghi
+vấn và thêm 5 nền V01. Notebook mới: `train/train-v4-pilot.ipynb`; ZIP cục bộ
+`data/colab/swiftletcare_train_val_v4_pilot.zip` (~122,4 MiB), tải lên
+`MyDrive/SwiftletCare/` rồi chạy bằng Colab T4. **Chưa train v4, chưa thay
+best.pt đang đóng băng**. Val rất nhỏ và cần người thứ hai duyệt nhãn.
+Xem [báo cáo v4](reports/2026-11-04-retraining-review.md) trước khi chạy;
+không dùng V01 đã đưa vào train để đo cải thiện độc lập.
+
 ## Cài môi trường Windows
 
 Đã kiểm trên Python 3.12.10. Từ thư mục `ai-vision/`, dùng Python 3.12 hoặc
