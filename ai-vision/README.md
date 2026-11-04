@@ -1,5 +1,167 @@
 # AI Vision
 
+Spec: [AI Vision](../docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md).
+Plan: [triển khai](../docs/superpowers/plans/2026-10-16-swiftletcare-ai-vision.md).
+Chạy `git status` trước mỗi lần commit; không commit video, ảnh, trọng số hoặc `.env`.
+
+## Cài môi trường Windows
+
+Đã kiểm trên Python 3.12.10. Từ thư mục `ai-vision/`, dùng Python 3.12 hoặc
+3.13 đã cài để tạo môi trường riêng, rồi cài đúng bản ghim:
+
+```powershell
+py -3.12 -m venv .venv
+.venv/Scripts/python -X utf8 -m pip install -r requirements.txt
+.venv/Scripts/python -m pip check
+.venv/Scripts/python -m pytest
+```
+
+Nếu Python Launcher (`py`) chưa có, dùng đường dẫn Python 3.12 đã cài để tạo
+venv. Không tạo lại hoặc xóa venv đang dùng chỉ để chạy các lệnh mẫu này.
+Môi trường hiện tại đã có từ trước và cho phép đọc gói hệ thống; cài mới bằng
+lệnh trên sẽ tạo venv riêng. Chưa xác nhận cài lại trên máy sạch.
+
+Giữ `supervision==0.30.9`: ByteTrack vẫn hoạt động nhưng có cảnh báo bị bỏ từ
+0.31. Chưa chuyển sang gói tracker khác. Windows Time hiện chưa chạy nên chưa
+xác nhận đồng bộ UTC, cần kiểm tra trước kiểm thử live với backend.
+
+## Chạy AI và trạng thái triển khai
+
+Đã triển khai code Task 2–15, gồm phần Nên có của Task 14. Spike đọc/bỏ khung
+Task 11 S17 đã đo trên V01.webm. Kiểm tay Ctrl+C với video thật (Task 12 S8),
+đo test chính thức (Task 15) và đầu-cuối với backend thật (Task 16) còn chờ
+dữ liệu/cấu hình. Task 13 đã có Release và đóng băng `best.pt` ngày 04/11;
+Các mục Task 1 đã/chưa kiểm được ghi đủ S1–S23 trong
+[spikes/RESULTS.md](spikes/RESULTS.md). Notebook sạch để dùng lại là
+`train/train.ipynb`; `train/colab-setup.ipynb` đã xóa output và số thứ tự chạy.
+Lịch sử train được giữ ở `results/training_history.csv`.
+
+Chạy các lệnh dưới đây từ `ai-vision/`, sau khi đặt video thật và sửa playlist:
+
+```powershell
+.venv/Scripts/python -m swiftletcare_ai offline --camera H1-F0-CAMERA --out data/out/H1
+.venv/Scripts/python -m swiftletcare_ai offline --camera H1-F0-CAMERA --playlist data/videos/V01.mp4 --t0 2000-01-01T00:00:00Z --imgsz 640 --out data/out/V01
+.venv/Scripts/python -m swiftletcare_ai offline --camera H1-F0-CAMERA --playlist data/videos/V01.mp4 --out data/out/preview --annotated-video
+.venv/Scripts/python -m swiftletcare_ai live --camera H1-F0-CAMERA
+.venv/Scripts/python -m pytest tests -q
+```
+
+`offline` ghi `counts.csv`, `crossings.csv`, `predators.csv`, ảnh JPEG và log;
+không gọi backend. `--annotated-video` ghi thêm `annotated.mp4` có vạch vàng,
+khung chim xanh và khung thiên địch đỏ. Video đầu ra dùng FPS/kích thước của
+video đầu trong playlist; nếu giảm process_fps hoặc trộn video khác FPS thì
+thời lượng đầu ra có thể khác nguồn, không dùng đồng hồ video đầu ra để đo sự kiện.
+`live` gửi HTTP với khóa trong `.env`. Chỉ bật `--heartbeat`
+khi backend đã triển khai route tương ứng; 404 sẽ dừng AI.
+
+Mã thoát: `0` bình thường/Ctrl+C một lần, `1` lỗi bất ngờ, `2` lỗi cấu hình,
+khởi động hoặc 401/404, `130` Ctrl+C lần hai. Log live nằm ở
+`data/logs/<camera>.log`; khóa chống trùng ở `data/run/<camera>.lock`.
+Nếu khóa đã có, kiểm tra không còn tiến trình chạy camera rồi mới xóa tay.
+
+Hướng dẫn số đo: [results/README.md](results/README.md). Chưa chạy đánh giá test
+chính thức. Các đường dẫn V01.mp4 trong lệnh là ví dụ cho video đã duyệt; hai
+file V01.webm/V02.ogv mới tải vẫn là ứng viên, chưa được gán tập để đánh giá.
+
+Chạy nhiều camera sau khi cấu hình backend và từng camera đã hợp lệ:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-cameras.ps1
+powershell -ExecutionPolicy Bypass -File scripts/start-cameras.ps1 -Cameras H1-F0-CAMERA
+```
+
+Script mở cửa sổ tương tác riêng cho mỗi camera để dừng bằng Ctrl+C. Tham số
+`-Heartbeat` chỉ dùng khi backend có route heartbeat; mặc định không bật.
+
+## Task 4: cấu hình camera và môi trường
+
+Hai mẫu nằm trong `cameras/H1-F0-CAMERA.yaml` và `cameras/H2-F0-CAMERA.yaml`.
+Playlist và tọa độ vạch đang là ví dụ; thay bằng video thật và chọn vạch trên
+tập val trước khi chạy. Không tạo video giả để vượt kiểm tra cấu hình.
+Đường dẫn playlist tính từ `ai-vision/`, dùng tên file/thư mục ASCII.
+
+| Trường | Ý nghĩa/điều kiện |
+|---|---|
+| `camera` | Một trong hai mã hợp đồng, trùng tên file YAML |
+| `playlist` | Danh sách file video tồn tại, không rỗng |
+| `line.start`, `line.end` | Hai điểm khác nhau, tọa độ chuẩn hóa trong [0,1] |
+| `swiftlet.confidence` | Ngưỡng tin cậy chim, trong (0,1] |
+| `predator.confidence` | Ngưỡng thiên địch trong [0.5,1] |
+| `predator.confirm_frames` | Số khung đã xử lý để xác nhận, số nguyên dương |
+| `predator.confirm_seconds` | Khoảng thời gian chứa các khung xác nhận, số dương |
+| `predator.cooldown_seconds` | Khoảng chặn báo lặp theo từng lớp, số dương |
+| `process_fps` | null theo video, hoặc số dương giới hạn tốc độ xử lý |
+
+Với đầu vạch bên trái và cuối vạch bên phải: bay lên là out, bay xuống là in.
+Đảo chiều bằng cách hoán đổi `start` và `end`, không có cờ flip.
+
+Chép `.env.example` thành `.env` khi cần chạy với backend, điền khóa dịch vụ
+do người chạy backend cung cấp. Không commit `.env`. Chế độ offline không
+bắt buộc file này. Bộ đọc hỗ trợ UTF-8 BOM; thông báo lỗi và `repr` cấu hình
+môi trường không in khóa dịch vụ.
+
+`check_confirm_fps()` kiểm tra điều kiện xác nhận thiên địch. Lệnh live đo FPS
+khởi động trên 30 khung đầu, bỏ 5 khung warmup trước khi kiểm điều kiện này.
+
+Hàng đợi giữ mức tổng lớn nhất của từng cửa sổ kể cả sau khi gửi thành công,
+đến khi hết hạn gửi (60 phút sau lúc cửa sổ đóng). Nhờ vậy đồng hồ nhảy lùi
+không làm payload gửi lại có tổng nhỏ hơn; đây vẫn là trạng thái trong bộ nhớ,
+không khôi phục được phần đếm đã mất khi khởi động lại tiến trình.
+
+Khi tập dượt: dùng SwiftletCare_Dev; không reset CSDL demo SwiftletCare.
+Theo spec, chạy demo AI trước 20:00 giờ Việt Nam. Thứ tự hệ thống: SQL Server,
+Mosquitto, simulator, backend, AI, rồi web/mobile. Video đầu ra và log không
+thay thế bằng chứng đầu-cuối với backend thật.
+
+## Task 3: thời gian UTC và cửa sổ 5 phút
+
+`swiftletcare_ai/timeutil.py` cung cấp định dạng UTC có `Z`, đọc thời gian UTC,
+làm tròn xuống cửa sổ 5 phút, `SystemClock` và `FakeClock`. Giá trị datetime
+thiếu múi giờ bị từ chối; giờ có múi giờ khác được đổi sang UTC trước khi chia
+cửa sổ. `FakeClock.jump()` mô phỏng đồng hồ máy nhảy mà không đổi thời gian
+đã trôi qua (`monotonic`).
+
+Chạy từ thư mục `ai-vision`:
+
+```powershell
+.venv/Scripts/python -m pytest tests/test_timeutil.py -q
+.venv/Scripts/python -m pytest tests -q
+```
+
+## Trọng số đã đóng băng trên Colab
+
+Notebook hiện tại: `train/colab-setup.ipynb`. Metadata của file tải về nằm trong
+`weights.json`; dùng **best.pt**, đã chạy đủ **50 epoch**, đối chiếu lịch sử
+trong checkpoint và log notebook. Đóng băng ngày 04/11/2026 trước lượt đo test.
+Val chỉ có swiftlet; ngưỡng thiên địch giữ mặc định 0,50, chưa tối ưu trên val.
+Không dùng tập test để chọn lại cấu hình. Xem `results/freeze.json`.
+
+Tải từ [GitHub Release](https://github.com/QuocAn118/HQTCSDL/releases/tag/ai-vision-v1-2026-11-04).
+Từ gốc repo chạy (bỏ `--verify-only` để tải lại từ Release):
+
+```powershell
+ai-vision/.venv/Scripts/python ai-vision/scripts/download_weights.py --verify-only
+ai-vision/.venv/Scripts/python -m unittest discover -s ai-vision/tests -p test_download_weights.py -v
+```
+
+Script kiểm SHA-256 trước khi nạp mô hình và kiểm đủ bốn tên lớp. File sai hash
+không được nạp; tải sai hash không ghi đè trọng số đang có. `--verify-only` dùng
+được cho file có sẵn. URL HTTPS trong `weights.json` đã kiểm tải đủ byte và
+SHA-256 khớp bản gốc; trọng số chỉ ở Release, không nằm trong Git.
+
+Môi trường đã nạp thử: Python 3.12.10, torch 2.15.0+cpu, Ultralytics 8.4.178,
+supervision 0.30.9. Colab dùng torch 2.11.0+cu130, khác máy Windows.
+`requirements.txt` ghim chín thư viện runtime; `requirements-data.txt` chỉ
+phục vụ chuẩn bị dữ liệu. Đánh giá test hiện giữ rõ hạn chế val thiếu thiên địch;
+train lại hoặc đổi cấu hình phải tạo phiên bản đóng băng và đo mới.
+
+Task 13 có thêm `scripts/split_dataset.py` cho export YOLO mới với tên ảnh bắt
+đầu bằng mã nguồn. Script đọc `splits.csv`, giữ nguyên thứ tự class ID, từ chối
+nguồn trùng/lạ, tên đầu ra trùng, export rỗng và thư mục đầu ra đã có. Thiếu
+file nhãn được coi là ảnh nền theo định dạng export; cần duyệt nhãn trước train.
+Không chạy script này ghi vào `split_v3` đang dùng. Quy trình dựng lại
+`split_v3` vẫn dùng `scripts/split_dataset.ps1` như hướng dẫn dữ liệu bên dưới.
+
 Dataset hiện dùng: **data/working/split_v3/**, cập nhật 24/10/2026. Có 5.945 ảnh và 5.945 file nhãn YOLO detection. Các ảnh mới giữ kích thước gốc; Ultralytics resize lúc train/inference. Chia theo nguồn dataset Universe, đúng spec §2.4; ảnh trùng/lỗi đã loại không thuộc bộ chia.
 
 | Lớp (class ID) | Train | Val | Test | Tổng |

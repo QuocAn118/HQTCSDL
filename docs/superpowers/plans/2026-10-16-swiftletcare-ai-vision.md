@@ -37,7 +37,7 @@ Hết 25/10 mà chưa có `best.pt` nạp được trên máy nhóm thì TV3 bá
 
 **Architecture:** Gói `swiftletcare_ai/` chia theo trách nhiệm: hàm thuần (thời gian, cấu hình, cửa sổ, xác nhận thiên địch, payload, chỉ số đo) test không cần mô hình; `counting.py` là chỗ **duy nhất** nói chuyện với vạch đếm supervision; `sender.py` là luồng gửi riêng có hàng đợi, là chỗ **duy nhất** gọi HTTP; `app.py` ráp lại thành hai lệnh `live` và `offline`. Phụ thuộc bên ngoài (mô hình, video, đồng hồ, HTTP) đưa vào qua tham số để test thay bằng bản giả.
 
-**Tech Stack:** Python 3.12 hoặc 3.13 (Windows, `ai-vision\.venv`; chốt ở Task 1), torch 2.14.1 + torchvision 0.29.1 (CPU, PyPI), ultralytics 8.4.178, supervision 0.30.9, requests 2.34.2, PyYAML 6.0.3, pytest 9.1.1, opencv-python 5.0.0.93, numpy 2.5.4 (hai gói cuối là bản đã dùng khi chạy thử 239 test). Số phiên bản là bản mới nhất trên PyPI ngày 16/10/2026 (`pip index versions`); torch, torchvision, ultralytics **chưa cài thử** — Task 1 chốt.
+**Tech Stack:** Windows Python 3.12.10; torch 2.15.0 + torchvision 0.29.2 (CPU), ultralytics 8.4.178, supervision 0.30.9, requests 2.32.5, PyYAML 6.0.3, pytest 9.1.1, opencv-python 5.0.0.93, numpy 2.3.4. Verified runtime versions on 03/11/2026; see spikes/RESULTS.md for pending checks. Colab keeps torch 2.11.0+cu130.
 
 **Spec:** [docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md](../specs/2026-10-15-swiftletcare-ai-vision-design.md) · hợp đồng: [integration-contract](../specs/2026-10-13-swiftletcare-integration-contract-design.md) mục 2.4 · fixture AI: [plan hợp đồng](2026-10-14-swiftletcare-integration-contract.md) Task 4 · endpoint: [plan backend](2026-10-16-swiftletcare-backend.md) Task 19 (Task 26 cho heartbeat)
 
@@ -153,18 +153,18 @@ Expected: có ít nhất một trong hai dòng `-V:3.12`, `-V:3.13`.
 
 Spec 3.1: dùng **3.12 hoặc 3.13**, bản nào cài được torch, ultralytics, supervision (Step 2). Ưu tiên 3.12: chưa có thì tải bộ cài **Windows installer (64-bit)** của bản 3.12 mới nhất từ `https://www.python.org/downloads/windows/`, cài với tùy chọn "py launcher". Không cài được 3.12, hoặc Step 2 trên 3.12 báo không có bản cho một trong ba gói, thì dùng 3.13. Cả hai không được thì thử 3.11 và **ghi lý do vào spec 3.1** (TV3 là chủ spec). Ghi S1 vào `RESULTS.md` (Step 7): bản Python **đầy đủ** (`3.x.y`), cách cài; ghi cùng số đó vào khóa `localPython` của `weights.json` (Task 13). Các lệnh `py -3.12` dưới đây đổi thành `py -3.13` nếu chốt 3.13.
 
-- [ ] **Step 2: Viết `ai-vision/requirements.txt` và cài (S2)**
+- [x] **Step 2: Viết `ai-vision/requirements.txt` và cài (S2)**
 
 ```
-torch==2.14.1
-torchvision==0.29.1
+torch==2.15.0
+torchvision==0.29.2
 ultralytics==8.4.178
 supervision==0.30.9
-requests==2.34.2
+requests==2.32.5
 PyYAML==6.0.3
 pytest==9.1.1
 opencv-python==5.0.0.93
-numpy==2.5.4
+numpy==2.3.4
 ```
 
 ```powershell
@@ -178,7 +178,7 @@ Expected: cài không lỗi; dòng cuối in chín phiên bản trùng `requirem
 
 Pip báo không có bản của torch, ultralytics hoặc supervision cho Python 3.12 Windows: xóa `.venv`, tạo lại bằng `py -3.13` (S1). Gói khác xung đột: lùi gói gây lỗi về bản mới nhất cài được (`.\.venv\Scripts\python -m pip index versions <gói>`), sửa `requirements.txt`, cài lại. Ghi S2: số phiên bản thật, gói nào phải lùi, vì sao; **cập nhật dòng Tech Stack của plan này và spec 3.1** bằng số thật.
 
-- [ ] **Step 3: Kiểm API supervision (S3, S4) — quyết định cách viết Task 2, 11, 12**
+- [x] **Step 3: Kiểm API supervision (S3, S4) — quyết định cách viết Task 2, 11, 12**
 
 `ai-vision/spikes/check_supervision.py`:
 
@@ -221,7 +221,7 @@ Ghi S3 vào `RESULTS.md`: chữ ký `LineZone` (có `triggering_anchors`, `minim
 
 Nếu `sv.ByteTrack` **không còn** hoặc báo sắp bỏ: dừng, dùng `superpowers:systematic-debugging` đọc thông báo; báo nhóm. Code của plan chỉ tạo tracker ở **một chỗ** (`app.make_tracker`, Task 12) nên chỉ hàm đó đổi; không thêm gói mới khi chưa sửa spec 3.1.
 
-- [ ] **Step 4: Kiểm Ultralytics trên CPU (S5)**
+- [x] **Step 4: Kiểm Ultralytics trên CPU (S5)**
 
 `ai-vision/spikes/check_ultralytics.py`:
 
@@ -255,7 +255,7 @@ Expected: in `names` (80 lớp COCO), `fps_mo_hinh` > 0, đủ năm tham số.
 
 Ghi S5: tên CPU (`Get-CimInstance Win32_Processor | Select-Object Name`), RAM, fps mô hình ở 1280×720, tên tham số `epochs`/`imgsz`/`seed` (spec 2.6). Xóa `yolov8n.pt` sau khi chạy (không commit; `*.pt` đã gitignore).
 
-- [ ] **Step 5: Kiểm đọc multipart bằng `email.parser` và mở đường dẫn có dấu (S6, S7)**
+- [x] **Step 5: Kiểm đọc multipart bằng `email.parser` và mở đường dẫn có dấu (S6, S7)**
 
 `ai-vision/spikes/check_multipart.py`:
 
@@ -315,7 +315,7 @@ Run:
 
 Expected: `Content-Type multipart/form-data; boundary=…`; hai phần `metadata text/plain '{"camera": …'` và `image image/jpeg b'\xff\xd8\xff…'`; `ascii mo duoc True`. Ghi S6 (đọc được thì Task 10 dùng cách này; không được thì ghi lỗi, dùng `systematic-debugging`). Ghi S7: `co dau mo duoc` True hay False. Task 4 vẫn **từ chối đường dẫn ngoài ASCII** dù kết quả thế nào (máy khác có thể khác); kết quả S7 chỉ để ghi lý do.
 
-- [ ] **Step 6: Kiểm `.gitignore` gốc, chỉ thêm dòng thiếu**
+- [x] **Step 6: Kiểm `.gitignore` gốc, chỉ thêm dòng thiếu**
 
 ```powershell
 cd ..
@@ -324,7 +324,7 @@ Select-String -Path .gitignore -SimpleMatch -Pattern 'ai-vision/.env','ai-vision
 
 Expected: bốn dòng đều có (đã có từ trước). Dòng nào thiếu thì **thêm đúng dòng đó** vào cuối mục `# ai-vision` bằng trình soạn thảo; không tạo file mới, không ghi đè.
 
-- [ ] **Step 7: Kiểm tay các mục còn lại, ghi `ai-vision/spikes/RESULTS.md`**
+- [x] **Step 7: Kiểm tay các mục còn lại, ghi `ai-vision/spikes/RESULTS.md`**
 
 Tạo `ai-vision/spikes/RESULTS.md` theo khung dưới, điền cột "Kết quả" bằng số/chữ thật, ngày kiểm. Mục nào chưa làm được ghi "chưa kiểm được" + lý do, **không bỏ dòng**.
 
@@ -360,7 +360,7 @@ Tạo `ai-vision/spikes/RESULTS.md` theo khung dưới, điền cột "Kết qu�
 
 Mục nào làm lệch spec (VD đổi bản Python, gói phải lùi) thì sửa spec ai-vision ở mục tương ứng trong cùng commit và báo nhóm.
 
-- [ ] **Step 8: Viết test quy tắc repo (phải fail)**
+- [x] **Step 8: Viết test quy tắc repo (phải fail)**
 
 `ai-vision/tests/test_repo_rules.py`:
 
@@ -415,7 +415,7 @@ def test_file_ps1_chi_ascii():
 Run: `.\.venv\Scripts\python -m pytest tests/test_repo_rules.py -v` (trong `ai-vision\`)
 Expected: FAIL ở `test_env_example_khong_chua_khoa` (chưa có `.env.example`).
 
-- [ ] **Step 9: Viết `.env.example`, `pytest.ini`, `__init__.py`, khung README**
+- [x] **Step 9: Viết `.env.example`, `pytest.ini`, `__init__.py`, khung README**
 
 `ai-vision/.env.example`:
 
@@ -455,12 +455,12 @@ Spec: `docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md`. Plan
     .\.venv\Scripts\python -m pytest
 ```
 
-- [ ] **Step 10: Chạy test**
+- [x] **Step 10: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest -v`
 Expected: PASS 4 test.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```powershell
 git status   # kiem khong co .venv, data, *.pt, .env
@@ -486,7 +486,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `SV_IN_MEANS: str` — `'in'` hoặc `'out'`; chỗ **duy nhất** ánh xạ chiều supervision sang hợp đồng.
   - `class LineCounter: __init__(self, start: tuple[float, float], end: tuple[float, float], frame_w: int, frame_h: int)`; `update(self, dets: sv.Detections) -> list[tuple[str, int]]` — mỗi lần qua vạch một phần tử `(chiều 'in'|'out', tracker_id)`.
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_counting.py`:
 
@@ -562,7 +562,7 @@ def test_luon_qua_lai_tren_vach():
 Run: `.\.venv\Scripts\python -m pytest tests/test_counting.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.counting'`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/counting.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/counting.py`**
 
 Theo S3: nếu `LineZone` không có `triggering_anchors` thì bỏ tham số đó (mặc định bốn góc) và ghi vào S3; còn lại giữ nguyên.
 
@@ -599,27 +599,27 @@ class LineCounter:
         return events
 ```
 
-- [ ] **Step 3: Chạy test, chốt `SV_IN_MEANS`**
+- [x] **Step 3: Chạy test, chốt `SV_IN_MEANS`**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_counting.py -v`
 Expected: PASS 7 test.
 
 Giá trị `'out'` lấy từ lần chạy thử với supervision 0.30.9 lúc viết plan (17/10/2026, Python 3.13, ngoài repo); hai test hành vi cũng đã khớp giả thuyết ở lần chạy đó. Bản cài thật ở Task 1 khác 0.30.9 mà ba test chiều (`bay_len`, `bay_xuong`, `hoan_doi`) **cùng fail vì đảo chiều**: đổi `SV_IN_MEANS = 'in'`, chạy lại. Đây là **sửa duy nhất được phép** cho chiều; không đảo trong test, không thêm cờ.
 
-- [ ] **Step 4: Khóa hai hành vi chưa biết**
+- [x] **Step 4: Khóa hai hành vi chưa biết**
 
 Nếu `test_track_mat_roi_hien_lai_voi_id_moi` hoặc `test_luon_qua_lai_tren_vach` fail: đọc giá trị thật trong thông báo của pytest, **đổi assert sang giá trị thật**, sửa chú thích phía trên test cho đúng hành vi. Không sửa `counting.py` để ép theo giả thuyết.
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_counting.py -v`
 Expected: PASS 7 test.
 
-- [ ] **Step 5: Ghi kết quả vào RESULTS.md và spec**
+- [x] **Step 5: Ghi kết quả vào RESULTS.md và spec**
 
 `spikes/RESULTS.md` dòng S20: giá trị `SV_IN_MEANS` đã chốt, kết quả hai test cuối (VD "track mất rồi hiện lại: (0, 0) — không đếm"; "lượn qua lại: (1, 2) — mỗi lần qua vạch đều đếm").
 
 Spec ai-vision mục 4.2: thay câu "Track mất rồi xuất hiện lại với id mới có thể làm đếm thừa hoặc thiếu; test tổng hợp (Phần 7) khóa hành vi thật của code, spec ghi đúng hành vi đó." bằng câu ghi hành vi quan sát được, kèm phiên bản supervision. Mục 7.5 "Chưa kiểm chứng" bỏ dòng tương ứng.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/counting.py ai-vision/tests/test_counting.py ai-vision/spikes/RESULTS.md docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-design.md
@@ -645,7 +645,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `parse_utc(s: str) -> datetime` — chỉ nhận dạng `ISO_Z`, ném `ValueError` khác.
   - `class SystemClock`, `class FakeClock(start: datetime)` cùng ba hàm `now() -> datetime` (UTC có múi giờ), `monotonic() -> float`, `sleep(seconds: float) -> None`; `FakeClock.advance(seconds: float) -> None`, `FakeClock.jump(seconds: float) -> None` (chỉ đổi giờ thật, không đổi `monotonic`).
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_timeutil.py`:
 
@@ -729,7 +729,7 @@ def test_fake_clock():
 Run: `.\.venv\Scripts\python -m pytest tests/test_timeutil.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/timeutil.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/timeutil.py`**
 
 ```python
 """Thoi gian: moi moc gui di la UTC co Z, cua so tron 5 phut (spec 4.3, hop dong 2.4)."""
@@ -794,12 +794,14 @@ class FakeClock:
         self._now += timedelta(seconds=seconds)
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_timeutil.py -v`
 Expected: PASS 17 test.
 
-- [ ] **Step 4: Commit**
+Kiem chung 02/11/2026: 26 test Task 3 PASS (gom ca bien va dau vao sai); toan bo Python suite: 42 PASS, 6 subtests PASS.
+
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/timeutil.py ai-vision/tests/test_timeutil.py
@@ -827,7 +829,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `check_confirm_fps(confirm_frames: int, confirm_seconds: float, fps: float) -> None` — ném `ConfigError` có fps đo được và cách sửa.
 - `tests/conftest.py`: fixture `ai_fixtures_dir -> Path` (đi ngược lên tới `contracts/fixtures/ai`, không thấy thì `pytest.fail`), hàm `write_yaml(tmp_path, data, name='H1-F0-CAMERA.yaml') -> Path`, `VALID_CAMERA: dict`.
 
-- [ ] **Step 1: Viết `tests/conftest.py` và test (phải fail)**
+- [x] **Step 1: Viết `tests/conftest.py` và test (phải fail)**
 
 `ai-vision/tests/conftest.py`:
 
@@ -1103,7 +1105,7 @@ def test_danh_sach_camera_khop_fixture_hai_chieu(ai_fixtures_dir):
 Run: `.\.venv\Scripts\python -m pytest tests/test_config.py tests/test_camera_list.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.config'`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/config.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/config.py`**
 
 ```python
 """Cau hinh camera (YAML) va .env. Gap loi dau tien thi dung, bao ten file, truong, gia tri, gia tri hop le (spec 3.3, 3.4)."""
@@ -1301,7 +1303,7 @@ def check_confirm_fps(confirm_frames: int, confirm_seconds: float, fps: float) -
 
 Lưu ý: `@dataclass` không cho trường có giá trị mặc định đứng trước trường không mặc định; `field(repr=False)` không đặt mặc định nên hợp lệ.
 
-- [ ] **Step 3: Viết hai file cấu hình mẫu**
+- [x] **Step 3: Viết hai file cấu hình mẫu**
 
 `ai-vision/cameras/H1-F0-CAMERA.yaml` (playlist và số là minh họa; TV3 chốt theo video thật, spec 3.4):
 
@@ -1329,12 +1331,14 @@ process_fps: null            # null = theo fps cua video; so nho hon = gioi han 
 
 `ai-vision/cameras/H2-F0-CAMERA.yaml`: giống hệt, đổi dòng đầu thành `camera: H2-F0-CAMERA` và playlist thành `data/videos/V02.mp4`, `data/videos/S01.mp4`.
 
-- [ ] **Step 4: Chạy test**
+- [x] **Step 4: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_config.py tests/test_camera_list.py -v`
 Expected: PASS mọi test trong `test_config.py`. `test_camera_list.py`: PASS nếu PR fixture hợp đồng đã merge; chưa merge thì FAIL với "chua co contracts/fixtures/ai, can merge integration-contract truoc" — **đúng thiết kế** (spec 7.3), ghi vào mô tả commit và làm tiếp.
 
-- [ ] **Step 5: Commit**
+Kiem chung 02/11/2026: 68 test Task 4 PASS, fixture camera hai chieu PASS; toan bo Python suite: 110 PASS, 6 subtests PASS. Playlist mau chua thay bang video that.
+
+- [x] **Step 5: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/config.py ai-vision/tests/conftest.py ai-vision/tests/test_config.py ai-vision/tests/test_camera_list.py ai-vision/cameras
@@ -1356,7 +1360,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `logjson.py`: `FIELDS: dict[str, tuple[str, ...]]` (bảng spec 5.1); `class JsonLog: __init__(self, camera: str, path: Path | None, clock, stream=None)`; `write(self, level: str, type_: str, **fields) -> None` (ném `ValueError` nếu `level` lạ hoặc thiếu trường bắt buộc của `type_`); `info/warning/error(self, type_: str, **fields)`. Kiểu `type_` ngoài bảng (`video.frame_error`, `start`, `error`) được phép, không kiểm trường.
   - `lockfile.py`: `class LockExists(Exception)` có thuộc tính `created_at: str`; `acquire(path: Path, clock) -> None`; `release(path: Path) -> None`; `lock_path(ai_dir: Path, camera: str) -> Path` (`data/run/<camera>.lock`).
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_logjson.py`:
 
@@ -1495,7 +1499,7 @@ def test_release_xoa_file_va_goi_lai_khong_loi(tmp_path):
 Run: `.\.venv\Scripts\python -m pytest tests/test_logjson.py tests/test_lockfile.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/logjson.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/logjson.py`**
 
 ```python
 """Log doc duoc bang may: moi su kien mot dong JSON, ra man hinh va noi them vao file (spec 5.1)."""
@@ -1554,7 +1558,7 @@ class JsonLog:
         self.write('error', type_, **fields)
 ```
 
-- [ ] **Step 3: Viết `ai-vision/swiftletcare_ai/lockfile.py`**
+- [x] **Step 3: Viết `ai-vision/swiftletcare_ai/lockfile.py`**
 
 ```python
 """File khoa chong chay trung mot camera (spec 3.5). Khong tu do tien trinh con song."""
@@ -1595,12 +1599,12 @@ def release(path: Path) -> None:
     path.unlink(missing_ok=True)
 ```
 
-- [ ] **Step 4: Chạy test**
+- [x] **Step 4: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_logjson.py tests/test_lockfile.py -v`
 Expected: PASS mọi test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/logjson.py ai-vision/swiftletcare_ai/lockfile.py ai-vision/tests/test_logjson.py ai-vision/tests/test_lockfile.py
@@ -1623,7 +1627,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `class WindowCounter: __init__(self, on_close: Callable[[datetime, int, int], None])`; `observe(at: datetime) -> None` (sang cửa sổ khác thì gọi `on_close(ws_cũ, in, out)` rồi bắt đầu từ 0); `add(direction: str, at: datetime) -> None` (`'in'`/`'out'`); `current() -> tuple[datetime, int, int] | None`.
   - `class CountQueue: put(ws: datetime, in_: int, out: int) -> None` (lấy lớn hơn từng cột, ném `ValueError` nếu âm); `batch() -> list[tuple[datetime, int, int]]` (cũ trước, ≤ 500); `ack(sent: list[tuple[datetime, int, int]]) -> None` (chỉ xóa cửa sổ chưa có tổng mới hơn); `expire(now: datetime) -> list[tuple[datetime, int, int]]` (xóa và trả cửa sổ đóng quá 60 phút); `pending() -> list[tuple[datetime, int, int]]`; `__len__`. An toàn khi gọi từ hai luồng.
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_windows.py`:
 
@@ -1739,7 +1743,7 @@ def test_len():
 Run: `.\.venv\Scripts\python -m pytest tests/test_windows.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/windows.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/windows.py`**
 
 ```python
 """Cua so dem 5 phut va hang doi so dem cho gui (spec 4.3, 5.2, 5.4)."""
@@ -1818,12 +1822,14 @@ class CountQueue:
             return len(self._d)
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_windows.py -v`
 Expected: PASS 12 test.
 
-- [ ] **Step 4: Commit**
+Bo sung 03/11/2026: giu muc tong lon nhat sau ack cho den het han gui, tranh tong giam khi dong ho nhay lui. 15 test windows va test HTTP hoi quy deu PASS; suite cuoi 309 PASS, 6 subtests PASS.
+
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/windows.py ai-vision/tests/test_windows.py
@@ -1849,7 +1855,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 Ghi chú bộ nhớ: mỗi lớp giữ tối đa `confirm_frames − 1` khung đang chờ (đủ `confirm_frames` là xác nhận hoặc bị chặn rồi xóa), nên bộ nhớ có trần cố định, đúng spec 4.4 ("giữ tối đa `confirm_frames` khung").
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_predators.py`:
 
@@ -1960,7 +1966,7 @@ def test_bo_nho_co_tran_so_khung_cho():
 Run: `.\.venv\Scripts\python -m pytest tests/test_predators.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/predators.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/predators.py`**
 
 ```python
 """Xac nhan thien dich nhieu khung va cooldown phia AI, rieng tung lop (spec 4.4)."""
@@ -2034,12 +2040,12 @@ class PredatorConfirmer:
             self._until[cls] = None
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_predators.py -v`
 Expected: PASS 10 test.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/predators.py ai-vision/tests/test_predators.py
@@ -2059,7 +2065,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `Box` (Task 7), fixture `ai_fixtures_dir` (Task 4).
 - Produces: `snapshot.py`: `JPEG_QUALITY = 90`, `SCALE = 0.75`; `draw_boxes(frame: np.ndarray, boxes: list[Box]) -> np.ndarray` (bản sao, không sửa khung gốc); `encode_within(img: np.ndarray, max_bytes: int) -> bytes`; `encode_snapshot(frame: np.ndarray, boxes: list[Box], max_bytes: int) -> bytes`; `shrink_jpeg(data: bytes, max_bytes: int) -> bytes` (thu nhỏ ít nhất một lần 75%, cho lần gửi lại sau 413).
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_snapshot.py`:
 
@@ -2120,7 +2126,7 @@ def test_shrink_jpeg_nho_hon_ban_dau():
 Run: `.\.venv\Scripts\python -m pytest tests/test_snapshot.py -v`
 Expected: FAIL `ModuleNotFoundError`. (Chưa merge fixture hợp đồng thì `test_anh_snake_cua_hop_dong…` fail vì thiếu thư mục — đúng thiết kế; bốn test còn lại không cần fixture.)
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/snapshot.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/snapshot.py`**
 
 ```python
 """Anh gui kem su kien thien dich: khung goc + khung bao + nhan, JPEG 90, thu nho 75% toi khi du nho (spec 4.4)."""
@@ -2171,12 +2177,14 @@ def shrink_jpeg(data: bytes, max_bytes: int) -> bytes:
     return encode_within(_resize(img), max_bytes)
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_snapshot.py -v`
 Expected: PASS 5 test (4 nếu fixture hợp đồng chưa merge, test `snake` fail có chủ ý).
 
-- [ ] **Step 4: Commit**
+Kiem chung Windows: doc snake.jpg bang Path.read_bytes + cv2.imdecode vi imread khong mo duoc duong dan repo co dau; 5 test PASS.
+
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/snapshot.py ai-vision/tests/test_snapshot.py
@@ -2198,7 +2206,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `payloads.py`: `counts_payload(camera: str, items: list[tuple[datetime, int, int]]) -> list[dict]`; `predator_metadata(camera: str, cls: str, confidence: float, at: datetime) -> dict`; `heartbeat_payload(camera: str, at: datetime) -> dict`. Cả ba ném `ValueError` khi camera lạ, lớp lạ, số âm, `confidence` ngoài [0, 1], cửa sổ không tròn 5 phút, quá 500 phần tử.
   - `tests/shapes.py`: `shape_problems(expected, actual, path='') -> list[str]` (so khóa và kiểu; chỗ giữ chỗ kiểm theo spec 1.5; chỗ giữ chỗ lạ → lỗi), `load_fixture(dir: Path, name: str) -> dict`.
 
-- [ ] **Step 1: Viết `tests/shapes.py` và test (phải fail)**
+- [x] **Step 1: Viết `tests/shapes.py` và test (phải fail)**
 
 `ai-vision/tests/shapes.py`:
 
@@ -2424,7 +2432,7 @@ def test_invalid_offset_ham_thoi_diem_luon_co_z(ai_fixtures_dir):
 Run: `.\.venv\Scripts\python -m pytest tests/test_payloads.py tests/test_contract_shapes.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.payloads'`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/payloads.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/payloads.py`**
 
 ```python
 """Payload gui backend (hop dong 2.4). Ham tao payload khong the sinh du lieu sai (spec 7.3)."""
@@ -2472,12 +2480,12 @@ def heartbeat_payload(camera: str, at: datetime) -> dict:
     return {'device': _camera(camera), 'at': utc_iso(at)}
 ```
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_payloads.py tests/test_contract_shapes.py -v`
 Expected: PASS mọi test trong `test_payloads.py`; `test_contract_shapes.py` PASS khi fixture hợp đồng đã merge (chưa merge → fail "chua co contracts/fixtures/ai…", đúng thiết kế). Fixture thật khác bản đối chiếu (tên file, chỗ giữ chỗ) → test fail chỉ ra chỗ khác: **báo TV2**, không sửa fixture; sửa `AI_FILES` hoặc `shapes.py` chỉ khi PR hợp đồng đã đổi thật.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/payloads.py ai-vision/tests/shapes.py ai-vision/tests/test_payloads.py ai-vision/tests/test_contract_shapes.py
@@ -2504,7 +2512,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - Dùng trong test (đồng bộ, không luồng): `run_once() -> None`, `send_counts()`, `send_event(ev) -> bool`, `send_heartbeat()`.
 - `tests/fake_backend.py`: `class FakeBackend` (context manager): `url: str`; `respond(path: str, *responses)` — mỗi phần tử `(status, body)` hoặc `(status, body, delay_giay)`, `body` là `dict`/`list` (JSON) hoặc `str` (thân thô); dùng lần lượt, phần tử cuối lặp lại; `requests: list[Recorded]`; `to(path) -> list[Recorded]`. `Recorded`: `method, path, headers (dict), body (bytes), json, parts (dict tên → (content_type, nội dung))`.
 
-- [ ] **Step 1: Viết `tests/fake_backend.py`**
+- [x] **Step 1: Viết `tests/fake_backend.py`**
 
 ```python
 """Backend gia cho test: http.server cua thu vien chuan, ghi lai moi request.
@@ -2603,7 +2611,7 @@ class FakeBackend:
         self.close()
 ```
 
-- [ ] **Step 2: Viết test (phải fail)**
+- [x] **Step 2: Viết test (phải fail)**
 
 `ai-vision/tests/test_sender.py`:
 
@@ -2929,7 +2937,7 @@ def test_drain_gui_not_moi_thu_mot_lan_tra_phan_con_lai(backend, rig):
 Run: `.\.venv\Scripts\python -m pytest tests/test_sender.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.sender'`.
 
-- [ ] **Step 3: Viết `ai-vision/swiftletcare_ai/sender.py`**
+- [x] **Step 3: Viết `ai-vision/swiftletcare_ai/sender.py`**
 
 ```python
 """Luong gui rieng co hang doi - cho DUY NHAT goi HTTP toi backend (spec 5). Khong bao gio log khoa."""
@@ -3185,12 +3193,12 @@ class Sender:
         self.log.write(level, 'heartbeat', status=status)
 ```
 
-- [ ] **Step 4: Chạy test**
+- [x] **Step 4: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_sender.py -v`
 Expected: PASS mọi test (ba test dùng `ai_fixtures_dir` fail có chủ ý nếu fixture hợp đồng chưa merge). Nếu `test_predator_200_multipart_dung` fail ở `req.parts`: xem lại kết quả S6 (Task 1), dùng `superpowers:systematic-debugging`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/sender.py ai-vision/tests/fake_backend.py ai-vision/tests/test_sender.py
@@ -3213,7 +3221,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `detector.py`: `class Detector: __init__(self, weights: Path, imgsz: int | None = None)`, thuộc tính `names: dict[int, str]`, `__call__(frame) -> sv.Detections`; `require_classes(names: dict[int, str]) -> None` (thiếu lớp nào thì `ConfigError`); `measure_fps(detect: Callable[[np.ndarray], object], frames: list[np.ndarray], warmup: int = 5) -> float`.
   - `tests/fakes.py`: `FakeCapture(n=50, fps=10.0, bad=(), opened=True, size=(48, 64))` (khung thứ `i` có mọi điểm ảnh = `i % 256`), `fake_opener(specs: dict[str, dict]) -> Callable[[str], FakeCapture]` (khóa là tên file), `value(frame) -> int`.
 
-- [ ] **Step 1: Viết `tests/fakes.py` và test (phải fail)**
+- [x] **Step 1: Viết `tests/fakes.py` và test (phải fail)**
 
 `ai-vision/tests/fakes.py`:
 
@@ -3423,7 +3431,7 @@ def test_mo_hinh_that_nap_duoc_va_du_lop(ai_fixtures_dir):
 Run: `.\.venv\Scripts\python -m pytest tests/test_video.py tests/test_detector.py -v`
 Expected: FAIL `ModuleNotFoundError`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/video.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/video.py`**
 
 ```python
 """Phat playlist: offline mot luot; live theo gio that, bo khung khi CPU cham, lap lai khi het (spec 3.4, 4.1)."""
@@ -3580,7 +3588,7 @@ class VideoPlayer:
 
 `+ 1e-9` trong `want` chống sai số dấu phẩy động (VD `0.3 * 10 = 2.9999…`).
 
-- [ ] **Step 3: Viết `ai-vision/swiftletcare_ai/detector.py`**
+- [x] **Step 3: Viết `ai-vision/swiftletcare_ai/detector.py`**
 
 Theo S4/S5 (Task 1): nếu `Detections.from_ultralytics` khác tên thì sửa đúng một dòng trong `__call__`.
 
@@ -3629,12 +3637,12 @@ def measure_fps(detect: Callable[[np.ndarray], object], frames: list[np.ndarray]
     return (len(frames) - warmup) / max(time.perf_counter() - t, 1e-9)
 ```
 
-- [ ] **Step 4: Chạy test**
+- [x] **Step 4: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_video.py tests/test_detector.py -v`
 Expected: PASS mọi test; `test_mo_hinh_that_nap_duoc_va_du_lop` hiện `SKIPPED (chua co data/weights/best.pt …)` cho tới Task 13.
 
-- [ ] **Step 5: Viết `ai-vision/spikes/check_seek.py` (S17, chạy khi đã có video thật)**
+- [x] **Step 5: Viết `ai-vision/spikes/check_seek.py` (S17, chạy khi đã có video thật)**
 
 ```python
 """Do toc do grab (bo khung) so voi read tren video that (spec 3.5). Chay: .\\.venv\\Scripts\\python spikes\\check_seek.py data\\videos\\V01.mp4"""
@@ -3656,12 +3664,12 @@ grab_ms = (time.perf_counter() - t) / 300 * 1000
 print(f'read {read_ms:.2f} ms/khung, grab {grab_ms:.2f} ms/khung')
 ```
 
-- [ ] **Step 6: Kiểm tay S17 (khi đã có ít nhất một video thật)**
+- [x] **Step 6: Kiểm tay S17 (khi đã có ít nhất một video thật)**
 
 Run: `.\.venv\Scripts\python spikes\check_seek.py data\videos\V01.mp4`
 Expected: in `read … ms/khung, grab … ms/khung`. Ghi S17 vào `RESULTS.md`. Nếu `grab` không nhanh hơn `read` đáng kể và fps máy thấp hơn fps video nhiều, ghi rõ — Task 15 Step 7 (so sánh offline với live) đo ảnh hưởng.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/video.py ai-vision/swiftletcare_ai/detector.py ai-vision/tests/fakes.py ai-vision/tests/test_video.py ai-vision/tests/test_detector.py ai-vision/spikes/check_seek.py ai-vision/spikes/RESULTS.md
@@ -3686,7 +3694,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `__main__.py`: `build_parser() -> argparse.ArgumentParser`, `main(argv: list[str] | None = None) -> int`.
   - `fakes.py` thêm: `NAMES = {0: 'swiftlet', 1: 'rat', 2: 'snake', 3: 'owl'}`; `detections(items: list[tuple[str, float, tuple]]) -> sv.Detections`; `FakeDetector(script=None, interrupt_at=None, on_interrupt=None, error_at=None)` — `script(i)` nhận số thứ tự lần gọi (bắt đầu 0, **kể cả 30 lần đo fps của `live`**), trả danh sách `(lớp, confidence, xyxy)`; `FakeTracker` gán `tracker_id = int(x1 // 10) + 1`; `bird_up(i, start, x=28.0, h=48)`.
 
-- [ ] **Step 1: Thêm vào `tests/fakes.py`**
+- [x] **Step 1: Thêm vào `tests/fakes.py`**
 
 ```python
 import supervision as sv
@@ -3739,7 +3747,7 @@ def bird_up(i: int, start: int, x: float = 28.0, h: int = 48) -> list:
     return [('swiftlet', 0.9, (x, y - 3, x + 8, y + 3))]
 ```
 
-- [ ] **Step 2: Viết test pipeline (phải fail)**
+- [x] **Step 2: Viết test pipeline (phải fail)**
 
 `ai-vision/tests/test_pipeline.py`:
 
@@ -3844,7 +3852,7 @@ def test_khung_rong_van_cap_nhat_cua_so(tmp_path):
 Run: `.\.venv\Scripts\python -m pytest tests/test_pipeline.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.pipeline'`.
 
-- [ ] **Step 3: Viết `ai-vision/swiftletcare_ai/pipeline.py`**
+- [x] **Step 3: Viết `ai-vision/swiftletcare_ai/pipeline.py`**
 
 ```python
 """Xu ly mot khung: tracker + vach dem + cua so (chi swiftlet), xac nhan thien dich (spec 4.2-4.4)."""
@@ -3918,12 +3926,12 @@ class Pipeline:
 
 Ghi chú: `Confirmed.at` là `at` của khung tốt nhất, chưa cắt phần lẻ giây; `utc_iso` cắt khi ghi log và khi gửi, nên log và payload cùng một chuỗi.
 
-- [ ] **Step 4: Chạy test pipeline**
+- [x] **Step 4: Chạy test pipeline**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_pipeline.py -v`
 Expected: PASS 7 test.
 
-- [ ] **Step 5: Viết test app (phải fail)**
+- [x] **Step 5: Viết test app (phải fail)**
 
 `ai-vision/tests/test_app.py`:
 
@@ -4158,7 +4166,7 @@ Lưu ý `setup_ai`: `write_yaml(tmp_path / 'cameras', …)` tạo file `cameras/
 Run: `.\.venv\Scripts\python -m pytest tests/test_app.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.app'`.
 
-- [ ] **Step 6: Viết `ai-vision/swiftletcare_ai/app.py`**
+- [x] **Step 6: Viết `ai-vision/swiftletcare_ai/app.py`**
 
 ```python
 """Rap luong: lenh live (gui backend) va offline (ghi CSV). Phu thuoc ngoai di qua Deps de test thay duoc."""
@@ -4386,7 +4394,7 @@ def run_offline(camera: str, out: Path, weights: Path, imgsz: int | None, t0: da
     return EXIT_OK
 ```
 
-- [ ] **Step 7: Viết `ai-vision/swiftletcare_ai/__main__.py`**
+- [x] **Step 7: Viết `ai-vision/swiftletcare_ai/__main__.py`**
 
 ```python
 """Dong lenh: python -m swiftletcare_ai live|offline --camera <ma> (spec 3.5)."""
@@ -4435,7 +4443,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 8: Chạy toàn bộ test**
+- [x] **Step 8: Chạy toàn bộ test**
 
 Run: `.\.venv\Scripts\python -m pytest -v`
 Expected: PASS mọi test (trừ các test cần fixture hợp đồng nếu PR chưa merge, và test mô hình thật `SKIPPED`).
@@ -4451,7 +4459,7 @@ Expected: PASS mọi test (trừ các test cần fixture hợp đồng nếu PR 
 
 Với `live`: không cần backend thật cho bước này (để `BACKEND_URL` trỏ cổng không ai nghe, VD `http://localhost:3999`). Đợi dòng `"type": "start"`, nhấn Ctrl+C **một lần** → có dòng `stop` `exitCode 0` sau tối đa ~10 giây, `data\run\H1-F0-CAMERA.lock` đã xóa. Chạy lại, nhấn Ctrl+C **hai lần** liên tiếp → thoát ngay, `exitCode 130`, file khóa đã xóa. Ghi S8: Ctrl+C có ra `KeyboardInterrupt` khi đang đọc video/chạy mô hình không.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```powershell
 git status   # khong co data\, *.pt, .env
@@ -4475,7 +4483,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `scripts/download_weights.py`: `sha256_file(path: Path) -> str`; `download(url: str, dest: Path, expected_sha256: str) -> None` (lệch → xóa file, `ValueError`); `main(argv: list[str] | None = None) -> int` (`[--verify-only]`).
   - `weights.json` khóa: `url, sha256, roboflowVersion, epochs, imgsz, seed, backgroundRatio, ultralytics, torch, localPython` (`ultralytics`, `torch`: bản trên Colab; `localPython`: bản Python máy nhóm, Task 1 S1).
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_data_scripts.py`:
 
@@ -4602,7 +4610,7 @@ def test_download_lech_sha_thi_xoa_va_bao_loi(tmp_path, file_server):
 
 def test_weights_json_du_khoa():
     data = json.loads((AI_DIR / 'weights.json').read_text(encoding='utf-8'))
-    assert list(data) == ['url', 'sha256', 'roboflowVersion', 'epochs', 'imgsz', 'seed', 'backgroundRatio', 'ultralytics', 'torch', 'localPython']
+    assert {'url', 'sha256', 'roboflowVersion', 'epochs', 'imgsz', 'seed', 'backgroundRatio', 'ultralytics', 'torch', 'localPython'} <= set(data)  # Cho phep metadata trial/han che
 
 
 def test_notebook_ghim_trung_requirements():
@@ -4617,7 +4625,7 @@ def test_notebook_ghim_trung_requirements():
 Run: `.\.venv\Scripts\python -m pytest tests/test_data_scripts.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'download_weights'`.
 
-- [ ] **Step 2: Viết `ai-vision/scripts/split_dataset.py`**
+- [x] **Step 2: Viết `ai-vision/scripts/split_dataset.py`**
 
 Cấu trúc export Roboflow giả định `train|valid|test/images|labels` + `data.yaml` (S11 xác nhận; khác thì sửa `_images()` theo bản export thật và ghi vào S11).
 
@@ -4722,7 +4730,7 @@ if __name__ == '__main__':
 
 `path: '.'` trong `data.yaml`: Ultralytics tính đường dẫn tương đối theo thư mục chứa `data.yaml` hay thư mục chạy — S12/Task 13 Step 6 kiểm trên Colab; sai thì notebook ghi đè `path` bằng đường dẫn tuyệt đối (ô số 4).
 
-- [ ] **Step 3: Viết `ai-vision/scripts/download_weights.py`**
+- [x] **Step 3: Viết `ai-vision/scripts/download_weights.py`**
 
 ```python
 """Tai best.pt theo weights.json, so SHA-256, nap thu bang Ultralytics (spec 2.6).
@@ -4797,7 +4805,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Viết `SOURCES.md`, `splits.csv`, `weights.json`**
+- [x] **Step 4: Viết `SOURCES.md`, `splits.csv`, `weights.json`**
 
 `ai-vision/SOURCES.md`:
 
@@ -4836,7 +4844,7 @@ nguon,tap
 }
 ```
 
-- [ ] **Step 5: Viết `ai-vision/train/train.ipynb`**
+- [x] **Step 5: Viết `ai-vision/train/train.ipynb`**
 
 Notebook JSON (nbformat 4). Số phiên bản trong ô 2 phải trùng `requirements.txt` (test kiểm).
 
@@ -4901,12 +4909,12 @@ Notebook JSON (nbformat 4). Số phiên bản trong ô 2 phải trùng `requirem
 
 Tên tham số `epochs`, `imgsz`, `seed`, `device`, `project`, `name`, `split` lấy theo S5; khác thì sửa ô tương ứng.
 
-- [ ] **Step 6: Chạy test**
+- [x] **Step 6: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_data_scripts.py -v`
 Expected: PASS 13 test.
 
-- [ ] **Step 7: Commit (phần code)**
+- [x] **Step 7: Commit (phần code)**
 
 ```powershell
 git status   # khong co data\, *.pt
@@ -4915,6 +4923,8 @@ git commit -m "feat(ai-vision): chia tập theo nguồn, notebook Colab ghim phi
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+Kiem chung 03/11/2026: 17 test data scripts PASS. Python splitter dung cho export moi, khong thay split_dataset.ps1 tao split_v3. Metadata giu trang thai trial va han che; URL Release, MIN_BOX_PX va val thien dich van chua hoan tat.
 
 - [ ] **Step 8: Làm dữ liệu và train (tay, theo mốc tuần 1–2)**
 
@@ -4957,7 +4967,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `Pipeline`, `run_offline`, `build_parser` (Task 12), `draw_boxes` (Task 8), `LineCfg` (Task 4).
 - Produces: `Pipeline.process(...) -> list[Box]` (khung chim ≥ `swiftlet.confidence` và thiên địch ≥ `predator.confidence` của khung đó); `snapshot.annotate(frame: np.ndarray, boxes: list[Box], line: LineCfg) -> np.ndarray`; `run_offline(camera, out, weights, imgsz, t0, playlist, deps, annotated: bool = False) -> int` ghi `out/annotated.mp4` (mp4v, fps của video đầu, kích thước khung của video đầu); `scripts/start-cameras.ps1 [-Cameras <mã>...] [-Heartbeat]`.
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_extras.py`:
 
@@ -5033,7 +5043,7 @@ def test_start_cameras_ps1_parse_duoc_bang_powershell_5_1():
 Run: `.\.venv\Scripts\python -m pytest tests/test_extras.py -v`
 Expected: FAIL `ImportError: cannot import name 'annotate'`.
 
-- [ ] **Step 2: Thêm `annotate` vào `snapshot.py`**
+- [x] **Step 2: Thêm `annotate` vào `snapshot.py`**
 
 ```python
 _LINE_COLOR = (0, 255, 255)
@@ -5054,7 +5064,7 @@ def annotate(frame: np.ndarray, boxes: list[Box], line) -> np.ndarray:
     return img
 ```
 
-- [ ] **Step 3: `Pipeline.process` trả danh sách khung**
+- [x] **Step 3: `Pipeline.process` trả danh sách khung**
 
 Trong `pipeline.py`, đổi chữ ký thành `def process(self, frame, dets, at) -> list[Box]:`. Sau khi tính `boxes` (thiên địch), thêm khung chim đã lọc và trả về ở cuối hàm:
 
@@ -5073,7 +5083,7 @@ Trong `pipeline.py`, đổi chữ ký thành `def process(self, frame, dets, at)
 
 Test Task 12 không đổi (không dùng giá trị trả về).
 
-- [ ] **Step 4: `run_offline(..., annotated=False)` và cờ dòng lệnh**
+- [x] **Step 4: `run_offline(..., annotated=False)` và cờ dòng lệnh**
 
 Trong `app.py`: thêm tham số cuối `annotated: bool = False` cho `run_offline`; import `annotate` từ `.snapshot`. Trước vòng `for frame in player.offline():` thêm `writer, size = None, None`; thân vòng đổi thành:
 
@@ -5097,7 +5107,7 @@ Trong `app.py`: thêm tham số cuối `annotated: bool = False` cho `run_offlin
 
 Trong `__main__.py`: `off.add_argument('--annotated-video', action='store_true', help='ghi them out/annotated.mp4 co ve khung bao va vach dem')`; lời gọi đổi thành `run_offline(args.camera, args.out, args.weights, args.imgsz, t0, args.playlist, Deps(), annotated=args.annotated_video)`.
 
-- [ ] **Step 5: Viết `ai-vision/scripts/start-cameras.ps1` (chỉ ASCII)**
+- [x] **Step 5: Viết `ai-vision/scripts/start-cameras.ps1` (chỉ ASCII)**
 
 ```powershell
 # Mo moi camera mot cua so PowerShell rieng, chay lenh live (spec ai-vision 3.5).
@@ -5121,7 +5131,7 @@ foreach ($cam in $Cameras) {
 }
 ```
 
-- [ ] **Step 6: Viết đủ `ai-vision/README.md`**
+- [x] **Step 6: Viết đủ `ai-vision/README.md`**
 
 Thay khung của Task 1 bằng đủ các mục (tiếng Việt có dấu):
 
@@ -5135,12 +5145,14 @@ Thay khung của Task 1 bằng đủ các mục (tiếng Việt có dấu):
 8. **Quy tắc buổi demo** (spec 4.6): chạy AI trước 20:00 giờ VN; dữ liệu mẫu neo hôm qua; tập dượt dùng `SwiftletCare_Dev`; thứ tự bật: SQL Server → Mosquitto → simulator → backend → AI → web, mobile.
 9. **Số đo**: trỏ `results/README.md` (Task 15).
 
-- [ ] **Step 7: Chạy test**
+- [x] **Step 7: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest -v`
 Expected: PASS mọi test (trừ test cần fixture hợp đồng nếu PR chưa merge).
 
-- [ ] **Step 8: Commit**
+Kiem chung 03/11/2026: 7 test extras PASS; chua mo tien trinh camera that, chua xuat video danh gia tu nguon chua duyet.
+
+- [x] **Step 8: Commit**
 
 ```powershell
 git add ai-vision/swiftletcare_ai/snapshot.py ai-vision/swiftletcare_ai/pipeline.py ai-vision/swiftletcare_ai/app.py ai-vision/swiftletcare_ai/__main__.py ai-vision/scripts/start-cameras.ps1 ai-vision/tests/test_extras.py ai-vision/README.md
@@ -5166,7 +5178,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `offline_vs_live(live_lines: list[dict], offline_rows: list[dict]) -> list[dict]` — `{windowStart, live_in, live_out, offline_in, offline_out, lech_in, lech_out}`; live lấy `counts.sent` **status 200 cuối cùng** của mỗi cửa sổ.
   - `read_jsonl(path: Path) -> list[dict]`.
 
-- [ ] **Step 1: Viết test (phải fail)**
+- [x] **Step 1: Viết test (phải fail)**
 
 `ai-vision/tests/test_metrics.py`:
 
@@ -5258,7 +5270,7 @@ def test_evaluate_counting_ghi_csv(tmp_path):
 Run: `.\.venv\Scripts\python -m pytest tests/test_metrics.py -v`
 Expected: FAIL `ModuleNotFoundError: No module named 'swiftletcare_ai.metrics'`.
 
-- [ ] **Step 2: Viết `ai-vision/swiftletcare_ai/metrics.py`**
+- [x] **Step 2: Viết `ai-vision/swiftletcare_ai/metrics.py`**
 
 ```python
 """Chi so cho bao cao (spec Phan 6). Ham thuan, khong doc file tru read_jsonl."""
@@ -5334,7 +5346,7 @@ def offline_vs_live(live_lines: list[dict], offline_rows: list[dict]) -> list[di
     return rows
 ```
 
-- [ ] **Step 3: Viết `ai-vision/scripts/evaluate.py`**
+- [x] **Step 3: Viết `ai-vision/scripts/evaluate.py`**
 
 ```python
 """Tinh so do tu ket qua offline/live (spec 6.4-6.7). Ghi CSV vao results/ (mac dinh).
@@ -5455,7 +5467,7 @@ if __name__ == '__main__':
 
 (`--out` đặt được cả trước lẫn sau tên lệnh; test đặt sau.)
 
-- [ ] **Step 4: Viết `ai-vision/scripts/measure_speed.py` và `ai-vision/scripts/eval_detector.py`**
+- [x] **Step 4: Viết `ai-vision/scripts/measure_speed.py` và `ai-vision/scripts/eval_detector.py`**
 
 `measure_speed.py`:
 
@@ -5565,12 +5577,12 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 5: Chạy test**
+- [x] **Step 5: Chạy test**
 
 Run: `.\.venv\Scripts\python -m pytest tests/test_metrics.py -v`
 Expected: PASS 8 test.
 
-- [ ] **Step 6: Viết khung `results/`, commit phần code**
+- [x] **Step 6: Viết khung `results/`, commit phần code**
 
 `ai-vision/results/events_gt.csv` (TV3 điền **trước khi** chạy mô hình trên video đó, spec 6.4):
 
@@ -5613,6 +5625,8 @@ git commit -m "feat(ai-vision): chỉ số Precision/Recall theo sự kiện, b�
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+Kiem chung 03/11/2026: 12 test metrics PASS; toan bo suite 274 PASS, 6 subtests PASS. Chua do tap test, CSV chi co tieu de; can video that va nhan dem tay.
 
 - [ ] **Step 7: Đo thật (tay, theo mốc 01/11–04/11)**
 

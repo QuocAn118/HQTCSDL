@@ -1,0 +1,46 @@
+{
+  "url": "https://github.com/QuocAn118/HQTCSDL/releases/download/ai-vision-v1-2026-11-04/best.pt",
+  "sha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "roboflowVersion": null,
+  "epochs": 50,
+  "imgsz": 640,
+  "seed": 42,
+  "backgroundRatio": 0.0,
+  "ultralytics": "8.4.178",
+  "torch": "2.11.0+cu130",
+  "localPython": "3.12.10",
+  "status": "frozen",
+  "dataset": "split_v3",
+  "classes": {
+    "0": "owl",
+    "1": "rat",
+    "2": "snake",
+    "3": "swiftlet"
+  },
+  "runName": "yolov8n_split_v3_trial_20261102T123729308781Z",
+  "localTorch": "2.15.0+cpu",
+  "validationClasses": [
+    "swiftlet"
+  ],
+  "validationMetrics": {
+    "metrics/precision(B)": 0.58065,
+    "metrics/recall(B)": 0.38118,
+    "metrics/mAP50(B)": 0.40066,
+    "metrics/mAP50-95(B)": 0.12891,
+    "val/box_loss": 2.5214,
+    "val/cls_loss": 2.94542,
+    "val/dfl_loss": 1.86139,
+    "fitness": 0.12891
+  },
+  "notes": [
+    "Combined local dataset from multiple Roboflow sources; no single Roboflow export version.",
+    "Val contains only swiftlet; not official four-class evaluation.",
+    "Colab torch version comes from the notebook environment output; local CPU load verified.",
+    "Frozen for evaluation; validation lacks predator classes; no tuning after test."
+  ],
+  "checkpoint": "best.pt",
+  "configuredEpochs": 50,
+  "releaseUrl": "https://github.com/QuocAn118/HQTCSDL/releases/tag/ai-vision-v1-2026-11-04",
+  "frozenDate": "2026-11-04",
+  "epochEvidence": "best.pt train_results.epoch = 1..50; notebook: 50 epochs completed in 0.728 hours."
+}

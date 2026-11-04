@@ -1,5 +1,31 @@
 # Nguồn dữ liệu
 
+## Video ứng viên nhận ngày 03/11/2026
+
+Hai file dưới đây mới được xem ảnh mẫu và kiểm tra khả năng mở bằng OpenCV.
+**Chưa duyệt để đếm, chưa gán train/val/test**, chưa chạy mô hình trên chúng;
+vì vậy chưa thêm vào `splits.csv`. Không dùng làm số đo chính thức.
+
+| Mã tạm | Tác giả trên trang nguồn | Nguồn | Giấy phép | Chia sẻ lại | Loài theo nguồn | Tập | Gán nhãn |
+|---|---|---|---|---|---|---|---|
+| V01 | Pristurus | [Delichon urbicum — 2012-07-20](https://commons.wikimedia.org/wiki/File:Delichon_urbicum_-_2012-07-20.webm) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | Theo điều kiện giấy phép | House martin, không phải swiftlet | Chưa gán | Chưa gán nhãn |
+| V02 | OakleyOriginals | [Progne subis — Tulsa, nestboxes](https://commons.wikimedia.org/wiki/File:Progne_subis_-Tulsa,_Oklahoma,_USA_-nestboxes-8.ogv) | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) | Theo điều kiện giấy phép | Purple martin, không phải swiftlet | Chưa gán | Chưa gán nhãn |
+
+V01: 117,32 giây, 1280×720, 25 FPS; V02: khoảng 16,18 giây, 640×480,
+29,97 FPS theo OpenCV. V01 có cảnh cận tổ/chim non và đổi góc quay; V02 có
+chuyển động camera trong ảnh mẫu. Cần duyệt đoạn liên tục trước khi đặt vạch.
+Chỉ dùng V01 cho spike read/grab, không xem kết quả suy luận để chọn nguồn.
+Ảnh xem mẫu và metadata: `data/out/source-review/` (không vào Git).
+
+Cập nhật 04/11: duyệt bổ sung 30 ảnh mẫu V01 cách 4 giây và 17 ảnh mẫu V02
+cách 1 giây, phủ suốt thời lượng (không phải xem đầy đủ từng khung). V01 đổi
+góc khoảng 28–52 giây; V02 lia/zoom rõ ở khoảng 9–16 giây. Chưa đủ cơ sở dùng
+làm phép đo đếm qua vạch cố định hoặc khẳng định video chỉ có chim yến.
+Playlist chạy thử đã thống nhất H1 → `data/videos/V01.webm`, H2 →
+`data/videos/V02.ogv`, đúng file gốc, không đổi đuôi hay chuyển mã. Không còn
+tham chiếu video `R02.mp4`/`S01.mp4`; R02 chỉ là mã nguồn dataset ảnh chuột.
+Hai video vẫn **chỉ dùng chạy thử**, chưa gán tập test và chưa có nhãn đếm tay.
+
 Dữ liệu hiện dùng lấy từ 9 bộ trên Roboflow Universe, sau đó gộp thành một project gồm 4 lớp: `swiftlet`, `rat`, `snake`, `owl`.
 
 Project đã gộp: Swiftlet and Predators Detection, nằm trong workspace nhóm trên Roboflow.

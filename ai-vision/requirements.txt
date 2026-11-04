@@ -1,0 +1,9 @@
+torch==2.15.0
+torchvision==0.29.2
+ultralytics==8.4.178
+supervision==0.30.9
+requests==2.32.5
+PyYAML==6.0.3
+pytest==9.1.1
+opencv-python==5.0.0.93
+numpy==2.3.4

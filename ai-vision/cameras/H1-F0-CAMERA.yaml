@@ -1,0 +1,19 @@
+camera: H1-F0-CAMERA
+playlist:                     # duong dan tinh tu ai-vision/, chi ky tu ASCII
+  - data/videos/V01.webm
+# Video thay the de smoke test; chua du dieu kien do dem chinh thuc.
+# Vach dem nam ngang, toa do chuan hoa [0,1] theo khung hinh.
+# Ra = chim bay tu duoi len, qua vach, sang phia TREN khung hinh.
+# Vao = chim bay tu tren xuong, sang phia DUOI khung hinh.
+# Muon dao chieu: hoan doi start va end, khong co co dao chieu.
+line:
+  start: [0.10, 0.55]
+  end:   [0.90, 0.55]
+swiftlet:
+  confidence: 0.40
+predator:
+  confidence: 0.50           # >= 0.5 vi SP bo qua duoi 0.5 (LOW_CONFIDENCE)
+  confirm_frames: 3          # so khung DA XU LY
+  confirm_seconds: 2
+  cooldown_seconds: 300      # khop @CooldownMinutes = 5 cua SP
+process_fps: null            # null = theo fps cua video; so nho hon = gioi han so khung xu ly moi giay
