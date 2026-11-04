@@ -102,3 +102,12 @@ export function markOnline(devices: Device[], readings: Pick<ReadingEvent, 'devi
   if (!devices.some((d) => ids.has(d.deviceId) && d.status !== 'ONLINE')) return devices;
   return devices.map((d) => (ids.has(d.deviceId) && d.status !== 'ONLINE' ? { ...d, status: 'ONLINE' } : d));
 }
+
+// Phan hoi POST /control chi ap khi trong luc cho chua co device.state nao cua thiet bi do (so object: moi su kien tao
+// object moi). Vong tu dong co the tat thiet bi ngay sau lenh AUTO, su kien den TRUOC phan hoi cu hon.
+export function applyControlResult(
+  devices: Device[], sent: Device, r: Pick<Device, 'mode' | 'isOn' | 'level'>,
+): Device[] {
+  if (!devices.includes(sent)) return devices;
+  return devices.map((d) => (d === sent ? { ...d, mode: r.mode, isOn: r.isOn, level: r.level } : d));
+}

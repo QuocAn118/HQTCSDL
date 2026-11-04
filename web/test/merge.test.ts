@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appendLive, applyDeviceState, createLoadGate, latestKey, markOnline, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates } from '../lib/merge';
+import { appendLive, applyControlResult, applyDeviceState, createLoadGate, latestKey, markOnline, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates } from '../lib/merge';
 import type { Alert, Device, DeviceState, LatestReading } from '../lib/types';
 
 const reading = (value: number, at: string): LatestReading => ({
@@ -186,5 +186,31 @@ describe('markOnline', () => {
     expect(markOnline(online, [ev(5)])).toBe(online);
     expect(markOnline([sensor], [ev(99)])[0]).toBe(sensor);
     expect(markOnline([sensor], [])[0].status).toBe('OFFLINE');
+  });
+});
+
+// Task 8: phan hoi POST /control den SAU device.state cua vong tu dong -> khong duoc ghi de trang thai moi hon.
+describe('applyControlResult', () => {
+  const fan = { ...device, mode: 'MANUAL' as const, isOn: true, level: 50 };
+  const other = { ...device, deviceId: 10, code: 'H1-F1-MIST' };
+  const res = { mode: 'AUTO' as const, isOn: true, level: 50 };
+
+  it('chua co su kien nao trong luc cho -> ap phan hoi; thiet bi khac giu nguyen', () => {
+    const r = applyControlResult([fan, other], fan, res);
+    expect(r[0]).toMatchObject({ mode: 'AUTO', isOn: true, level: 50 });
+    expect(r[1]).toBe(other);
+  });
+
+  it('device.state da den trong luc cho (vong tu dong tat ngay) -> bo phan hoi, giu trang thai cua su kien', () => {
+    let list = applyDeviceState([fan, other], state({ deviceId: 9, mode: 'AUTO', isOn: true, level: 50 }));
+    list = applyDeviceState(list, state({ deviceId: 9, mode: 'AUTO', isOn: false, level: 0 }));
+    const r = applyControlResult(list, fan, res);
+    expect(r).toBe(list);
+    expect(r[0]).toMatchObject({ mode: 'AUTO', isOn: false, level: 0 });
+  });
+
+  it('su kien cua thiet bi KHAC den trong luc cho -> van ap phan hoi', () => {
+    const list = applyDeviceState([fan, other], state({ deviceId: 10, isOn: true, level: null }));
+    expect(applyControlResult(list, fan, res)[0]).toMatchObject({ mode: 'AUTO' });
   });
 });
