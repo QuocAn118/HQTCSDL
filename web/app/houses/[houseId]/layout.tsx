@@ -45,7 +45,7 @@ export default function HouseLayout({ children }: { children: ReactNode }) {
     <LiveProvider>
       <ConnectionBar />
       <header className="flex flex-wrap items-center gap-4 border-b border-stone-200 bg-white px-6 py-3">
-        <Link href="/houses" className="font-semibold">{house?.name ?? 'Nhà yến'}</Link>
+        <Link href="/houses?all=1" className="font-semibold">{house?.name ?? 'Nhà yến'}</Link>
         <nav className="flex flex-wrap gap-1">
           {TABS.map(([path, label]) => {
             const href = base + path;

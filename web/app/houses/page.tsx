@@ -28,7 +28,8 @@ export default function HousesPage() {
   }, [router]);
 
   useEffect(() => {
-    void load(true).catch(() => {});
+    // Vao thang dashboard khi chi co mot nha, tru khi bam link "xem danh sach" o dau trang (khong thi khong toi duoc form tao nha).
+    void load(!new URLSearchParams(window.location.search).has('all')).catch(() => {});
   }, [load]);
 
   async function create(e: FormEvent) {
