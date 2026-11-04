@@ -5,6 +5,7 @@ export const MESSAGES: Record<string, string> = {
   CONSTRAINT_VIOLATION: 'Ngưỡng không hợp lệ (Min phải nhỏ hơn Max).',
   DUPLICATE: 'Trùng tên hoặc trùng mã.',
   VALIDATION_ERROR: 'Dữ liệu nhập chưa đúng, kiểm tra các trường được đánh dấu.',
+  INVALID_PARAMETER: 'Khoảng thời gian không hợp lệ: "Từ" phải trước "Đến"; khoảng quá dài thì gom theo nhiều phút hơn.',
   NOT_FOUND: 'Không tìm thấy.',
   RETRY_LATER: 'Hệ thống bận, vui lòng thử lại.',
   UNAUTHENTICATED: 'Sai tên đăng nhập hoặc mật khẩu.',

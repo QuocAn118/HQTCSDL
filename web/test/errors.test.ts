@@ -11,6 +11,11 @@ describe('errors (spec web 2.2)', () => {
       'VALIDATION_ERROR', 'NOT_FOUND', 'RETRY_LATER', 'NETWORK']) expect(MESSAGES[code]).toBeTruthy();
   });
 
+  it('INVALID_PARAMETER (SP 50040-50042: khoang sai, qua 2000 bucket) -> cau rieng, khong bao thu lai', () => {
+    expect(messageFor('INVALID_PARAMETER')).not.toBe(GENERIC_MESSAGE);
+    expect(messageFor('INVALID_PARAMETER')).not.toMatch(/thử lại/);
+  });
+
   it('ma la hoac rong -> cau chung', () => {
     expect(messageFor('INTERNAL')).toBe(GENERIC_MESSAGE);
     expect(messageFor(null)).toBe(GENERIC_MESSAGE);
