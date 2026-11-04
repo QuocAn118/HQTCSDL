@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from './api';
 import { ApiError } from './errors';
 import { useLive, useReloadOnConnect } from './live';
-import { applyDeviceState, createLoadGate, markOnline, mergeAlert, mergeLatest, replayDeviceStates, type LatestMap } from './merge';
+import { applyDeviceState, createLoadGate, markOnline, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates, type LatestMap } from './merge';
 import type { Alert, AlertCreated, AlertUpdated, Device, DeviceState, LatestReading, Page, ReadingsNew } from './types';
 
 export function useLiveDevices(houseId: number) {
@@ -74,23 +74,25 @@ export function useLiveLatest(houseId: number) {
 export function useLiveOpenAlerts(houseId: number) {
   const { subscribe } = useLive();
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [gate] = useState(createLoadGate<Alert | AlertUpdated>);
 
   useEffect(() => subscribe((event, payload) => {
-    if (event === 'alert.created') {
-      const a = (payload as AlertCreated).alert;
-      if (a.houseId === houseId) setAlerts((l) => mergeAlert(l, a));
-    } else if (event === 'alert.updated') {
-      const u = payload as AlertUpdated;
-      if (u.houseId === houseId) setAlerts((l) => mergeAlert(l, u));
-    }
-  }), [subscribe, houseId]);
+    const incoming = event === 'alert.created' ? (payload as AlertCreated).alert : event === 'alert.updated' ? (payload as AlertUpdated) : null;
+    if (!incoming || incoming.houseId !== houseId || gate.hold(incoming)) return;
+    setAlerts((l) => mergeAlert(l, incoming));
+  }), [subscribe, houseId, gate]);
 
+  // Tai lai THAY danh sach (T7W-3): canh bao dong trong luc mat ket noi khong co trong REST, gop thi con dem la dang mo.
   useReloadOnConnect(async () => {
+    const id = gate.begin();
     try {
       const page = await api<Page<Alert>>(`/api/alerts?houseId=${houseId}&status=NEW,ACK&limit=200`);
-      setAlerts((l) => page.items.reduce(mergeAlert, l));
+      const held = gate.end(id);
+      if (held) setAlerts(mergeAlerts(page.items, held));
     } catch {
       // dashboard van hien so do khi khong tai duoc canh bao
+      const held = gate.end(id);
+      if (held) setAlerts((l) => mergeAlerts(l, held));
     }
   });
   return alerts.filter((a) => a.status !== 'RESOLVED');

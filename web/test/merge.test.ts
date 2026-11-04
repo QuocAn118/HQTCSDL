@@ -63,6 +63,17 @@ describe('mergeAlert', () => {
   it('alert.updated cua canh bao chua co -> bo qua', () => {
     expect(mergeAlert([], { alertId: 7, houseId: 1, status: 'ACK', resolvedAt: null, resolvedBy: null })).toEqual([]);
   });
+
+  // T7W-3: tai lai thay danh sach bang REST roi ap su kien da giu, khong gop vao danh sach cu.
+  it('tai lai REST + su kien giu: su kien moi hon REST thi thang; canh bao da dong khong quay lai', () => {
+    const rest = [alert(2, 'NEW'), alert(1, 'ACK')];
+    const held = [
+      alert(5, 'NEW'),
+      { alertId: 2, houseId: 1, status: 'RESOLVED' as const, resolvedAt: '2026-10-12T10:00:00Z', resolvedBy: 2 },
+      { alertId: 4, houseId: 1, status: 'RESOLVED' as const, resolvedAt: '2026-10-12T10:00:00Z', resolvedBy: 2 },
+    ];
+    expect(mergeAlerts(rest, held).map((a) => [a.alertId, a.status])).toEqual([[5, 'NEW'], [2, 'RESOLVED'], [1, 'ACK']]);
+  });
 });
 
 describe('trang thai thiet bi', () => {
