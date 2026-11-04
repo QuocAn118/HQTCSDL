@@ -1,11 +1,12 @@
 'use client';
 // Cai dat: sua nha; them/sua khu vuc; them thiet bi, doi ten, ngung dung; sua nguong Min/Max/Target (spec web 2.2).
 import { useParams } from 'next/navigation';
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useContext, useEffect, useState, type FormEvent } from 'react';
 import { Banner, btnCls, btnGhostCls, Card, fieldError, inputCls, Loading } from '@/components/ui';
 import { api } from '@/lib/api';
 import { DEVICE_LABELS } from '@/lib/config';
 import { parseDecimal } from '@/lib/form';
+import { HouseChangedContext } from '@/lib/houses';
 import type { Device, DeviceType, House, MetricInfo, Threshold, Zone } from '@/lib/types';
 
 const TYPES: DeviceType[] = ['SENSOR', 'FAN', 'MIST', 'HEATER', 'SPEAKER', 'CAMERA'];
@@ -80,6 +81,7 @@ type FormCard = 'house' | 'zone' | 'device';
 
 export default function SettingsPage() {
   const houseId = Number(useParams<{ houseId: string }>().houseId);
+  const onHouseChanged = useContext(HouseChangedContext);
   const [house, setHouse] = useState<House | null>(null);
   const [zones, setZones] = useState<Zone[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
@@ -100,6 +102,7 @@ export default function SettingsPage() {
         api<Device[]>(`/api/houses/${houseId}/devices`), api<MetricInfo[]>('/api/metrics'),
       ]);
       setHouse(h);
+      onHouseChanged(h);
       // Tai lai sau moi thao tac: khong xoa phan dang go o form nha, khong doi metrics de ngung tai lai (va mat) o nhap nguong.
       setHouseForm((f) => (f.name ? f : { name: h.name, address: h.address ?? '' }));
       setZones(z);
@@ -110,7 +113,7 @@ export default function SettingsPage() {
     } catch (e) {
       setError(e);
     }
-  }, [houseId]);
+  }, [houseId, onHouseChanged]);
   useEffect(() => {
     void load().catch(() => {});
   }, [load]);

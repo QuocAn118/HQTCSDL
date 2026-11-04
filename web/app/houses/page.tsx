@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Banner, btnCls, btnGhostCls, Card, Empty, fieldError, inputCls, Loading } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { singleActiveHouse } from '@/lib/houses';
 import type { House } from '@/lib/types';
 
 export default function HousesPage() {
@@ -21,7 +22,8 @@ export default function HousesPage() {
       const list = await api<House[]>('/api/houses');
       setHouses(list);
       setError(null);
-      if (redirectSingle && list.length === 1) router.replace(`/houses/${list[0].houseId}`);
+      const single = redirectSingle ? singleActiveHouse(list) : null;
+      if (single) router.replace(`/houses/${single.houseId}`);
     } catch (e) {
       setError(e);
     }
