@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from './api';
 import { ApiError } from './errors';
 import { useLive, useReloadOnConnect } from './live';
-import { applyDeviceState, createLoadGate, mergeAlert, mergeLatest, replayDeviceStates, type LatestMap } from './merge';
+import { applyDeviceState, createLoadGate, markOnline, mergeAlert, mergeLatest, replayDeviceStates, type LatestMap } from './merge';
 import type { Alert, AlertCreated, AlertUpdated, Device, DeviceState, LatestReading, Page, ReadingsNew } from './types';
 
 export function useLiveDevices(houseId: number) {
@@ -14,6 +14,11 @@ export function useLiveDevices(houseId: number) {
   const [gate] = useState(createLoadGate<DeviceState>);
 
   useEffect(() => subscribe((event, payload) => {
+    if (event === 'readings.new') {
+      const r = payload as ReadingsNew;
+      if (r.houseId === houseId) setDevices((d) => (d ? markOnline(d, r.readings) : d));
+      return;
+    }
     if (event !== 'device.state') return;
     const ev = payload as DeviceState;
     if (ev.houseId !== houseId) return;

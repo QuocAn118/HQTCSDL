@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appendLive, applyDeviceState, createLoadGate, latestKey, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates } from '../lib/merge';
+import { appendLive, applyDeviceState, createLoadGate, latestKey, markOnline, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates } from '../lib/merge';
 import type { Alert, Device, DeviceState, LatestReading } from '../lib/types';
 
 const reading = (value: number, at: string): LatestReading => ({
@@ -166,5 +166,25 @@ describe('createLoadGate', () => {
     expect(g.end(b)).toEqual([]);
     expect(g.end(a)).toBeNull();
     expect(g.hold('z')).toBe(false);
+  });
+});
+
+// T7W-1: readings.new -> thiet bi gui duoc coi la ONLINE (chieu nguoc lai chi khi tai lai REST).
+describe('markOnline', () => {
+  const sensor = { ...device, deviceId: 5, code: 'H1-F1-SENSOR', deviceType: 'SENSOR' as const, status: 'OFFLINE' };
+  const ev = (deviceId: number) => ({ deviceId, deviceCode: 'X', zoneId: 2, metric: 'TEMP' as const, value: 28, at: '2026-10-12T10:40:00Z' });
+
+  it('thiet bi co trong readings -> ONLINE; thiet bi khac giu nguyen', () => {
+    const fanOff = { ...device, status: 'OFFLINE' };
+    const r = markOnline([sensor, fanOff], [ev(5), ev(5)]);
+    expect(r[0].status).toBe('ONLINE');
+    expect(r[1]).toBe(fanOff);
+  });
+
+  it('khong co gi doi (da ONLINE hoac khong lien quan) -> tra lai dung mang cu', () => {
+    const online = [{ ...sensor, status: 'ONLINE' }];
+    expect(markOnline(online, [ev(5)])).toBe(online);
+    expect(markOnline([sensor], [ev(99)])[0]).toBe(sensor);
+    expect(markOnline([sensor], [])[0].status).toBe('OFFLINE');
   });
 });

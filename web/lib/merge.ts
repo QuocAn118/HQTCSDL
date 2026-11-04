@@ -94,3 +94,11 @@ export function createLoadGate<E>() {
     },
   };
 }
+
+// readings.new: thiet bi vua gui so do coi la ONLINE (T7W-1). Chieu nguoc lai (im lang -> OFFLINE) chi khi tai lai REST.
+// Khong doi gi -> tra lai dung mang cu de React khong ve lai.
+export function markOnline(devices: Device[], readings: Pick<ReadingEvent, 'deviceId'>[]): Device[] {
+  const ids = new Set(readings.map((r) => r.deviceId));
+  if (!devices.some((d) => ids.has(d.deviceId) && d.status !== 'ONLINE')) return devices;
+  return devices.map((d) => (ids.has(d.deviceId) && d.status !== 'ONLINE' ? { ...d, status: 'ONLINE' } : d));
+}
