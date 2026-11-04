@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDecimal } from '../lib/form';
+import { cleanName, NAME_PATTERN, parseDecimal } from '../lib/form';
 
 describe('parseDecimal (nhap nguong)', () => {
   it('rong hoac toan khoang trang -> null (bo nguong)', () => {
@@ -28,5 +28,30 @@ describe('parseDecimal (nhap nguong)', () => {
   // Number('abc') = NaN, JSON.stringify doi thanh null -> am tham xoa nguong.
   it.each(['abc', '3o', '1.2.3', '1,2,3', 'Infinity', '1e3', '0x10', '.', '-'])('%s -> invalid', (s) => {
     expect(parseDecimal(s)).toBe('invalid');
+  });
+});
+
+describe('cleanName (ten nhap qua window.prompt)', () => {
+  it('huy, rong, toan khoang trang -> null: khong gui', () => {
+    expect(cleanName(null)).toBeNull();
+    expect(cleanName('')).toBeNull();
+    expect(cleanName('   ')).toBeNull();
+  });
+
+  it('co chu -> bo khoang trang hai dau', () => {
+    expect(cleanName('  Tang 2 ')).toBe('Tang 2');
+  });
+});
+
+describe('NAME_PATTERN (o nhap ten, trinh duyet bao ca chuoi)', () => {
+  const ok = (v: string) => new RegExp(`^(?:${NAME_PATTERN})$`).test(v);
+
+  it('ten bat ky co chu -> hop le', () => {
+    expect(ok('Nhà 1')).toBe(true);
+    expect(ok(' f2')).toBe(true);
+  });
+
+  it('toan khoang trang -> khong hop le', () => {
+    expect(ok('   ')).toBe(false);
   });
 });

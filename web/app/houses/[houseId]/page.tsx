@@ -1,11 +1,12 @@
 'use client';
 // Dashboard: the moi khu vuc voi so do moi nhat (to mau ngoai nguong), trang thai thiet bi, so canh bao dang mo.
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Banner, Card, Empty, Loading } from '@/components/ui';
 import { api } from '@/lib/api';
 import { DEVICE_LABELS, METRIC_LABELS, showOffline } from '@/lib/config';
 import { useLiveDevices, useLiveLatest, useLiveOpenAlerts } from '@/lib/hooks';
+import { useReloadOnConnect } from '@/lib/live';
 import { latestKey } from '@/lib/merge';
 import { formatVn } from '@/lib/time';
 import type { Device, Metric, Threshold, Zone } from '@/lib/types';
@@ -28,30 +29,34 @@ export default function Dashboard() {
   const [zones, setZones] = useState<Zone[] | null>(null);
   const [thresholds, setThresholds] = useState<Record<number, Threshold[]>>({});
   const [error, setError] = useState<unknown>(null);
-  const { devices, error: devError } = useLiveDevices(houseId);
-  const { latest, error: latestError } = useLiveLatest(houseId);
+  const { devices, error: devError, reload: reloadDevices } = useLiveDevices(houseId);
+  const { latest, error: latestError, reload: reloadLatest } = useLiveLatest(houseId);
   const openAlerts = useLiveOpenAlerts(houseId);
 
-  useEffect(() => {
-    void (async () => {
-      try {
-        const z = await api<Zone[]>(`/api/houses/${houseId}/zones`);
-        setZones(z);
-        const all = await Promise.all(z.map((zone) => api<Threshold[]>(`/api/zones/${zone.zoneId}/thresholds`)));
-        setThresholds(Object.fromEntries(z.map((zone, i) => [zone.zoneId, all[i]])));
-      } catch (e) {
-        setError(e);
-      }
-    })().catch(() => {});
+  const load = useCallback(async () => {
+    try {
+      const z = await api<Zone[]>(`/api/houses/${houseId}/zones`);
+      setZones(z);
+      const all = await Promise.all(z.map((zone) => api<Threshold[]>(`/api/zones/${zone.zoneId}/thresholds`)));
+      setThresholds(Object.fromEntries(z.map((zone, i) => [zone.zoneId, all[i]])));
+      setError(null);
+    } catch (e) {
+      setError(e);
+    }
   }, [houseId]);
+  useEffect(() => {
+    void load().catch(() => {});
+  }, [load]);
+  // Tai trang luc backend loi thi khong ket o thong bao sau khi noi lai.
+  useReloadOnConnect(load);
 
-  if (error) return <Banner error={error} />;
+  if (error) return <Banner error={error} onRetry={load} />;
   if (!zones) return <Loading />;
   if (zones.length === 0) return <Empty>Nhà chưa có khu vực nào.</Empty>;
 
   return (
     <div>
-      <Banner error={devError ?? latestError} />
+      <Banner error={devError ?? latestError} onRetry={() => Promise.all([reloadDevices(), reloadLatest()])} />
       <p className="mb-4 text-sm">
         Cảnh báo đang mở: <strong className={openAlerts.length ? 'text-red-700' : ''}>{openAlerts.length}</strong>
       </p>

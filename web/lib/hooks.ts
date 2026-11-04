@@ -59,7 +59,7 @@ export function useLiveLatest(houseId: number) {
     if (ev.houseId === houseId) setLatest((m) => mergeLatest(m, ev.readings));
   }), [subscribe, houseId]);
 
-  useReloadOnConnect(async () => {
+  const load = async () => {
     try {
       const rest = await api<LatestReading[]>(`/api/houses/${houseId}/latest-readings`);
       setLatest((m) => mergeLatest(m, rest));
@@ -67,8 +67,9 @@ export function useLiveLatest(houseId: number) {
     } catch (e) {
       setError(e as ApiError);
     }
-  });
-  return { latest, error };
+  };
+  useReloadOnConnect(load);
+  return { latest, error, reload: load };
 }
 
 export function useLiveOpenAlerts(houseId: number) {

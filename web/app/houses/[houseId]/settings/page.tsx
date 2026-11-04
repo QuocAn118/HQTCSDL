@@ -5,7 +5,7 @@ import { useCallback, useContext, useEffect, useState, type FormEvent } from 're
 import { Banner, btnCls, btnGhostCls, Card, fieldError, inputCls, Loading } from '@/components/ui';
 import { api } from '@/lib/api';
 import { DEVICE_LABELS } from '@/lib/config';
-import { parseDecimal } from '@/lib/form';
+import { cleanName, NAME_PATTERN, parseDecimal } from '@/lib/form';
 import { HouseChangedContext } from '@/lib/houses';
 import type { Device, DeviceType, House, MetricInfo, Threshold, Zone } from '@/lib/types';
 
@@ -143,7 +143,7 @@ export default function SettingsPage() {
       <Banner error={error} onRetry={load} />
       <Card title="Nhà">
         <form className="flex flex-wrap items-end gap-2" onSubmit={submit('house', () => api(`/api/houses/${houseId}`, 'PATCH', { name: houseForm.name, address: houseForm.address || null }))}>
-          <label className="flex flex-col text-sm">Tên<input className={inputCls} value={houseForm.name} maxLength={100} required onChange={(e) => setHouseForm({ ...houseForm, name: e.target.value })} />
+          <label className="flex flex-col text-sm">Tên<input className={inputCls} value={houseForm.name} maxLength={100} required pattern={NAME_PATTERN} title="Tên không được để trống" onChange={(e) => setHouseForm({ ...houseForm, name: e.target.value })} />
             <span className="text-xs text-red-700">{fieldError(errorOf('house'), 'name')}</span></label>
           <label className="flex flex-col text-sm">Địa chỉ<input className={inputCls} value={houseForm.address} maxLength={255} onChange={(e) => setHouseForm({ ...houseForm, address: e.target.value })} />
             <span className="text-xs text-red-700">{fieldError(errorOf('house'), 'address')}</span></label>
@@ -157,7 +157,7 @@ export default function SettingsPage() {
           <details key={z.zoneId} className="border-t py-2">
             <summary className="cursor-pointer">{z.name} (tầng {z.floorNo})</summary>
             <button className={`${btnGhostCls} mt-2`} disabled={busy} onClick={() => {
-              const name = window.prompt('Tên khu vực mới', z.name);
+              const name = cleanName(window.prompt('Tên khu vực mới', z.name));
               if (name) void run('zone', () => api(`/api/zones/${z.zoneId}`, 'PATCH', { name })).catch(() => {});
             }}>Đổi tên</button>
             <Thresholds zone={z} metrics={metrics} />
@@ -167,7 +167,7 @@ export default function SettingsPage() {
           await api(`/api/houses/${houseId}/zones`, 'POST', { name: zoneForm.name, floorNo: Number(zoneForm.floorNo) });
           setZoneForm({ name: '', floorNo: '1' });
         })}>
-          <label className="flex flex-col text-sm">Tên khu vực<input className={inputCls} value={zoneForm.name} maxLength={50} required onChange={(e) => setZoneForm({ ...zoneForm, name: e.target.value })} />
+          <label className="flex flex-col text-sm">Tên khu vực<input className={inputCls} value={zoneForm.name} maxLength={50} required pattern={NAME_PATTERN} title="Tên không được để trống" onChange={(e) => setZoneForm({ ...zoneForm, name: e.target.value })} />
             <span className="text-xs text-red-700">{fieldError(errorOf('zone'), 'name')}</span></label>
           <label className="flex flex-col text-sm">Tầng<input className={`${inputCls} w-20`} type="number" min={0} max={255} required value={zoneForm.floorNo} onChange={(e) => setZoneForm({ ...zoneForm, floorNo: e.target.value })} />
             <span className="text-xs text-red-700">{fieldError(errorOf('zone'), 'floorNo')}</span></label>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
                 <td>{zones.find((z) => z.zoneId === d.zoneId)?.name}</td>
                 <td className="flex gap-1 py-1">
                   <button className={btnGhostCls} disabled={busy} onClick={() => {
-                    const name = window.prompt('Tên thiết bị mới', d.name);
+                    const name = cleanName(window.prompt('Tên thiết bị mới', d.name));
                     if (name) void run('device', () => api(`/api/devices/${d.deviceId}`, 'PATCH', { name })).catch(() => {});
                   }}>Đổi tên</button>
                   <button className={btnGhostCls} disabled={busy} onClick={() => run('device', () => api(`/api/devices/${d.deviceId}`, 'PATCH', { isActive: !d.isActive }))}>
@@ -206,7 +206,7 @@ export default function SettingsPage() {
           </select>
           <label className="flex flex-col text-sm">Mã (A-Z, 0-9, -)<input className={inputCls} value={devForm.code} required pattern="[A-Z0-9\-]{3,50}" title="3-50 ký tự: chữ A-Z, số 0-9, dấu gạch ngang" onChange={(e) => setDevForm({ ...devForm, code: e.target.value.toUpperCase() })} />
             <span className="text-xs text-red-700">{fieldError(errorOf('device'), 'code')}</span></label>
-          <label className="flex flex-col text-sm">Tên<input className={inputCls} value={devForm.name} required maxLength={100} onChange={(e) => setDevForm({ ...devForm, name: e.target.value })} />
+          <label className="flex flex-col text-sm">Tên<input className={inputCls} value={devForm.name} required maxLength={100} pattern={NAME_PATTERN} title="Tên không được để trống" onChange={(e) => setDevForm({ ...devForm, name: e.target.value })} />
             <span className="text-xs text-red-700">{fieldError(errorOf('device'), 'name')}</span></label>
           <select aria-label="Loại thiết bị" className={inputCls} value={devForm.deviceType} onChange={(e) => setDevForm({ ...devForm, deviceType: e.target.value as DeviceType })}>
             {TYPES.map((t) => <option key={t} value={t}>{DEVICE_LABELS[t]}</option>)}

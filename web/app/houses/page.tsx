@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Banner, btnCls, btnGhostCls, Card, Empty, fieldError, inputCls, Loading } from '@/components/ui';
 import { api } from '@/lib/api';
+import { NAME_PATTERN } from '@/lib/form';
 import { useAuth } from '@/lib/auth';
 import { singleActiveHouse } from '@/lib/houses';
 import type { House } from '@/lib/types';
@@ -69,7 +70,7 @@ export default function HousesPage() {
       <Card title="Tạo nhà mới">
         <form onSubmit={create} className="flex flex-wrap items-end gap-3">
           <label className="flex flex-col text-sm">Tên
-            <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={100} />
+            <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={100} pattern={NAME_PATTERN} title="Tên không được để trống" />
             <span className="text-xs text-red-700">{fieldError(formError, 'name')}</span>
           </label>
           <label className="flex flex-col text-sm">Địa chỉ
