@@ -5,7 +5,10 @@
 Snapshot v3 bên dưới giữ nguyên. `splits_v4.csv` dành riêng bộ thử v4:
 R01–R04 train; V01 thêm 5 khung nền train; **R11** là collection ảnh Wikimedia
 Commons mới cho val, không dùng lại mã nguồn chuột R10 cũ. Val mới có 13 ảnh,
-đủ bốn lớp, nhãn ban đầu do agent quan sát, chưa có người thứ hai duyệt.
+đủ bốn lớp. Agent đã duyệt vòng hai bằng ảnh kích thước nguồn, chỉnh 13 bbox
+và đối chiếu nhãn YOLO với bản ghi rà soát. Không có dự đoán mô hình làm nhãn
+hoặc tuyên bố TV5/người thứ hai đã duyệt độc lập. Chi tiết ở
+`reports/2026-11-04-v4-label-review.json`.
 Nguồn/tác giả, URL ảnh gốc, giấy phép, SHA-256 và bbox theo từng ảnh ở
 [attribution v4](reports/2026-11-04-v4-val-attribution.json). Giữ yêu cầu ghi
 công/chia sẻ tương tự của từng ảnh CC BY/CC BY-SA. Ảnh không nằm trong Git.

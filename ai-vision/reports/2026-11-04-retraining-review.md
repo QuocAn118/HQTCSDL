@@ -3,6 +3,12 @@
 **Đã chuẩn bị dữ liệu và notebook, chưa train v4.** Không đổi best.pt,
 weights.json, cấu hình runtime hoặc kết quả test của bản v3 đã đóng băng.
 
+Cập nhật duyệt nhãn: agent đã xem riêng từng ảnh val ở kích thước nguồn,
+chỉnh 13 bbox để bao đủ phần con vật nhìn thấy và giảm nền dư; kiểm lại 5 nền
+V01. Trạng thái `agent_reviewed_for_pilot`, không phải duyệt độc lập của TV5.
+File trước/sau, kích thước ảnh, lý do và hash nhãn nằm trong
+`2026-11-04-v4-label-review.json`. Bộ ZIP mới có hậu tố **v4_reviewed**.
+
 ## Kết quả rà dữ liệu
 
 Script `scripts/review_labels.py` chỉ đọc train/val của split_v3: **4.040 ảnh**,
@@ -36,7 +42,8 @@ phần lớn ảnh chim cùng một góc quay; đây là hạn chế đa dạng 
 - Nền chiếm **5/3106 = 0,161%**, không nhân bản để nâng tỷ lệ giả tạo.
 - **Val 13 ảnh mới**: owl 4, rat 4, snake 3, swiftlet 2. Có ảnh và metadata giấy
   phép từ Wikimedia Commons. Agent gán bbox ban đầu bằng quan sát, không dùng
-  mô hình v3 dự đoán để làm nhãn. Cần người thứ hai duyệt nhãn.
+  mô hình v3 dự đoán để làm nhãn. Đã agent duyệt vòng hai; không có người
+  thứ hai xác nhận độc lập hoặc chứng nhận chuyên gia về loài.
 - Mã nguồn mới **R11** cho toàn collection val, tránh dùng lại mã R10 từng có
   trong tên nguồn chuột cũ. `splits_v4.csv` giữ toàn R11 ở val, V01 ở train.
 - Loại khỏi val một ảnh crop trùng cùng bức swiftlet, một ảnh chim chồng lấp,
@@ -55,8 +62,9 @@ hoàn chỉnh. V01 từ v4 là train, không dùng làm đánh giá độc lập
 
 ## File để chạy
 
-- Dataset cục bộ: `data/working/train_val_v4_pilot/`.
-- ZIP: `data/colab/swiftletcare_train_val_v4_pilot.zip`, khoảng 122,4 MiB.
+- Dataset cục bộ đã duyệt: `data/working/train_val_v4_reviewed/`.
+- ZIP mới: `data/colab/swiftletcare_train_val_v4_reviewed.zip`, khoảng 122,4 MiB.
+- ZIP `v4_pilot` cũ được giữ để đối chiếu, không dùng với notebook hiện tại.
 - SHA-256 và metadata: `2026-11-04-v4-pilot.json`.
 - Notebook: `train/train-v4-pilot.ipynb`, output trống.
 - Tham số dự kiến: `train/train-v4-settings.json` — YOLOv8n pretrained, tối đa

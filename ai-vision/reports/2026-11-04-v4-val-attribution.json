@@ -15,14 +15,19 @@
       "reviewSha256": "a2d2e63c4876db071bbfd84d3321eff27d2e3c566605f1d25d1efebae605e169",
       "boxesNormalizedXyxy": [
         [
-          0.4,
-          0.19,
-          0.66,
-          0.7
+          0.33984375,
+          0.2403282532239156,
+          0.703125,
+          0.6682297772567409
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include rear body and snout behind fence; reduce top/bottom background",
+      "labelSha256": "bfe6fe4475ca99f89c17a5a2f2d95334708ace2f787b89732f3d22df1d52ae03"
     },
     {
       "source": "R11",
@@ -39,14 +44,19 @@
       "reviewSha256": "7a4df800289e1099fef2d58a60e2cb08144e0230d41d033805173682c8ff2897",
       "boxesNormalizedXyxy": [
         [
-          0.22,
-          0.4,
-          0.82,
-          0.65
+          0.22421875,
+          0.38777908343125733,
+          0.80859375,
+          0.6286721504112809
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Tighten to visible swimming body; do not infer submerged tail",
+      "labelSha256": "274d0e162fd705c60d350e3ea74a2a7088656ca6e9cf52a2c0c8ef51dfc03b22"
     },
     {
       "source": "R11",
@@ -63,14 +73,19 @@
       "reviewSha256": "c619fc5883442a07187e8ebc826c6866af67669ece3f1946150011052cd52548",
       "boxesNormalizedXyxy": [
         [
-          0.03,
-          0.08,
-          0.68,
-          0.94
+          0.0859375,
+          0.01762632197414806,
+          0.6953125,
+          0.9283196239717979
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include visible fur at top and tail at left",
+      "labelSha256": "18ba825e25f30353675a967662a75ba03b8f98c0d6a1e03465329e694dad88a6"
     },
     {
       "source": "R11",
@@ -87,14 +102,19 @@
       "reviewSha256": "18a870f9ccd82a4e7b45a0c56cb97bb18bdb92a17302b72741a3d32238e08456",
       "boxesNormalizedXyxy": [
         [
-          0.075,
-          0.18,
-          0.995,
-          0.86
+          0.09765625,
+          0.21875,
+          1.0,
+          0.7552083333333334
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include tail at clipped right image edge; remove excess rocks below",
+      "labelSha256": "04ee35984daa9d9a2d4aa54596159dcf176c5a7252b6d8350d915ea0cc82c8c1"
     },
     {
       "source": "R11",
@@ -111,14 +131,19 @@
       "reviewSha256": "07eda5e9362c01b81b51ac17644f1acb4282d43d09198da15ba3d54a99880cf2",
       "boxesNormalizedXyxy": [
         [
-          0.14,
-          0.2,
-          0.95,
-          0.94
+          0.13481828839390386,
+          0.19140625,
+          0.9554513481828839,
+          0.896875
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Fit visible head, feet and feather tips; exclude excess perch/wire",
+      "labelSha256": "cd8b3d50d263d7721c9b0da29f1371f770ab0701438c5114f9787c84fad51d6a"
     },
     {
       "source": "R11",
@@ -135,14 +160,19 @@
       "reviewSha256": "71a442ac57a2c4070e2408cfafd0df7f69a715bb040c23f10b4629951d6e5f89",
       "boxesNormalizedXyxy": [
         [
-          0.19,
-          0.035,
-          0.98,
-          0.94
+          0.19583333333333333,
+          0.04375,
+          0.9666666666666667,
+          0.93125
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Fit visible head, tail and claws; reduce excess margin",
+      "labelSha256": "84127266e6646916f1f05e1e45a460dd09137925b836d9f560304b2df3ea1d57"
     },
     {
       "source": "R11",
@@ -159,14 +189,19 @@
       "reviewSha256": "6057493b5eda0cea050dd34803b39839ac027007c171560030c9bfc07fa54c65",
       "boxesNormalizedXyxy": [
         [
-          0.055,
-          0.13,
-          0.89,
+          0.0,
+          0.115625,
+          0.9199237368922784,
           1.0
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include wing touching left edge and body clipped at bottom",
+      "labelSha256": "f1307332edfd9fb8d8bce80513ff4f7c7f92219a0cfe98abfd2127ed0affa139"
     },
     {
       "source": "R11",
@@ -183,14 +218,19 @@
       "reviewSha256": "4a79e10428d3171c2a94d2c15c1df03e792c4da4ae8b0a51bc13f84f6baafd00",
       "boxesNormalizedXyxy": [
         [
-          0.08,
-          0.12,
-          0.82,
-          0.94
+          0.08984375,
+          0.12890625,
+          0.828125,
+          0.953125
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include foot/claw tips and wing/tail; exclude excess wall",
+      "labelSha256": "650c726a3c1b2a58d6efa74df7afd2423631bb56fc772ab3e99c8763355e03b1"
     },
     {
       "source": "R11",
@@ -207,14 +247,19 @@
       "reviewSha256": "a97b7f755c05d651c3a8868ec845ba4153ff29352594d8e502368e8faf74fdb5",
       "boxesNormalizedXyxy": [
         [
-          0.21,
-          0.18,
-          0.89,
-          0.96
+          0.171875,
+          0.1796875,
+          0.78125,
+          0.90234375
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include left side of coil; exclude right branch and excess bottom",
+      "labelSha256": "1688ad63423d13d867fc511a85ac3a2db18115dd07e60a1f8025c392eacd4f2f"
     },
     {
       "source": "R11",
@@ -231,14 +276,19 @@
       "reviewSha256": "368a7da90ada8de69d0b3b39fefbc18f81185d133b3524b1b0bb1ba056856d64",
       "boxesNormalizedXyxy": [
         [
-          0,
-          0.12,
-          1,
-          0.98
+          0.0,
+          0.0625,
+          1.0,
+          1.0
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include upper coil and snake clipped at left/right/bottom borders",
+      "labelSha256": "e01298bc467f99329b7e7141ca08042b34990e368550b293f0603fb939fefda4"
     },
     {
       "source": "R11",
@@ -255,14 +305,19 @@
       "reviewSha256": "92a9d78abc563df5930ef0a1fe3bcfec8d40373226d8f15691bf408dc4057b0d",
       "boxesNormalizedXyxy": [
         [
-          0.04,
-          0.08,
-          0.97,
-          0.95
+          0.0609375,
+          0.05042016806722689,
+          0.94921875,
+          0.9483793517406963
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include upper coil and tail while tightening moss margins",
+      "labelSha256": "19987cb0f756fb5188f0add45938af5bdeb88bce7991d3841d3430616a291e15"
     },
     {
       "source": "R11",
@@ -279,14 +334,19 @@
       "reviewSha256": "aaeb041bba5178a2418f9b7df2c88fd5a42fa26f300263df02c12d59352d2148",
       "boxesNormalizedXyxy": [
         [
-          0.29,
-          0.2,
-          0.76,
-          0.79
+          0.2734375,
+          0.21484375,
+          0.73828125,
+          0.791015625
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include full spread wings and tail feather tips",
+      "labelSha256": "4502a2afba5ad3d9a76cd2a0deab6dd03de298ff69b6a8e5a5cc02338e85308d"
     },
     {
       "source": "R11",
@@ -303,14 +363,19 @@
       "reviewSha256": "a96ad2e5c433f7f97fc7da529a8c32de230f424d0757618a756347db1c266ef6",
       "boxesNormalizedXyxy": [
         [
-          0.32,
-          0.07,
-          0.65,
-          0.91
+          0.296875,
+          0.07083333333333333,
+          0.609375,
+          0.8958333333333334
         ]
       ],
       "annotationMethod": "agent visual annotation, not model predictions",
-      "reviewStatus": "initial labels; second human review requested"
+      "reviewStatus": "agent_reviewed_for_pilot",
+      "reviewPasses": 2,
+      "independentHumanReview": false,
+      "reviewMethod": "Agent visual second pass of full-size source image; no detector output used",
+      "reviewNote": "Include left wing/long feather tips; reduce right-wall margin",
+      "labelSha256": "8cf55a8ac42c67b68a05c3262abc3bcc5462e0f55649b05ff9690144bdcbe9f5"
     }
   ],
   "excluded": {
@@ -318,5 +383,15 @@
     "63636513": "Overlapping birds require additional human annotation review",
     "130598310": "Strong occlusion prevents a reliable whole-animal box without additional review"
   },
-  "note": "Small validation pilot, not sufficient for stable model-selection estimates."
+  "note": "Small validation pilot, not sufficient for stable model-selection estimates.",
+  "reviewSummary": {
+    "date": "2026-11-04",
+    "status": "agent_review_completed_for_pilot",
+    "reviewedImages": 13,
+    "refinedBoxes": 13,
+    "reviewedNonTargetBackgrounds": 5,
+    "method": "Full-size visual inspection; class, object completeness, visible boundaries, occlusion and clipping checked",
+    "independentHumanReview": false,
+    "limits": "Not an independent reviewer or expert species certification; small pilot validation only."
+  }
 }

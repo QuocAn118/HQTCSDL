@@ -96,3 +96,14 @@ def test_prepare_enforces_explicit_source_split_mapping(tmp_path):
     with pytest.raises(ValueError, match='mapping'):
         prepare(*args, tmp_path / 'v4', splits=splits)
     assert not (tmp_path / 'v4').exists()
+
+
+def test_prepare_rejects_yolo_label_different_from_reviewed_annotation(tmp_path):
+    args = inputs(tmp_path)
+    p = args[3] / 'selected_annotations.json'
+    j = json.loads(p.read_text())
+    j['selected'][0]['boxesNormalizedXyxy'] = [[.1, .1, .3, .3]]
+    p.write_text(json.dumps(j))
+    with pytest.raises(ValueError, match='reviewed annotation'):
+        prepare(*args, tmp_path / 'v4')
+    assert not (tmp_path / 'v4').exists()

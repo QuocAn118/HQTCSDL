@@ -1,0 +1,482 @@
+{
+  "summary": {
+    "date": "2026-11-04",
+    "status": "agent_review_completed_for_pilot",
+    "reviewedImages": 13,
+    "refinedBoxes": 13,
+    "reviewedNonTargetBackgrounds": 5,
+    "method": "Full-size visual inspection; class, object completeness, visible boundaries, occlusion and clipping checked",
+    "independentHumanReview": false,
+    "limits": "Not an independent reviewer or expert species certification; small pilot validation only."
+  },
+  "decisions": [
+    {
+      "image": "R11_rat_166232832.jpg",
+      "class": "rat",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.4,
+          0.19,
+          0.66,
+          0.7
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        435,
+        205,
+        900,
+        570
+      ],
+      "imageSize": [
+        1280,
+        853
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.33984375,
+          0.2403282532239156,
+          0.703125,
+          0.6682297772567409
+        ]
+      ],
+      "reason": "Include rear body and snout behind fence; reduce top/bottom background",
+      "labelSha256": "bfe6fe4475ca99f89c17a5a2f2d95334708ace2f787b89732f3d22df1d52ae03"
+    },
+    {
+      "image": "R11_rat_65025873.jpg",
+      "class": "rat",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.22,
+          0.4,
+          0.82,
+          0.65
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        287,
+        330,
+        1035,
+        535
+      ],
+      "imageSize": [
+        1280,
+        851
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.22421875,
+          0.38777908343125733,
+          0.80859375,
+          0.6286721504112809
+        ]
+      ],
+      "reason": "Tighten to visible swimming body; do not infer submerged tail",
+      "labelSha256": "274d0e162fd705c60d350e3ea74a2a7088656ca6e9cf52a2c0c8ef51dfc03b22"
+    },
+    {
+      "image": "R11_rat_304424.jpg",
+      "class": "rat",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.03,
+          0.08,
+          0.68,
+          0.94
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        110,
+        15,
+        890,
+        790
+      ],
+      "imageSize": [
+        1280,
+        851
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.0859375,
+          0.01762632197414806,
+          0.6953125,
+          0.9283196239717979
+        ]
+      ],
+      "reason": "Include visible fur at top and tail at left",
+      "labelSha256": "18ba825e25f30353675a967662a75ba03b8f98c0d6a1e03465329e694dad88a6"
+    },
+    {
+      "image": "R11_rat_2957455.jpg",
+      "class": "rat",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.075,
+          0.18,
+          0.995,
+          0.86
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        125,
+        210,
+        1280,
+        725
+      ],
+      "imageSize": [
+        1280,
+        960
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.09765625,
+          0.21875,
+          1.0,
+          0.7552083333333334
+        ]
+      ],
+      "reason": "Include tail at clipped right image edge; remove excess rocks below",
+      "labelSha256": "04ee35984daa9d9a2d4aa54596159dcf176c5a7252b6d8350d915ea0cc82c8c1"
+    },
+    {
+      "image": "R11_owl_75445606.jpg",
+      "class": "owl",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.14,
+          0.2,
+          0.95,
+          0.94
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        115,
+        245,
+        815,
+        1148
+      ],
+      "imageSize": [
+        853,
+        1280
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.13481828839390386,
+          0.19140625,
+          0.9554513481828839,
+          0.896875
+        ]
+      ],
+      "reason": "Fit visible head, feet and feather tips; exclude excess perch/wire",
+      "labelSha256": "cd8b3d50d263d7721c9b0da29f1371f770ab0701438c5114f9787c84fad51d6a"
+    },
+    {
+      "image": "R11_owl_31517017.jpg",
+      "class": "owl",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.19,
+          0.035,
+          0.98,
+          0.94
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        235,
+        35,
+        1160,
+        745
+      ],
+      "imageSize": [
+        1200,
+        800
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.19583333333333333,
+          0.04375,
+          0.9666666666666667,
+          0.93125
+        ]
+      ],
+      "reason": "Fit visible head, tail and claws; reduce excess margin",
+      "labelSha256": "84127266e6646916f1f05e1e45a460dd09137925b836d9f560304b2df3ea1d57"
+    },
+    {
+      "image": "R11_owl_20283834.jpg",
+      "class": "owl",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.055,
+          0.13,
+          0.89,
+          1.0
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        0,
+        148,
+        965,
+        1280
+      ],
+      "imageSize": [
+        1049,
+        1280
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.0,
+          0.115625,
+          0.9199237368922784,
+          1.0
+        ]
+      ],
+      "reason": "Include wing touching left edge and body clipped at bottom",
+      "labelSha256": "f1307332edfd9fb8d8bce80513ff4f7c7f92219a0cfe98abfd2127ed0affa139"
+    },
+    {
+      "image": "R11_owl_84474132.jpg",
+      "class": "owl",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.08,
+          0.12,
+          0.82,
+          0.94
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        115,
+        165,
+        1060,
+        1220
+      ],
+      "imageSize": [
+        1280,
+        1280
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.08984375,
+          0.12890625,
+          0.828125,
+          0.953125
+        ]
+      ],
+      "reason": "Include foot/claw tips and wing/tail; exclude excess wall",
+      "labelSha256": "650c726a3c1b2a58d6efa74df7afd2423631bb56fc772ab3e99c8763355e03b1"
+    },
+    {
+      "image": "R11_snake_91372159.jpg",
+      "class": "snake",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.21,
+          0.18,
+          0.89,
+          0.96
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        220,
+        230,
+        1000,
+        1155
+      ],
+      "imageSize": [
+        1280,
+        1280
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.171875,
+          0.1796875,
+          0.78125,
+          0.90234375
+        ]
+      ],
+      "reason": "Include left side of coil; exclude right branch and excess bottom",
+      "labelSha256": "1688ad63423d13d867fc511a85ac3a2db18115dd07e60a1f8025c392eacd4f2f"
+    },
+    {
+      "image": "R11_snake_469093.jpg",
+      "class": "snake",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0,
+          0.12,
+          1,
+          0.98
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        0,
+        40,
+        1024,
+        640
+      ],
+      "imageSize": [
+        1024,
+        640
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.0,
+          0.0625,
+          1.0,
+          1.0
+        ]
+      ],
+      "reason": "Include upper coil and snake clipped at left/right/bottom borders",
+      "labelSha256": "e01298bc467f99329b7e7141ca08042b34990e368550b293f0603fb939fefda4"
+    },
+    {
+      "image": "R11_snake_159059613.jpg",
+      "class": "snake",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.04,
+          0.08,
+          0.97,
+          0.95
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        78,
+        42,
+        1215,
+        790
+      ],
+      "imageSize": [
+        1280,
+        833
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.0609375,
+          0.05042016806722689,
+          0.94921875,
+          0.9483793517406963
+        ]
+      ],
+      "reason": "Include upper coil and tail while tightening moss margins",
+      "labelSha256": "19987cb0f756fb5188f0add45938af5bdeb88bce7991d3841d3430616a291e15"
+    },
+    {
+      "image": "R11_swiftlet_18278100.jpg",
+      "class": "swiftlet",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.29,
+          0.2,
+          0.76,
+          0.79
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        350,
+        220,
+        945,
+        810
+      ],
+      "imageSize": [
+        1280,
+        1024
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.2734375,
+          0.21484375,
+          0.73828125,
+          0.791015625
+        ]
+      ],
+      "reason": "Include full spread wings and tail feather tips",
+      "labelSha256": "4502a2afba5ad3d9a76cd2a0deab6dd03de298ff69b6a8e5a5cc02338e85308d"
+    },
+    {
+      "image": "R11_swiftlet_39716142.jpg",
+      "class": "swiftlet",
+      "objects": 1,
+      "decision": "accepted_after_box_refinement",
+      "reviewer": "agent_visual_second_pass",
+      "independentHumanReview": false,
+      "oldNormalizedXyxy": [
+        [
+          0.32,
+          0.07,
+          0.65,
+          0.91
+        ]
+      ],
+      "reviewedPixelXyxy": [
+        380,
+        68,
+        780,
+        860
+      ],
+      "imageSize": [
+        1280,
+        960
+      ],
+      "newNormalizedXyxy": [
+        [
+          0.296875,
+          0.07083333333333333,
+          0.609375,
+          0.8958333333333334
+        ]
+      ],
+      "reason": "Include left wing/long feather tips; reduce right-wall margin",
+      "labelSha256": "8cf55a8ac42c67b68a05c3262abc3bcc5462e0f55649b05ff9690144bdcbe9f5"
+    }
+  ]
+}

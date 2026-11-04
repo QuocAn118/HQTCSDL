@@ -3,6 +3,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 from pathlib import Path
 import shutil
 
@@ -51,6 +52,14 @@ def prepare(base, decisions, negatives, validation, out, splits=None):
         boxes, errors = parse_boxes(label.read_text(encoding='utf-8'), 4)
         if errors or not boxes or any(NAMES[b[0]] != row['class'] for b in boxes):
             raise ValueError(f'Invalid validation label: {name}')
+        if 'boxesNormalizedXyxy' in row:
+            expected = [(NAMES.index(row['class']), (x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1)
+                        for x1, y1, x2, y2 in row['boxesNormalizedXyxy']]
+            if len(expected) != len(boxes) or any(
+                not all(math.isclose(a, b, rel_tol=0, abs_tol=1e-6) for a, b in zip(actual, reviewed))
+                for actual, reviewed in zip(boxes, expected)
+            ):
+                raise ValueError(f'YOLO label differs from reviewed annotation: {name}')
         items.append(('val', image, label))
     sources = {split: {image.name.split('_')[0] for s, image, _ in items if s == split} for split in ['train', 'val']}
     if sources['train'] & sources['val']:
@@ -100,7 +109,8 @@ def prepare(base, decisions, negatives, validation, out, splits=None):
                 'valImages': len(items)-n_train, 'quarantinedTrainingImages': len(quarantine),
                 'backgroundImages': backgrounds, 'backgroundRatio': backgrounds/n_train,
                 'classes': NAMES, 'sources': {k: sorted(v) for k, v in sources.items()},
-                'notes': ['No test images included or read.', 'Small validation pilot; labels need a second human review.',
+                'labelReview': 'agent_reviewed_for_pilot' if all(r.get('reviewStatus') == 'agent_reviewed_for_pilot' for r in chosen) else 'not_recorded',
+                'notes': ['No test images included or read.', 'Small validation pilot; agent review does not imply independent human review.',
                           'V01 is training data for this iteration and cannot serve as independent evaluation.',
                           'Frozen v3 weights, results and dataset remain unchanged.']}
     (out / 'dataset.json').write_text(json.dumps(metadata, indent=2)+'\n', encoding='utf-8')

@@ -24,16 +24,17 @@
         "R11"
       ]
     },
+    "labelReview": "agent_reviewed_for_pilot",
     "notes": [
       "No test images included or read.",
-      "Small validation pilot; labels need a second human review.",
+      "Small validation pilot; agent review does not imply independent human review.",
       "V01 is training data for this iteration and cannot serve as independent evaluation.",
       "Frozen v3 weights, results and dataset remain unchanged."
     ]
   },
-  "zip": "swiftletcare_train_val_v4_pilot.zip",
-  "zipBytes": 128358155,
-  "zipSha256": "105cd8cbecadbbc416ced0ec5346453cc4a0f73ea3374905a8315d2e0299f55c",
+  "zip": "swiftletcare_train_val_v4_reviewed.zip",
+  "zipBytes": 128375863,
+  "zipSha256": "4d3010be83ea53eecf87160e92a07661d7d5aa50c4f125396c55759558197479",
   "status": "ready_for_colab_pilot_not_trained",
   "valClassImages": {
     "owl": 4,
@@ -41,7 +42,7 @@
     "snake": 3,
     "swiftlet": 2
   },
-  "secondHumanLabelReview": "pending",
+  "secondHumanLabelReview": "not_performed_not_claimed",
   "settings": {
     "model": "yolov8n.pt",
     "epochs": 50,
@@ -51,5 +52,8 @@
     "close_mosaic": 0,
     "seed": 42,
     "patience": 15
-  }
+  },
+  "supersedesZip": "swiftletcare_train_val_v4_pilot.zip",
+  "supersedesZipSha256": "105cd8cbecadbbc416ced0ec5346453cc4a0f73ea3374905a8315d2e0299f55c",
+  "agentLabelReview": "completed_second_visual_pass_2026-11-04"
 }

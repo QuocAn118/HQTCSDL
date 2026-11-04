@@ -8,9 +8,11 @@ Chạy `git status` trước mỗi lần commit; không commit video, ảnh, tr�
 
 Đã có bộ **v4 pilot riêng** (3.106 train, 13 val đủ bốn lớp), loại 3 ảnh nghi
 vấn và thêm 5 nền V01. Notebook mới: `train/train-v4-pilot.ipynb`; ZIP cục bộ
-`data/colab/swiftletcare_train_val_v4_pilot.zip` (~122,4 MiB), tải lên
+`data/colab/swiftletcare_train_val_v4_reviewed.zip` (~122,4 MiB), tải lên
 `MyDrive/SwiftletCare/` rồi chạy bằng Colab T4. **Chưa train v4, chưa thay
-best.pt đang đóng băng**. Val rất nhỏ và cần người thứ hai duyệt nhãn.
+best.pt đang đóng băng**. Agent đã duyệt đủ 13 ảnh val ở kích thước nguồn,
+chỉnh bbox và kiểm lại 5 nền. Chưa có duyệt độc lập của TV5; val vẫn rất nhỏ.
+ZIP `v4_reviewed` thay bản `v4_pilot` cũ; notebook đã cập nhật hash tương ứng.
 Xem [báo cáo v4](reports/2026-11-04-retraining-review.md) trước khi chạy;
 không dùng V01 đã đưa vào train để đo cải thiện độc lập.
 

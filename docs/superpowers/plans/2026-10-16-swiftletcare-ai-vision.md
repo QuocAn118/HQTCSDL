@@ -4475,7 +4475,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 Cập nhật vòng cải thiện 04/11: đã chuẩn bị bộ v4 pilot riêng (3.106 train,
 13 val đủ bốn lớp), `splits_v4.csv`, notebook `train-v4-pilot.ipynb` và ZIP
-cục bộ để chạy Colab. **Chưa train v4**, val nhỏ/nhãn cần người thứ hai duyệt;
+cục bộ để chạy Colab. Agent đã duyệt/sửa đủ 13 nhãn val và kiểm lại 5 nền,
+ZIP hiện tại là `swiftletcare_train_val_v4_reviewed.zip`. **Chưa train v4**,
+val vẫn nhỏ, chưa có duyệt độc lập của người thứ hai;
 không thay snapshot v3 đã đóng băng hoặc dùng lại test để chọn tham số. Xem
 `ai-vision/reports/2026-11-04-retraining-review.md` để biết dữ liệu, giới hạn
 và bước cần người dùng thực hiện trên Colab.
