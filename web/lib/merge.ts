@@ -1,5 +1,5 @@
 // Ghep du lieu REST voi su kien Socket.IO (spec web 2.4, hop dong 4.1). Ham thuan, khong sua dau vao.
-import type { Alert, AlertStatus, AlertUpdated, Device, DeviceState, LatestReading, ReadingEvent } from './types';
+import type { Alert, AlertStatus, AlertUpdated, Device, DeviceState, LatestReading, ReadingEvent, ReadingsNew } from './types';
 import { toMs } from './time';
 
 export type LatestMap = Record<string, LatestReading>;
@@ -65,8 +65,9 @@ export function applyDeviceState(devices: Device[], ev: Pick<DeviceState, 'devic
 }
 
 // REST devices khong co moc thoi gian trang thai: ap REST roi ap lai cac su kien da giu theo thu tu den.
-export function replayDeviceStates(restDevices: Device[], held: DeviceState[]): Device[] {
-  return held.reduce(applyDeviceState, restDevices);
+// readings.new giu trong luc tai -> markOnline (T9W-3): REST doc truoc khi so do den van con OFFLINE.
+export function replayDeviceStates(restDevices: Device[], held: Array<DeviceState | ReadingsNew>): Device[] {
+  return held.reduce((d, e) => ('readings' in e ? markOnline(d, e.readings) : applyDeviceState(d, e)), restDevices);
 }
 
 // Giu su kien trong luc REST tai (T4W-3). Tai lai khi mount va khi connect co the chong nhau:

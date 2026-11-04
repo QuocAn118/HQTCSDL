@@ -11,12 +11,12 @@ export function useLiveDevices(houseId: number) {
   const { subscribe } = useLive();
   const [devices, setDevices] = useState<Device[] | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
-  const [gate] = useState(createLoadGate<DeviceState>);
+  const [gate] = useState(createLoadGate<DeviceState | ReadingsNew>);
 
   useEffect(() => subscribe((event, payload) => {
     if (event === 'readings.new') {
       const r = payload as ReadingsNew;
-      if (r.houseId === houseId) setDevices((d) => (d ? markOnline(d, r.readings) : d));
+      if (r.houseId === houseId && !gate.hold(r)) setDevices((d) => (d ? markOnline(d, r.readings) : d));
       return;
     }
     if (event !== 'device.state') return;

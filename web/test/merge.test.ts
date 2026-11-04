@@ -82,6 +82,19 @@ describe('trang thai thiet bi', () => {
     expect(r[0]).toMatchObject({ mode: 'MANUAL', isOn: true, level: 50 });
   });
 
+  // T9W-3: readings.new den luc REST dang tai khong bi REST cu de.
+  it('REST + su kien giu gom ca readings.new: thiet bi gui so do thanh ONLINE, thiet bi khac giu nguyen', () => {
+    const offline: Device = { ...device, status: 'OFFLINE' };
+    const other: Device = { ...device, deviceId: 99, status: 'OFFLINE' };
+    const held = [
+      state({ isOn: true, level: 100 }),
+      { houseId: 1, readings: [{ deviceId: device.deviceId, deviceCode: 'x', zoneId: 2, metric: 'TEMP' as const, value: 28, at: '2026-10-12T10:40:00Z' }] },
+    ];
+    const r = replayDeviceStates([offline, other], held);
+    expect(r[0]).toMatchObject({ status: 'ONLINE', isOn: true, level: 100 });
+    expect(r[1].status).toBe('OFFLINE');
+  });
+
   it('idempotent: ap mot su kien hai lan, hoac trung voi REST, khong doi ket qua', () => {
     const once = applyDeviceState([device], state({}));
     expect(applyDeviceState(once, state({}))).toEqual(once);

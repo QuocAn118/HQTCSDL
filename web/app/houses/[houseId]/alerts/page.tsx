@@ -21,6 +21,7 @@ function Detail({ alertId, onChanged }: { alertId: number; onChanged: () => void
   const [note, setNote] = useState('');
   const [error, setError] = useState<unknown>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -34,6 +35,7 @@ function Detail({ alertId, onChanged }: { alertId: number; onChanged: () => void
   }, [load]);
 
   async function change(status: 'ACK' | 'RESOLVED') {
+    setBusy(true);
     setError(null);
     setInfo(null);
     try {
@@ -45,6 +47,7 @@ function Detail({ alertId, onChanged }: { alertId: number; onChanged: () => void
     }
     await load();
     onChanged();
+    setBusy(false);
   }
 
   if (!detail) return error ? <Banner error={error} /> : <Loading />;
@@ -59,8 +62,8 @@ function Detail({ alertId, onChanged }: { alertId: number; onChanged: () => void
       {detail.status !== 'RESOLVED' ? (
         <div className="my-3 flex flex-wrap gap-2">
           <input className={`${inputCls} flex-1`} placeholder="Ghi chú (không bắt buộc)" value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} />
-          {detail.status === 'NEW' ? <button className={btnGhostCls} onClick={() => change('ACK')}>Đã xem (ACK)</button> : null}
-          <button className={btnCls} onClick={() => change('RESOLVED')}>Đã xử lý</button>
+          {detail.status === 'NEW' ? <button className={btnGhostCls} disabled={busy} onClick={() => change('ACK')}>Đã xem (ACK)</button> : null}
+          <button className={btnCls} disabled={busy} onClick={() => change('RESOLVED')}>Đã xử lý</button>
         </div>
       ) : null}
       <h3 className="mt-3 text-sm font-semibold">Lịch sử</h3>
