@@ -25,12 +25,22 @@ Giữ `supervision==0.30.9`: ByteTrack vẫn hoạt động nhưng có cảnh b�
 0.31. Chưa chuyển sang gói tracker khác. Windows Time hiện chưa chạy nên chưa
 xác nhận đồng bộ UTC, cần kiểm tra trước kiểm thử live với backend.
 
+Máy này đã dựng backend Dev ngày 04/11: SQL Express TCP 1433/Mixed Mode,
+`SwiftletCare_Dev`, Mosquitto và NestJS. Health tại
+`http://127.0.0.1:3000/api/health` đã trả 200 với db=ok/mqtt=connected.
+Backend và AI đọc `.env` riêng, dùng chung service key; không commit các file
+này. Broker chạy nền ở thư mục ASCII `%USERPROFILE%/SwiftletCare-Dev/mosquitto`
+do CLI không mở được đường dẫn repo có dấu trên máy này. Script bật lại cục
+bộ: `data/local-setup/start-dev.ps1` (không có trong Git). Xem bằng chứng thật
+và giới hạn ở [results/e2e.md](results/e2e.md).
+
 ## Chạy AI và trạng thái triển khai
 
 Đã triển khai code Task 2–15, gồm phần Nên có của Task 14. Spike đọc/bỏ khung
 Task 11 S17 đã đo trên V01.webm. Kiểm tay Ctrl+C với video thật (Task 12 S8),
-đo test chính thức (Task 15) và đầu-cuối với backend thật (Task 16) còn chờ
-dữ liệu/cấu hình. Task 13 đã có Release và đóng băng `best.pt` ngày 04/11;
+đo video chính thức (Task 15) và đầu-cuối với video đúng yêu cầu (Task 16) còn
+chờ dữ liệu. P/R theo ảnh đã đo; backend Dev đã dựng, live 602,55 giây và restart/cooldown
+đã kiểm bằng video chạy thử. Task 13 đã có Release và đóng băng `best.pt` ngày 04/11;
 Các mục Task 1 đã/chưa kiểm được ghi đủ S1–S23 trong
 [spikes/RESULTS.md](spikes/RESULTS.md). Notebook sạch để dùng lại là
 `train/train.ipynb`; `train/colab-setup.ipynb` đã xóa output và số thứ tự chạy.

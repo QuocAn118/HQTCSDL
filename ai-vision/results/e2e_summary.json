@@ -1,0 +1,227 @@
+{
+  "checkedAt": "2026-11-04T02:49:54.066146Z",
+  "database": "SwiftletCare_Dev",
+  "commit": "e156247837ce78aab22a24a1beef46bb8aebd3f5",
+  "weightsSha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "frozenHashesMatch": true,
+  "cameraId": 26,
+  "cameraStatus": "ONLINE",
+  "lastSeenAt": "2026-11-04T02:48:26.000Z",
+  "windows": [
+    {
+      "windowStart": "2026-11-04T02:35:00Z",
+      "sentIn": 0,
+      "sentOut": 0,
+      "apiIn": 0,
+      "apiOut": 0,
+      "matches": true
+    },
+    {
+      "windowStart": "2026-11-04T02:40:00Z",
+      "sentIn": 0,
+      "sentOut": 0,
+      "apiIn": 0,
+      "apiOut": 0,
+      "matches": true
+    },
+    {
+      "windowStart": "2026-11-04T02:45:00Z",
+      "sentIn": 0,
+      "sentOut": 0,
+      "apiIn": 0,
+      "apiOut": 0,
+      "matches": true
+    }
+  ],
+  "lockRemoved": true,
+  "live": {
+    "start": "2026-11-04T02:37:37Z",
+    "finishedAt": "2026-11-04T02:47:41.007299Z",
+    "elapsedSeconds": 602.55,
+    "exitCode": 0,
+    "ctrlCDispatched": true,
+    "heartbeat200": 20,
+    "counts200": 12,
+    "fpsMin": 13.75,
+    "fpsMax": 18.03,
+    "predatorResponses": [
+      {
+        "ts": "2026-11-04T02:37:40Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "snake",
+        "at": "2026-11-04T02:37:38Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 10,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-04T02:38:09Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "owl",
+        "at": "2026-11-04T02:38:07Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 11,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-04T02:38:09Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "rat",
+        "at": "2026-11-04T02:38:06Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 12,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-04T02:42:40Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "snake",
+        "at": "2026-11-04T02:42:38Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 13,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-04T02:44:01Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "owl",
+        "at": "2026-11-04T02:43:59Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 14,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-04T02:44:11Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "rat",
+        "at": "2026-11-04T02:44:08Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 15,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-04T02:47:40Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "snake",
+        "at": "2026-11-04T02:47:38Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 16,
+        "skipReason": null
+      }
+    ],
+    "stop": [
+      {
+        "ts": "2026-11-04T02:47:40Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "stop",
+        "reason": "ctrl+c",
+        "exitCode": 0
+      }
+    ]
+  },
+  "restart": {
+    "start": "2026-11-04T02:47:54Z",
+    "finishedAt": "2026-11-04T02:48:43.564074Z",
+    "elapsedSeconds": 48.39,
+    "exitCode": 0,
+    "ctrlCDispatched": true,
+    "heartbeat200": 2,
+    "counts200": 1,
+    "fpsMin": null,
+    "fpsMax": null,
+    "predatorResponses": [
+      {
+        "ts": "2026-11-04T02:47:56Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "snake",
+        "at": "2026-11-04T02:47:55Z",
+        "attempt": 1,
+        "status": 200,
+        "created": false,
+        "alertId": null,
+        "skipReason": "COOLDOWN"
+      },
+      {
+        "ts": "2026-11-04T02:48:26Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "owl",
+        "at": "2026-11-04T02:48:23Z",
+        "attempt": 1,
+        "status": 200,
+        "created": false,
+        "alertId": null,
+        "skipReason": "COOLDOWN"
+      },
+      {
+        "ts": "2026-11-04T02:48:26Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "rat",
+        "at": "2026-11-04T02:48:23Z",
+        "attempt": 1,
+        "status": 200,
+        "created": false,
+        "alertId": null,
+        "skipReason": "COOLDOWN"
+      }
+    ],
+    "stop": [
+      {
+        "ts": "2026-11-04T02:48:42Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "stop",
+        "reason": "ctrl+c",
+        "exitCode": 0
+      }
+    ]
+  },
+  "createdAlertsVisibleViaApi": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "health": {
+    "status": "ok",
+    "db": "ok",
+    "mqtt": "connected"
+  }
+}

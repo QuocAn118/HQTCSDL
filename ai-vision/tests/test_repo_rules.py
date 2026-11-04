@@ -1,5 +1,6 @@
 import re
 import json
+import hashlib
 from pathlib import Path
 
 AI = Path(__file__).resolve().parent.parent
@@ -53,3 +54,12 @@ def test_notebook_ghim_cung_ban_ultralytics_va_supervision():
     for name in ('ultralytics', 'supervision'):
         assert f'{name}=={pins[name]}' in code
     assert 'torch==' not in code  # Colab keeps its existing GPU torch.
+
+
+def test_frozen_tracked_artifacts_giu_nguyen_byte_sau_checkout():
+    frozen = json.loads((AI / 'results/freeze.json').read_text(encoding='utf-8'))
+    for relative, expected in frozen['files'].items():
+        if relative.startswith('data/'):
+            continue  # Dataset is local and is not shipped in Git.
+        actual = hashlib.sha256((AI / relative).read_bytes()).hexdigest()
+        assert actual == expected, f'Frozen artifact changed (including line endings): {relative}'

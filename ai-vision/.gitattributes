@@ -1,0 +1,4 @@
+# Preserve the exact bytes recorded in results/freeze.json across Git checkouts.
+cameras/*.yaml text eol=crlf
+swiftletcare_ai/metrics.py text eol=crlf
+scripts/eval_fixed_detector.py text eol=lf

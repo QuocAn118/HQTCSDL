@@ -2,8 +2,8 @@
 
 ## Video ứng viên nhận ngày 03/11/2026
 
-Hai file dưới đây mới được xem ảnh mẫu và kiểm tra khả năng mở bằng OpenCV.
-**Chưa duyệt để đếm, chưa gán train/val/test**, chưa chạy mô hình trên chúng;
+Khi nhận ngày 03/11, hai file dưới đây mới được xem ảnh mẫu và kiểm tra khả năng mở bằng OpenCV.
+**Chưa duyệt để đếm, chưa gán train/val/test**, lúc đó chưa chạy mô hình trên chúng;
 vì vậy chưa thêm vào `splits.csv`. Không dùng làm số đo chính thức.
 
 | Mã tạm | Tác giả trên trang nguồn | Nguồn | Giấy phép | Chia sẻ lại | Loài theo nguồn | Tập | Gán nhãn |
@@ -14,7 +14,7 @@ vì vậy chưa thêm vào `splits.csv`. Không dùng làm số đo chính thứ
 V01: 117,32 giây, 1280×720, 25 FPS; V02: khoảng 16,18 giây, 640×480,
 29,97 FPS theo OpenCV. V01 có cảnh cận tổ/chim non và đổi góc quay; V02 có
 chuyển động camera trong ảnh mẫu. Cần duyệt đoạn liên tục trước khi đặt vạch.
-Chỉ dùng V01 cho spike read/grab, không xem kết quả suy luận để chọn nguồn.
+Trước 04/11 chỉ dùng V01 cho spike read/grab, không xem kết quả suy luận để chọn nguồn.
 Ảnh xem mẫu và metadata: `data/out/source-review/` (không vào Git).
 
 Cập nhật 04/11: duyệt bổ sung 30 ảnh mẫu V01 cách 4 giây và 17 ảnh mẫu V02
@@ -25,6 +25,10 @@ Playlist chạy thử đã thống nhất H1 → `data/videos/V01.webm`, H2 →
 `data/videos/V02.ogv`, đúng file gốc, không đổi đuôi hay chuyển mã. Không còn
 tham chiếu video `R02.mp4`/`S01.mp4`; R02 chỉ là mã nguồn dataset ảnh chuột.
 Hai video vẫn **chỉ dùng chạy thử**, chưa gán tập test và chưa có nhãn đếm tay.
+Sau khi đóng băng, V01 đã được phát lặp bằng mô hình thật để kiểm HTTP,
+heartbeat và lưu ảnh trên backend Dev (04/11). Có nhận dạng sai chim/tổ thành
+thiên địch, xem `results/e2e.md`. Đây không phải lượt đo độ chính xác trên
+video test và không dùng để chọn ngưỡng.
 
 Dữ liệu hiện dùng lấy từ 9 bộ trên Roboflow Universe, sau đó gộp thành một project gồm 4 lớp: `swiftlet`, `rat`, `snake`, `owl`.
 

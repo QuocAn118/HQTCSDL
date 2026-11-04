@@ -56,8 +56,9 @@ Chạy lại công cụ chỉ để tái lập đúng snapshot, không dùng đ�
 MAE, sai lệch có dấu và báo động giả/giờ **chưa đo được**: V01/V02 chỉ là
 video chạy thử, camera thay đổi, nguồn ghi chim én thay vì swiftlet; chưa có
 đoạn test được duyệt và nhãn đếm tay lập trước suy luận. Không suy ra các số
-này từ test ảnh và không coi file CSV trống là kết quả 0. Task 16 chờ backend
-dev hoạt động và cấu hình `.env` cục bộ; xem `e2e.md`.
+này từ test ảnh và không coi file CSV trống là kết quả 0. Backend Dev đã dựng,
+health/heartbeat đã kiểm thành công; Task 16 đã kiểm live/restart/cooldown bằng video chạy thử,
+vẫn thiếu video đúng yêu cầu để kết luận đầy đủ; xem `e2e.md`.
 
 Chọn ngưỡng và vị trí vạch trên val, không chỉnh theo test.
 Train lại sau khi đo thì đo lại toàn bộ các mục Phần 6 của spec.

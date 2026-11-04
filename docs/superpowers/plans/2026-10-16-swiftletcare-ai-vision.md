@@ -5662,19 +5662,24 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: backend đã xong plan backend Task 19 (mốc trước 29/10); CSDL `SwiftletCare_Dev` có dữ liệu mẫu; `best.pt`; playlist H1 có đoạn thiên địch **ở đầu** (để bước 4 phát lại kịp trong 5 phút).
 - Produces: `results/e2e.md` — bằng chứng duy nhất AI chạy đúng với backend thật.
 
-- [ ] **Step 1: Chuẩn bị**
+- [x] **Step 1: Chuẩn bị**
 
 - Hỏi TV2 giá trị `AI_SERVICE_KEY` của backend dev (qua kênh riêng), ghi vào `ai-vision\.env`; `BACKEND_URL` đúng máy chạy backend.
 - Kiểm `SNAPSHOT_MAX_BYTES` hai bên bằng nhau (S19).
 - Mở web (hoặc gọi API) của H1 để xem số đếm và cảnh báo.
 
-- [ ] **Step 2: Kiểm 404 thật (S22)**
+- [x] **Step 2: Kiểm 404 thật (S22)**
 
 ```powershell
 curl.exe -s -i -X POST -H "X-Service-Key: x" http://localhost:3000/api/ai/khong-co
 ```
 
 Expected: `HTTP/1.1 4xx`. Ghi body thật vào S22. Nếu route sai trả 401 (guard chạy trước) thay vì 404: ghi rõ — AI vẫn dừng, chỉ khác thông báo (spec 5.6).
+
+Cập nhật 04/11: Dev local đã dựng và kiểm thật. Live 602,55 giây, API số đếm
+khớp, Ctrl+C/heartbeat/cooldown sau restart đã kiểm. V01 là video chạy thử có
+nhận dạng sai, chưa có video thiên địch được duyệt; **không đánh dấu hoàn tất
+Step 3/Task 16**. Xem results/e2e.md.
 
 - [ ] **Step 3: Chạy theo 7 bước spec 7.5**
 
@@ -5685,7 +5690,7 @@ Expected: `HTTP/1.1 4xx`. Ghi body thật vào S22. Nếu route sai trả 401 (g
 5. Ctrl+C: tổng cuối của cửa sổ đang mở đã vào CSDL (API `/api/houses/{id}/birds…` hoặc web); `data\run\H1-F0-CAMERA.lock` đã xóa.
 6. (Nếu backend đã xong Task 26) chạy lại với `--heartbeat`: `LastSeenAt` của `H1-F0-CAMERA` cập nhật.
 
-- [ ] **Step 4: Ghi `ai-vision/results/e2e.md`**
+- [x] **Step 4: Ghi `ai-vision/results/e2e.md`**
 
 ```markdown
 # Kiểm tay đầu-cuối ai-vision ↔ backend (spec 7.5)
