@@ -7,12 +7,13 @@ import { btnGhostCls, Empty } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/errors';
+import { HouseChangedContext } from '@/lib/houses';
 import { LiveProvider, useLive } from '@/lib/live';
 import type { House } from '@/lib/types';
 
 const TABS = [
   ['', 'Tổng quan'], ['/devices', 'Thiết bị'], ['/alerts', 'Cảnh báo'], ['/history', 'Lịch sử'],
-  ['/settings', 'Cài đặt'], ['/harvests', 'Thu hoạch'],
+  ['/settings', 'Cài đặt'],
 ] as const;
 
 function ConnectionBar() {
@@ -43,6 +44,7 @@ export default function HouseLayout({ children }: { children: ReactNode }) {
 
   return (
     <LiveProvider>
+      <HouseChangedContext.Provider value={setHouse}>
       <ConnectionBar />
       <header className="flex flex-wrap items-center gap-4 border-b border-stone-200 bg-white px-6 py-3">
         <Link href="/houses?all=1" className="font-semibold">{house?.name ?? 'Nhà yến'}</Link>
@@ -60,6 +62,7 @@ export default function HouseLayout({ children }: { children: ReactNode }) {
         <button className={`${btnGhostCls} ml-auto`} onClick={() => logout()}>Đăng xuất</button>
       </header>
       <main className="mx-auto max-w-6xl p-6">{children}</main>
+      </HouseChangedContext.Provider>
     </LiveProvider>
   );
 }
