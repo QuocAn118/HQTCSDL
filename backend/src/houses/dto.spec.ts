@@ -1,7 +1,31 @@
 import { validateDto } from '../common/validation';
-import { CreateDeviceDto, CreateHouseDto, UpdateHouseDto } from './dto';
+import {
+  CreateDeviceDto,
+  CreateHouseDto,
+  ThresholdDto,
+  UpdateHouseDto,
+} from './dto';
 
 describe('DTO nha/thiet bi (spec backend 5.3)', () => {
+  it('nguong ngoai DECIMAL(9,2) -> 400 theo truong, khong de SQL bao 500', async () => {
+    await expect(
+      validateDto(ThresholdDto, {
+        minValue: -9999999.99,
+        maxValue: 9999999.99,
+        targetValue: null,
+      }),
+    ).resolves.toBeDefined();
+    for (const f of ['minValue', 'maxValue', 'targetValue']) {
+      for (const v of [10000000, -10000000, 99999999, 9999999.995]) {
+        await expect(
+          validateDto(ThresholdDto, { [f]: v }),
+        ).rejects.toMatchObject({
+          code: 'VALIDATION_ERROR',
+          details: { fields: [f] },
+        });
+      }
+    }
+  });
   it('code thiet bi khop ^[A-Z0-9-]{3,50}$', async () => {
     await expect(
       validateDto(CreateDeviceDto, {

@@ -1,3 +1,4 @@
+import { applyDecorators } from '@nestjs/common';
 import {
   IsBoolean,
   IsIn,
@@ -50,8 +51,18 @@ export class UpdateDeviceDto {
   @IsOptional() @IsString() @Length(1, 100) name?: string;
   @IsOptional() @IsBoolean() isActive?: boolean;
 }
+// Cot DECIMAL(9,2): vuot thi SQL bao loi tran so -> 500 (T11W-2).
+const THRESHOLD_LIMIT = 9999999.99;
+const IsThreshold = () =>
+  applyDecorators(
+    IsOptional(),
+    IsNumber(),
+    Min(-THRESHOLD_LIMIT),
+    Max(THRESHOLD_LIMIT),
+  );
+
 export class ThresholdDto {
-  @IsOptional() @IsNumber() minValue?: number | null;
-  @IsOptional() @IsNumber() maxValue?: number | null;
-  @IsOptional() @IsNumber() targetValue?: number | null;
+  @IsThreshold() minValue?: number | null;
+  @IsThreshold() maxValue?: number | null;
+  @IsThreshold() targetValue?: number | null;
 }
