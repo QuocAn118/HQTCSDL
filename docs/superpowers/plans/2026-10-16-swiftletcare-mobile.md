@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Người thực thi:** TV4, theo cách Native (`superpowers:executing-plans`) trên máy mình — không dùng subagent-driven. Hàm thuần: viết test trước, chạy cho fail, code cho đạt, commit. Màn hình: spec mobile 3.1 không có test component, nên mỗi task giao diện kiểm bằng `npm run typecheck`, `npm test` và các bước checklist 3.1 tương ứng trên Expo Go (bằng `mobile-mcp` nếu kết nối được). Dùng skill `expo-router`, `expo-ui`, `expo-data-fetching` khi chỉnh màn hình; thiết kế theo `frontend-design`, `taste-skill` — code trong plan là bản chạy được tối thiểu, được chỉnh giao diện miễn giữ nguyên luồng dữ liệu.
+**Người thực thi:** TV4, theo cách Native (`superpowers:executing-plans`) trên máy mình — không dùng subagent-driven. Hàm thuần: viết test trước, chạy cho fail, code cho đạt, commit. Màn hình: spec mobile 3.1 không có test component, nên mỗi task giao diện kiểm bằng `npm run typecheck`, `npm test` và các bước checklist 3.1 tương ứng trên Expo Go (bằng `mobile-mcp` nếu kết nối được). Dùng skill `expo-router`, `expo-ui`, `expo-data-fetching` khi chỉnh màn hình; thiết kế theo `impeccable`, `ui-ux-pro-max` — code trong plan là bản chạy được tối thiểu, được chỉnh giao diện miễn giữ nguyên luồng dữ liệu.
 
 ## Trước khi chạy
 

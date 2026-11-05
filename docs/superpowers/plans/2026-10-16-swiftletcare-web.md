@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Người thực thi:** TV4, theo cách Native (`superpowers:executing-plans`) trên máy mình — không dùng subagent-driven. Hàm thuần: viết test trước, chạy cho fail, code cho đạt, commit. Màn hình: spec web 3.1 chỉ test hàm thuần, nên mỗi task giao diện kiểm bằng `npm run build` (kiểm kiểu TypeScript) và các bước Playwright MCP của checklist 3.2 tương ứng. Thiết kế màn hình: phác bằng `stitch`, làm theo `frontend-design` và `taste-skill` (CLAUDE.md) — code trong plan là bản chạy được tối thiểu, TV4 được chỉnh giao diện miễn giữ nguyên luồng dữ liệu.
+**Người thực thi:** TV4, theo cách Native (`superpowers:executing-plans`) trên máy mình — không dùng subagent-driven. Hàm thuần: viết test trước, chạy cho fail, code cho đạt, commit. Màn hình: spec web 3.1 chỉ test hàm thuần, nên mỗi task giao diện kiểm bằng `npm run build` (kiểm kiểu TypeScript) và các bước Playwright MCP của checklist 3.2 tương ứng. Thiết kế màn hình: phác bằng `stitch`, làm theo `impeccable` và `ui-ux-pro-max` (CLAUDE.md) — code trong plan là bản chạy được tối thiểu, TV4 được chỉnh giao diện miễn giữ nguyên luồng dữ liệu.
 
 ## Trước khi chạy
 
