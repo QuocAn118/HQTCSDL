@@ -66,3 +66,19 @@ Train lại sau khi đo thì đo lại toàn bộ các mục Phần 6 của spec
 Chạy `offline` riêng từng video với cùng `--t0`; đặt tên thư mục kết quả bằng
 mã video để các script ghép đúng nguồn. Tổng video dưới một giờ thì số báo
 động giả mỗi giờ là ngoại suy và phải ghi rõ trong báo cáo.
+
+## Đo tốc độ CPU bổ sung — 05/11/2026
+
+V3 best.pt đã đóng băng, Intel Core i7-12700H, RAM 15,64 GiB, chạy CPU.
+Dùng V02.ogv chỉ làm benchmark, không coi là test đếm hoặc test âm tính.
+Mô hình: 5 khung warmup + 300 khung đo. Toàn luồng offline xử lý toàn video
+485 khung, gồm detector/tracker/đếm/log, không có HTTP backend; không ép real-time.
+
+| imgsz | FPS mô hình | FPS toàn luồng | ms/khung toàn luồng |
+|---|---:|---:|---:|
+| 640 | 15,39 | 15,00 | 66,7 |
+| 320 | 49,65 | 46,35 | 21,6 |
+
+Đầu ra: speed.csv. Đây là một lượt benchmark trên máy hiện tại, không phải
+ước lượng độ chính xác. 640 thấp hơn FPS video (~29,97); live có thể bỏ khung.
+Không tự đổi cấu hình runtime xuống 320, vì recall ảnh test ở 320 thấp hơn.

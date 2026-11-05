@@ -1,0 +1,29 @@
+{
+  "status": "trial_v4_pilot_not_frozen",
+  "checkpoint": "best.pt",
+  "datasetLabelReview": "agent_reviewed_for_pilot",
+  "sha256": "03f78a5c01cb38bf9e0bc8bda422804e2cff3e40cfdbd8caecfa5d49a13215ea",
+  "epochsCompleted": 50,
+  "configuredEpochs": 50,
+  "datasetZipSha256": "4d3010be83ea53eecf87160e92a07661d7d5aa50c4f125396c55759558197479",
+  "settings": {
+    "model": "yolov8n.pt",
+    "epochs": 50,
+    "imgsz": 1280,
+    "batch": 4,
+    "mosaic": 0.0,
+    "close_mosaic": 0,
+    "seed": 42,
+    "patience": 15
+  },
+  "python": "3.13.16",
+  "torch": "2.11.0+cu130",
+  "ultralytics": "8.4.178",
+  "supervision": "0.30.9",
+  "notes": [
+    "Small pilot validation; agent review completed, no independent human review claimed.",
+    "No test evaluation or automatic replacement of frozen v3 weights."
+  ],
+  "evidence": "Saved notebook stdout; checkpoint bytes not yet available locally for verification",
+  "run": "yolov8n_v4_reviewed_20261104T134038Z"
+}

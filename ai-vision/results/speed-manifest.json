@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-05",
+  "weightsSha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "video": "data/videos/V02.ogv",
+  "videoSha256": "17bbaf1514dea7d09e6ccdcdef45c7a66f4a66808d86ec5c2abc14efc5941455",
+  "role": "CPU benchmark only; not accuracy evaluation",
+  "modelWarmupFrames": 5,
+  "modelMeasuredFrames": 300,
+  "fullPipelineFrames": 485,
+  "httpBackendIncluded": false,
+  "imgsz": [
+    640,
+    320
+  ],
+  "scriptSha256": "22a0e07a56bdcd161ec24dea74907762e75cdcf2156fc9fdec3d018b6bf5a99f"
+}

@@ -1,0 +1,27 @@
+{
+  "status": "verified_pilot_not_frozen",
+  "run": "yolov8n_v4_reviewed_20261104T134038Z",
+  "checkpointSha256": "03f78a5c01cb38bf9e0bc8bda422804e2cff3e40cfdbd8caecfa5d49a13215ea",
+  "checkpointBytes": 6664298,
+  "epochsCompleted": 50,
+  "bestCheckpointHistoryThroughEpoch": 50,
+  "checkpointStrippedEpoch": -1,
+  "csvSha256": "95c4d2e262c329316eee69f45f4f8f8ee05b9cd155694ca3d70ba652973fc098",
+  "metadataSha256": "a0f791b875d273d694ac35a204ac76c32299b1df25d17e8b4a4b6574f7a4eecc",
+  "checks": [
+    "checkpoint hash matches Colab receipt",
+    "dataset ZIP hash matches",
+    "CSV epochs are exactly 1..50",
+    "checkpoint history matches CSV prefix",
+    "class IDs and configured settings match",
+    "frozen v3 weights unchanged"
+  ],
+  "limitations": [
+    "13-image pilot validation only; not independent test",
+    "No runtime threshold or deployed model changed"
+  ],
+  "bestFitnessEpochFromCsv": 47,
+  "notes": [
+    "Checkpoint embeds history through epoch 50; this is not the selected best epoch. Best CSV fitness occurs at epoch 47. Plot dotted line denotes history end."
+  ]
+}

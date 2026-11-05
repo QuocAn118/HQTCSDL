@@ -1,6 +1,6 @@
 # Chuẩn bị lượt train cải thiện v4 — 04/11/2026
 
-**Đã chuẩn bị dữ liệu và notebook, chưa train v4.** Không đổi best.pt,
+**V4 đã train đủ 50 epoch; đã đối chiếu checkpoint, CSV và metadata tải về.** Không đổi best.pt,
 weights.json, cấu hình runtime hoặc kết quả test của bản v3 đã đóng băng.
 
 Cập nhật duyệt nhãn: agent đã xem riêng từng ảnh val ở kích thước nguồn,
@@ -94,3 +94,32 @@ Các nguồn mới cần metadata và nhãn đã chuẩn bị ở máy này. Scr
 không tự thay nhãn bằng dự đoán và từ chối overwrite, thiếu lớp val, lệch hash,
 trùng train/val, sai mapping nguồn hoặc nền vượt 10%. Dữ liệu/ZIP/ảnh minh họa
 ở thư mục gitignore; chỉ báo cáo, nguồn/nhãn dạng JSON và code vào Git.
+
+## Kết quả lượt v4 đã chạy
+
+Run `yolov8n_v4_reviewed_20261104T134038Z`, 50 epoch trong 1,933 giờ trên T4.
+Đã trích metadata từ stdout vào `results/v4-training-receipt.json` và bảng val
+best.pt vào `results/v4-pilot-val.csv` trước khi xóa output notebook.
+Đây là số làm tròn từ Ultralytics trên 13 ảnh val, không phải P/R tại ngưỡng
+runtime đã đóng băng, không phải test độc lập. Không so trực tiếp với test v3.
+
+- Tổng: P 0,814; R 0,529; mAP50 0,542; mAP50-95 0,304.
+- Swiftlet: Recall 0 và AP 0 trên 2 đối tượng; P hiển thị 1 không chứng minh phát hiện tốt.
+- Snake: P 0,307; R 0,667 trên 3 đối tượng; chưa đủ tin cậy để triển khai.
+- Chưa thay v3 hoặc nâng v4 thành bản đóng băng; chưa sửa ngưỡng theo kết quả này.
+- Chưa tìm thấy best.pt/results.csv v4 trong data hoặc Downloads. Cần tải checkpoint,
+  results.csv, weights-v4-pilot.json về `data/weights/v4-pilot/` để đối chiếu hash,
+  lịch sử epoch và chạy kiểm tra tiếp. SHA trong receipt chỉ là giá trị Colab báo.
+- Task 15 video và Task 16 hoàn chỉnh vẫn thiếu video đúng mục tiêu, giấy phép và
+  nhãn đếm/sự kiện; không dùng V01 đã đưa vào train v4 làm test độc lập.
+
+## Đã nhận và xác minh artifact v4
+
+Đã nhận đủ best.pt, results.csv và weights-v4-pilot.json trong data/weights/v4-pilot/.
+SHA best.pt trùng receipt Colab, ZIP trùng bộ đã duyệt, CSV đủ epoch 1–50;
+lịch sử trong best.pt khớp phần đầu CSV và kết thúc tại epoch 50.
+Checkpoint đã strip optimizer nên epoch=-1; không dùng trường này để suy ra số epoch train.
+Bản CSV đầy đủ được lưu vào results/v4-training-history.csv; biên bản kiểm tra nằm ở
+results/v4-artifact-verification.json. Biểu đồ dựng từ CSV ở data/weights/v4-pilot/training-review.png.
+Các mục ghi thiếu artifact ở trên là trạng thái trước khi nhận file, đã được giải quyết.
+V4 vẫn là pilot: chưa phát hành thay v3, chưa đo test mới hoặc đo video có ground truth.

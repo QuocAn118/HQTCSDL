@@ -1,0 +1,6 @@
+class,images,instances,precision,recall,mAP50,mAP50_95,scope,source
+all,13,13,0.814,0.529,0.542,0.304,pilot_val_not_test,notebook_stdout_rounded_ultralytics_summary
+owl,4,4,1,0.951,0.995,0.634,pilot_val_not_test,notebook_stdout_rounded_ultralytics_summary
+rat,4,4,0.95,0.5,0.655,0.281,pilot_val_not_test,notebook_stdout_rounded_ultralytics_summary
+snake,3,3,0.307,0.667,0.517,0.302,pilot_val_not_test,notebook_stdout_rounded_ultralytics_summary
+swiftlet,2,2,1,0,0,0,pilot_val_not_test,notebook_stdout_rounded_ultralytics_summary
