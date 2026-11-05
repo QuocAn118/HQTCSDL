@@ -1,0 +1,13 @@
+{
+  "name": "swiftletcare-simulator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env src/main.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "mqtt": "5.16.1"
+  }
+}

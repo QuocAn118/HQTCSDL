@@ -1,0 +1,10 @@
+{
+  "name": "normal",
+  "defaults": {
+    "TEMP": 28,
+    "HUMID": 82,
+    "CO2": 600,
+    "LIGHT": 2
+  },
+  "zones": {}
+}
