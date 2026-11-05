@@ -2,3 +2,14 @@
 cameras/*.yaml text eol=crlf
 swiftletcare_ai/metrics.py text eol=crlf
 scripts/eval_fixed_detector.py text eol=lf
+# Measurement manifests hash these Windows-generated artifacts byte-for-byte.
+results/*.csv text eol=crlf
+results/*.json text eol=crlf
+reports/2026-11-05*.json text eol=crlf
+spikes/*.json text eol=crlf
+tests/test_eval_detector_cli.py text eol=lf
+swiftletcare_ai/app.py text eol=crlf
+scripts/evaluate.py text eol=crlf
+scripts/eval_detector.py text eol=crlf
+tests/test_metrics.py text eol=crlf
+tests/test_app.py text eol=crlf

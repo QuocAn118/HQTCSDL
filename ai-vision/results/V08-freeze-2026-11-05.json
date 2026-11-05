@@ -1,0 +1,20 @@
+{
+  "frozenAtUtc": "2026-11-05T10:26:49.223149+00:00",
+  "scope": "V08 source-identified Mariana swiftlet negative clip, before inference",
+  "videoSha256": "51b194a1bee32b148ba071a8120813245309ace6c46215c275aa01d2df1ba46e",
+  "provenanceSha256": "f5097f0cc5c4ec7bbc6364a52c111503bba0f5aa214fa48519bdb964dceed8ab",
+  "weightsSha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "configurationSha256": "a093ca1f5c24b4ba37f51daf820ebf2d5e4cadc16810ffd8036bf281b6aa68af",
+  "imgsz": 640,
+  "predatorConfidence": 0.5,
+  "confirmFrames": 3,
+  "confirmSeconds": 2,
+  "cooldownSeconds": 300,
+  "durationSeconds": 26,
+  "t0": "2000-01-01T00:00:00Z",
+  "notes": [
+    "Not trained on this source; source-based species identification, no expert confirmation",
+    "One short sample; hourly rate is extrapolated, not observed for one hour",
+    "No model outputs used to select or annotate clip"
+  ]
+}

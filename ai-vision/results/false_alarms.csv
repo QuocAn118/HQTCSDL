@@ -1,4 +1,4 @@
 lop,gio_video,confirmed,blocked,per_hour_cooldown,per_hour_raw,video,duration_seconds,scope,extrapolated_under_one_hour
-rat,0.007,0,0,0.0,0.0,V03,25.96,fallback_unspecified_birds_not_verified_swiftlet,true
-snake,0.007,0,0,0.0,0.0,V03,25.96,fallback_unspecified_birds_not_verified_swiftlet,true
-owl,0.007,0,0,0.0,0.0,V03,25.96,fallback_unspecified_birds_not_verified_swiftlet,true
+rat,0.007,1,355,138.46153846153848,49292.307692307695,V08,26.0,source_identified_Mariana_swiftlet_negative_clip,true
+snake,0.007,0,0,0.0,0.0,V08,26.0,source_identified_Mariana_swiftlet_negative_clip,true
+owl,0.007,0,0,0.0,0.0,V08,26.0,source_identified_Mariana_swiftlet_negative_clip,true

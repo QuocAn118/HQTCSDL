@@ -86,3 +86,30 @@ def test_evaluate_counting_ghi_csv(tmp_path):
         rows = list(csv.DictReader(f))
     assert [(r['doan'], r['ai_in'], r['ai_out']) for r in rows] == [('1', '1', '1'), ('2', '0', '1')]
     assert (out / 'counting_summary.csv').is_file()
+
+
+def test_counting_uses_precise_media_seconds_at_fractional_boundary(tmp_path):
+    run = tmp_path / 'V03'
+    run.mkdir()
+    (run / 'crossings.csv').write_text(
+        'at,chieu,track_id,media_seconds\n2000-01-01T00:00:07Z,out,1,7.9\n', encoding='utf-8')
+    seg = tmp_path / 'segments.csv'
+    seg.write_text('video,doan,bat_dau_s,ket_thuc_s,tay_in,tay_out\nV03,1,7.8,8.2,0,1\n', encoding='utf-8')
+    out = tmp_path / 'results'
+    evaluate.main(['counting', '--segments', str(seg), '--runs', str(run), '--t0',
+                   '2000-01-01T00:00:00Z', '--out', str(out)])
+    assert list(csv.DictReader((out / 'counting.csv').open()))[0]['ai_out'] == '1'
+
+
+def test_events_use_precise_media_seconds_at_fractional_boundary(tmp_path):
+    run = tmp_path / 'V05'
+    run.mkdir()
+    (run / 'predators.csv').write_text(
+        'camera,class,confidence,at,media_seconds\nH1-F0-CAMERA,snake,0.9,2000-01-01T00:00:02Z,2.9\n', encoding='utf-8')
+    gt = tmp_path / 'gt.csv'
+    gt.write_text('video,class,bat_dau_s,ket_thuc_s\nV05,snake,2.8,3.1\n', encoding='utf-8')
+    out = tmp_path / 'results'
+    evaluate.main(['events', '--gt', str(gt), '--runs', str(run), '--t0',
+                   '2000-01-01T00:00:00Z', '--out', str(out)])
+    row = next(r for r in csv.DictReader((out / 'events.csv').open()) if r['lop'] == 'snake')
+    assert (row['precision'], row['recall']) == ('1.0', '1.0')

@@ -180,7 +180,7 @@ def read_csv(path):
 
 def test_offline_ghi_csv_khong_gui_gi(tmp_path):
     ai = setup_ai(tmp_path)                     # khong co .env: offline khong can
-    script = lambda i: bird_up(i, 60) + bird_up(i, 150, x=48.0) + ([SNAKE] if 20 <= i <= 22 else [])
+    script = lambda i: bird_up(i, 60) + bird_up(i, 150, x=48.0) + ([SNAKE] if 21 <= i <= 23 else [])
     out = tmp_path / 'out'
     code = run_offline(CAM, out, WEIGHTS, None, datetime(2026, 10, 12, 10, 4, 50, tzinfo=timezone.utc), None,
                        deps(ai, FakeDetector(script=script), video={'n': 200, 'fps': 10}))
@@ -193,6 +193,8 @@ def test_offline_ghi_csv_khong_gui_gi(tmp_path):
     assert [(c['chieu'], c['track_id']) for c in crossings] == [('out', '3'), ('out', '5')]
     [pred] = read_csv(out / 'predators.csv')
     assert (pred['camera'], pred['class'], pred['confidence']) == (CAM, 'snake', '0.9')
+    assert float(pred['media_seconds']) == pytest.approx(2.1)
+    assert all(float(c['media_seconds']) >= 0 for c in crossings)
     [snap] = list((out / 'snapshots').glob('*.jpg'))
     assert snap.read_bytes()[:3] == b'\xff\xd8\xff'
     assert logs_offline(out, 'predator.confirmed')

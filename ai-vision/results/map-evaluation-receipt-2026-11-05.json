@@ -1,0 +1,7 @@
+{
+  "status": "completed",
+  "elapsedSeconds": 155.65600000007544,
+  "rows": 8,
+  "plan": "map-evaluation-plan-2026-11-05.json",
+  "note": "Additional pass for missing metric, not model or threshold selection; original detector.csv unchanged"
+}

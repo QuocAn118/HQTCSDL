@@ -1,0 +1,18 @@
+{
+  "scope": "same frozen parameters, one-pass live/offline diagnostic on fallback V03",
+  "stopMechanism": "KeyboardInterrupt at first replay boundary; no extra replay frame processed",
+  "lastMediaSeconds": 25.92,
+  "processed": 299,
+  "skipped": 350,
+  "startedAt": "2026-11-05T10:13:11.839450+00:00",
+  "t0": "2026-11-05T10:13:18.757654+00:00",
+  "completedOnePass": true,
+  "exitCode": 0,
+  "finishedAt": "2026-11-05T10:13:47.103434+00:00",
+  "droppedFrameRatioExact": 0.539291217257319,
+  "offlineProcessedFrames": 649,
+  "offlineTimeOrigin": "Same exact aware datetime as live first processing timestamp, including microseconds",
+  "offlineOutput": "data/out/eval_precise_20261105/V03",
+  "liveLogSha256": "7e71ac8cfcb6a8fbcc1d8d415a0fb2816b9cf4ed2faed7292bdbe1b6f0dd5621",
+  "offlineCrossingsSha256": "683c772ebec2952ed99443e754d0333271d323787f9ec7d58599f311aa5a77bc"
+}

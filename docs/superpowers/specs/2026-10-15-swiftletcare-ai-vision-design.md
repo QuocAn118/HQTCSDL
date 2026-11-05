@@ -290,6 +290,10 @@ Mỗi camera **một tiến trình**; **không bao giờ chạy hai tiến trìn
 
 - **`live`:** phát lại playlist theo thời gian thật, gửi kết quả cho backend (Phần 4, 5). Ctrl+C: gửi tổng hiện tại của cửa sổ đang mở rồi thoát.
 - **`offline`:** xử lý playlist một lượt, nhanh hết mức, không gửi backend. Ghi `counts.csv` (`camera, windowStart, in, out`, trùng trường gửi đi), `predators.csv` (`camera, class, confidence, at`, trùng `metadata`) và `crossings.csv` (`at, chieu, track_id`, mỗi lần qua vạch một dòng, dùng cho mục 6.6).
+  Cập nhật05/11: hai CSV sự kiện offline thêm cột media_seconds (giây từ t0,
+  giữ phần lẻ) để tính đúng tại ranh giới đoạn; cột at và HTTP giữ UTC đến giây.
+  Công cụ đo ưu tiên media_seconds, tương thích CSV cũ chỉ có at.
+
 - **`scripts\start-cameras.ps1`** (Nên có): mỗi camera một cửa sổ.
 
 **Cờ dòng lệnh:**

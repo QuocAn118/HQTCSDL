@@ -4,7 +4,7 @@
 |---|---|---|
 | 1. Đóng băng trọng số | Đạt về artifact | weights.json: frozen, best.pt v3, 50 epoch thực tế, URL Release. Tải lại asset và xác minh SHA-256 ngày 05/11; toàn bộ hash freeze.json vẫn khớp. Không có nghĩa chất lượng mô hình đạt. |
 | 2. Video và playlist | Đã có V03–V07 và profile kiểm riêng; V03 là video thay thế | H1 dùng V01.webm, H2 dùng V02.ogv, có nguồn trong SOURCES.md; không còn R02.mp4/S01.mp4. Hai video là martin, không phải swiftlet, không phù hợp đếm qua vạch cố định. |
-| 3. Task 15 | Có CSV video bổ sung, còn giới hạn | detector.csv có P/R ảnh; events.csv có P/R sự kiện. Đã có counting.csv/counting_summary.csv và false_alarms.csv từ V03 thay thế. Nhãn agent chưa TV5 đếm lại; loài V03 chưa xác nhận swiftlet nên chưa hoàn tất điều kiện swiftlet-only. Tham số và nhãn đã lưu hash trước suy luận. |
+| 3. Task 15 | Có CSV video bổ sung, còn giới hạn | detector.csv có P/R ảnh; events.csv có P/R sự kiện. Đã có counting.csv/counting_summary.csv và false_alarms.csv từ V03 thay thế. Nhãn agent chưa TV5 đếm lại; V03 là video đếm thay thế; V08 đã bổ sung riêng phép đo âm tính theo nguồn swiftlet. Tham số và nhãn đã lưu hash trước suy luận. |
 | 4. Task 16 | Đã kiểm lại với video thiên địch thật | e2e.md và evidence hậu tố2026-11-05: live602,98 giây,20 heartbeat200/12 counts200, ảnh chuột thật, restart owl COOLDOWN, tổng cuối API khớp, khóa xóa. Ctrl+C bằng tín hiệu console; chưa kiểm bàn phím kép hoặc NTP độc lập. Số đếm playlist này chỉ kiểm vận chuyển. |
 | 5. Xóa output notebook | Đạt | colab-setup.ipynb và train-v4-pilot.ipynb đều outputs rỗng, execution_count null. |
 
@@ -66,3 +66,11 @@ Ba cửa sổ API khớp tổng cuối; khóa xóa. Bằng chứng results/e2e.m
 hậu tố2026-11-05. Bộ test mới nhất327 passed,6 subtests passed,1 FutureWarning.
 Task15 hiện có CSV sự kiện, đếm tham chiếu agent và báo động giả video thay thế;
 vẫn chưa đạt điều kiện nghiêm ngặt swiftlet-only và TV5 đếm lại độc lập.
+
+## Hoàn tất phần có thể tự động sau review
+
+Đã bổ sung AP640/320 và offline_vs_live.csv. V08DVIDS nguồn xác nhận Mariana
+swiftlet,26giây, đã đo false_alarms.csv; không còn thiếu hoàn toàn video âm tính
+theo nguồn. Rat1confirmed/355blocked, số mỗi giờ ngoại suy đã ghi rõ. Sửa lỗi
+CSVthời điểmgiâylẻ và CLIghiđèP/Rcốđịnh theo TDD; suite330+6subtest đạt.
+Trạng thái task và xác nhận ngoài còn thiếu ở2026-11-05-task-status.md.

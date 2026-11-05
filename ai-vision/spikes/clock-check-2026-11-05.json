@@ -1,0 +1,32 @@
+{
+  "method": "Compare current local UTC against HTTPS GitHub API Date header with unique query and no-cache; no Windows clock settings changed",
+  "source": "https://api.github.com/rate_limit",
+  "samples": [
+    {
+      "serverDate": "2026-11-05T10:17:25+00:00",
+      "localMidpoint": "2026-11-05T10:17:24.397194+00:00",
+      "roundTripSeconds": 0.5729,
+      "differenceSeconds": -0.602806,
+      "cacheAge": null
+    },
+    {
+      "serverDate": "2026-11-05T10:17:26+00:00",
+      "localMidpoint": "2026-11-05T10:17:24.961657+00:00",
+      "roundTripSeconds": 0.556026,
+      "differenceSeconds": -1.038343,
+      "cacheAge": null
+    },
+    {
+      "serverDate": "2026-11-05T10:17:26+00:00",
+      "localMidpoint": "2026-11-05T10:17:25.516173+00:00",
+      "roundTripSeconds": 0.553006,
+      "differenceSeconds": -0.483827,
+      "cacheAge": null
+    }
+  ],
+  "windowsTimeService": "not_running",
+  "limitations": [
+    "Date header is whole seconds and affected by response timing; this is not NTP synchronization",
+    "Check occurred after live runs, not proof of synchronization at their start"
+  ]
+}

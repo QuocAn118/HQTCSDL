@@ -1,0 +1,47 @@
+{
+  "method": "Windows GenerateConsoleCtrlEvent on hidden child console, no fake clock/detector, real v3 weights/V03",
+  "manualKeyboardClaim": false,
+  "results": [
+    {
+      "phase": "one",
+      "realWindowsCtrlCSignals": 1,
+      "exitCode": 0,
+      "elapsedAfterFirstSignalSeconds": 2.8119999999180436,
+      "lockRemoved": true,
+      "stop": [
+        {
+          "ts": "2026-11-05T10:35:53Z",
+          "level": "info",
+          "camera": "H1-F0-CAMERA",
+          "type": "stop",
+          "reason": "ctrl+c",
+          "exitCode": 0
+        }
+      ],
+      "backend": "unreachable localhost3999 per Task12Step9, not Dev e2e"
+    },
+    {
+      "phase": "two",
+      "realWindowsCtrlCSignals": 2,
+      "exitCode": 130,
+      "elapsedAfterFirstSignalSeconds": 2.812000000034459,
+      "lockRemoved": true,
+      "stop": [
+        {
+          "ts": "2026-11-05T10:36:04Z",
+          "level": "warning",
+          "camera": "H1-F0-CAMERA",
+          "type": "stop",
+          "reason": "ctrl+c lan hai - thoat ngay",
+          "exitCode": 130
+        }
+      ],
+      "backend": "unreachable localhost3999 per Task12Step9, not Dev e2e"
+    }
+  ],
+  "harnessCorrection": {
+    "initialAttempt": "Second child inherited ignore-CTRL-C attribute from controller and timed out; only that isolated probe was force-stopped and stale probe lock cleared",
+    "correction": "Clear inherited ignore flag in probe child before calling production run_live; no production code change",
+    "documentation": "https://learn.microsoft.com/en-us/windows/console/ctrl-c-and-ctrl-break-signals"
+  }
+}

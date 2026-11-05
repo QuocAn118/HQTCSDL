@@ -15,7 +15,7 @@ Không điều chỉnh theo kết quả test. Đổi trọng số/tham số ph�
 
 `training_history.csv` trích đủ 50 dòng epoch từ chính checkpoint; log notebook
 trước khi xóa output cũng ghi `50 epochs completed in 0.728 hours`.
-Các file **nhãn video** CSV hiện chỉ có tiêu đề, chưa có nhãn đếm tay.
+Các file nhãn video đã bổ sung ngày 05/11; nhãn đếm là tham chiếu thị giác agent, chưa có TV5 kiểm độc lập.
 Điền `events_gt.csv` trước khi chạy mô hình trên video test. Đếm tay các đoạn
 khoảng một phút vào `counting_segments.csv`; TV5 đếm lại khoảng 20% số đoạn.
 
@@ -32,7 +32,7 @@ khoảng một phút vào `counting_segments.csv`; TV5 đếm lại khoảng 20%
 ghép một-một, cùng lớp, ưu tiên prediction confidence cao rồi chọn GT có IoU
 lớn nhất >= 0,5. Khác với P/R tổng kết của Ultralytics có thể chọn điểm F1 tốt
 nhất: số này giữ confidence cố định. Cột rỗng khi mẫu số bằng 0, không tự gán
-thành 0 hoặc 1. Chưa có mAP từ lượt này và chưa có P/R theo sự kiện video.
+thành 0 hoặc 1. Lượt này chỉ đo P/R cố định. mAP bổ sung ở detector_map.csv; P/R sự kiện video ở events.csv, xem cập nhật 05/11.
 Suy luận batch 8, CPU, NMS IoU 0,7, tối đa 300 detection/ảnh.
 
 | Lớp | Precision 640 | Recall 640 | Precision 320 | Recall 320 |
@@ -53,7 +53,7 @@ Chạy lại công cụ chỉ để tái lập đúng snapshot, không dùng đ�
 .venv/Scripts/python -X utf8 scripts/eval_fixed_detector.py
 ```
 
-MAE, sai lệch có dấu và báo động giả/giờ **chưa đo được**: V01/V02 chỉ là
+Tại lượt 04/11, MAE/sai lệch/báo động giả chưa đo được: V01/V02 chỉ là
 video chạy thử, camera thay đổi, nguồn ghi chim én thay vì swiftlet; chưa có
 đoạn test được duyệt và nhãn đếm tay lập trước suy luận. Không suy ra các số
 này từ test ảnh và không coi file CSV trống là kết quả 0. Backend Dev đã dựng,
@@ -133,7 +133,7 @@ Kết quả thấp được giữ nguyên. Không thay trọng số/ngưỡng đ
 
 ### Báo động giả
 
-- false_alarms.csv và false_alarms_fallback.csv: V03, 25,96 giây, 0 lần confirmed
+- Bản trước false_alarms.csv, nay giữ tại false_alarms_fallback.csv: V03, 25,96 giây, 0 lần confirmed
   và 0 lần blocked cả ba lớp. Đây là video đàn chim chưa xác nhận loài, **không
   hoàn tất riêng yêu cầu video chỉ có chim yến mục 6.5**.
 - false_alarms_background.csv: V07 nền rừng 10,6106 giây; snake 1 confirmed,
@@ -144,6 +144,61 @@ Kết quả thấp được giữ nguyên. Không thay trọng số/ngưỡng đ
   phép ngoại suy từ lần xác nhận đầu clip có thể vượt trần dài hạn của cooldown.
   Cột gio_video bị làm tròn ba chữ số; phép chia dùng thời lượng chính xác local.
 
-Tổng hợp máy đọc được: video-evaluation-2026-11-05.json. Chưa có video swiftlet
-được xác nhận để kết luận mục 6.5; chưa có TV5 đếm lại. Không ghi hoàn tất các
+Tổng hợp máy đọc được: video-evaluation-2026-11-05.json. Đã bổ sung V08 theo mô tả loài của DVIDS ở phần cuối; chưa có TV5 đếm lại. Không ghi hoàn tất các
 điều kiện đó chỉ vì đã có CSV.
+
+## Bổ sung sau rà độc lập — 05/11/2026
+
+Đã sửa lỗi đánh giá ở ranh giới giây lẻ: offline predators.csv và crossings.csv
+thêm media_seconds chính xác; evaluate.py ưu tiên trường này và vẫn đọc CSV cũ.
+HTTP/fixture thời gian UTC đến giây có Z giữ nguyên. Hai test ranh giới7,9s/2,9s
+và test writer2,1s tái hiện lỗi trước sửa, đạt sau sửa. Đã chạy lại V03–V07 với
+cùng model/config/GT để sửa phép đo, không dùng kết quả chọn tham số. Các số đo
+toàn clip không đổi. Raw mới: data/out/eval_precise_20261105/; bản cũ giữ nguyên.
+Chi tiết review: reports/2026-11-05-measurement-review.json.
+
+Đã bổ sung AP theo score sweep vào detector_map.csv ở640/320 trên1.905 ảnh test.
+Đây là **lượt test bổ sung cho chỉ số thiếu**, lệch quy tắc “test một lần” ở6.1;
+không chọn lại model hoặc threshold theo kết quả. detector.csv P/R tại ngưỡng
+runtime giữ nguyên byte/hash; không trộn F1-selected PR vào đó. Tham số/hash
+trước lượt bổ sung trong map-evaluation-plan-2026-11-05.json; receipt riêng.
+Script eval_detector.py giờ mặc định ghi detector_ultralytics.csv và ép CPU,
+tránh vô ý đè detector.csv; có test hồi quy tình huống đó.
+
+| Lớp | AP50 640 | AP50–95 640 | AP50 320 | AP50–95 320 |
+|---|---:|---:|---:|---:|
+| owl | 0,0160 | 0,0048 | 0,0239 | 0,0097 |
+| rat | 0,9102 | 0,5740 | 0,9059 | 0,6219 |
+| snake | 0,6750 | 0,3708 | 0,6038 | 0,3180 |
+| swiftlet | 0,0714 | 0,0225 | 0,0496 | 0,0161 |
+
+Đã có offline_vs_live.csv trên đúng một vòng V03, cùng t0 chính xác
+2026-11-05T10:13:18.757654+00:00. Live xử lý299/bỏ350 khung trên649 khung,
+tỷ lệ bỏ350/649=53,93%; offline xử lý đủ649. Cửa sổ10:10UTC: live0in/0out,
+offline0in/1out, chênh0in/-1out. Không tính vòng lặp thứ hai. Helper chỉ chặn
+ở biên replay đầu bằng KeyboardInterrupt, không thay model/phát hiện/đồng hồ;
+đây không phải bằng chứng Ctrl+C kép bàn phím. Receipt ở
+offline-vs-live-receipt-2026-11-05.json. Chỉ là một video thay thế ngắn,
+không suy rộng mức sai số hoặc tỷ lệ bỏ khung sang mọi máy/video.
+
+## False alarms trên nguồn chim yến V08
+
+Đã bổ sung V08 từ video U.S.Navy/DVIDS949024, nguồn xác nhận Mariana swiftlet;
+chi tiết giấy phép, phần cắt và disclaimer trong SOURCES.md. Lấy26giây skyview,
+không dùng cảnh có người hoặc đoạn cut, duyệt trước suy luận, không dùng model
+để chọn đoạn. Lưu hash video/nhãn âm tính/config trong V08-freeze-2026-11-05.json.
+
+false_alarms.csv **hiện chứa V08**, thay fileV03; V03 vẫn ở
+false_alarms_fallback.csv, V07 ở false_alarms_background.csv.
+V08: rat1 confirmed +355 cooldown_blocked; snake/owl đều0. Ngoại suy tương ứng
+138,46/h có cooldown và49.292,31/h raw; **không phải quan sát một giờ**, số raw
+là số lần xác nhận/chặn theo định nghĩa spec, không phải356 con chuột hay356
+sự kiện vật lý độc lập. Tỷ lệ ngắn hạn vượt12/h không mô tả tốc độ gửi dài hạn
+khi giữ cooldown300giây. Điều này cho thấy nhận dạng nhầm nền/cành cây trên mẫu
+đã kiểm, không cho phép kết luận hệ thống đáng tin cậy. Loài dựa vào nguồn,
+chưa có chuyên gia đối chiếu; một đoạn rất ngắn, không đại diện mọi nhà yến.
+
+Toàn suite sau sửa330 test và6 subtest đạt, một FutureWarning ByteTrack đã biết.
+Pip check: không có phụ thuộc hỏng. Rà độc lập theo requesting-code-review đã
+xác nhận hai sửa đổi thời gian/đầu ra CLI, không còn lỗi cần chặn trong phạm vi đó.
+R05 vẫn chưa xác minh giấy phép gốc; không tự ghi giấy phép thay chủ nguồn.

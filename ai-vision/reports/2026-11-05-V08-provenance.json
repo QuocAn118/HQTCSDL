@@ -1,0 +1,22 @@
+{
+  "code": "V08",
+  "source": "https://www.dvidshub.net/video/949024/mariana-swiftlet-count-guam-b-roll",
+  "author": "Amy Burrell / U.S. Navy / NAVFAC Marianas",
+  "license": "PUBLIC DOMAIN as marked by DVIDS; follow copyright/non-endorsement notice",
+  "licenseUrl": "https://www.dvidshub.net/about/copyright",
+  "publicPlayer": "https://www.dvidshub.net/video/embed/949024",
+  "derivative": "Public HLS4 decoded sequentially; source frames8000..9299, source160..186seconds, mp4v without audio; excludes cut to person at~186.5seconds",
+  "fps": 50.0,
+  "frames": 1300,
+  "durationSeconds": 26.0,
+  "sha256": "51b194a1bee32b148ba071a8120813245309ace6c46215c275aa01d2df1ba46e",
+  "sourceStreamSha256": "f724ca811f001ae8fa478dbf0b25b87a2b9a9d645737c4cfb56905bd7d4d2270",
+  "status": "visual_review_before_any_model_inference",
+  "modelInferencePerformed": false,
+  "disclaimer": "The appearance of U.S. Department of War (DoW) visual information does not imply or constitute DoW endorsement.",
+  "split": "test",
+  "review": "Agent visual review at 2 fps through source160..185.5seconds plus endpoint; no visible rat/snake/owl; small flying birds identified as Mariana swiftlets by source, no expert verification",
+  "groundTruth": "No predator events in clip",
+  "purpose": "swiftlet-source false-alarm measurement; not counting validation",
+  "downloadDate": "2026-11-05"
+}

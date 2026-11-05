@@ -1,0 +1,24 @@
+{
+  "plannedAtUtc": "2026-11-05T10:15:05.793911+00:00",
+  "scope": "Supplement missing AP required by spec6.3; additional test pass explicitly deviates from literal test-once rule, no tuning/model selection",
+  "weightsSha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "dataYamlSha256": "ec51ce43d4ea91473c63f582c3d2ae5310c6ff390ce2a73e598482bb32b26126",
+  "splitManifestSha256": "e79fb22224b99eeddcbf5d6ae2c1ff81ccc72c56b714b0e3a4986bd02e185199",
+  "originalDetectorCsvSha256": "97c6e0590e73e6c04599f63b45d740019d254f980f5d34a192461dbf8803d584",
+  "scriptSha256": "7e6574df16aaa2b14c9667181d5eac68304d8961ef1fb102d00944e9788dcfb5",
+  "imgsz": [
+    640,
+    320
+  ],
+  "split": "test",
+  "device": "cpu",
+  "batch": 8,
+  "workers": 0,
+  "conf": 0.001,
+  "nmsIou": 0.7,
+  "maxDet": 300,
+  "output": "detector_map.csv",
+  "ultralytics": "8.4.178",
+  "torch": "2.15.0+cpu",
+  "note": "AP uses score sweep; F1-selected P/R must not replace fixed confidence P/R in detector.csv"
+}

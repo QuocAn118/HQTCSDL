@@ -1,0 +1,18 @@
+{
+  "command": "w32tm /stripchart /computer:time.windows.com /dataonly /samples:3",
+  "server": "time.windows.com",
+  "sampleLocalTimesVn": [
+    "2026-11-05T17:32:38+07:00",
+    "2026-11-05T17:32:40+07:00",
+    "2026-11-05T17:32:42+07:00"
+  ],
+  "offsetSeconds": [
+    1.1398146,
+    1.1386169,
+    1.1492891
+  ],
+  "exitCode": 0,
+  "windowsTimeService": "not_running",
+  "clockChanged": false,
+  "scope": "Read-only NTP offset measurement after live runs, not proof of automatic synchronization or offset at their start"
+}

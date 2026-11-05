@@ -141,7 +141,10 @@ ai-vision/
 - Consumes: không.
 - Produces: `.venv` cài đủ gói; `spikes/RESULTS.md` ghi chữ ký thật của `sv.LineZone`, `sv.ByteTrack`, `sv.Detections.from_ultralytics`, tên trường kết quả val của Ultralytics — **Task 2, 11, 15 đọc file này trước khi code**; hằng `PINNED` trong `tests/test_repo_rules.py`.
 
-- [ ] **Step 1: Chốt bản Python (S1)**
+- [x] **Step 1: Chốt bản Python (S1)**
+
+Đã chốt Python3.12.10 qua .venv/Scripts/python; py launcher không có, dùng
+đường dẫn Python trực tiếp thay lệnh py. S1/weights.json đã ghi bản thực tế.
 
 ```powershell
 py -0p
@@ -4450,7 +4453,13 @@ Expected: PASS mọi test (trừ các test cần fixture hợp đồng nếu PR 
 
 `test_live_ctrl_c_lan_hai_thoat_ngay` dựa vào `_thread.interrupt_main` (spec 7.5 "Chưa kiểm chứng": gửi Ctrl+C cho tiến trình con trên Windows có thể khó). Nếu test này treo hoặc không ổn định trên máy nhóm: đánh dấu `@pytest.mark.skip(reason='Ctrl+C lan hai kiem tay o Step 9')`, ghi vào S8, và kiểm tay ở Step 9 — không xóa test.
 
-- [ ] **Step 9: Kiểm tay Ctrl+C và lệnh thật (S8) — cần `best.pt` (Task 13) và một video thật**
+- [x] **Step 9: Kiểm tay Ctrl+C và lệnh thật (S8) — cần `best.pt` (Task 13) và một video thật**
+
+Đã kiểm05/11 bằng tín hiệu CTRL_C_EVENTWindows thật trên console con với model/V03
+thật và backendcổng3999 không listener: một lầnexit0, hai lầnexit130, khóa xóa.
+Đây là tương đương tín hiệu console, không tuyên bố thao tác bàn phím tay.
+Receipt ai-vision/spikes/ctrlc-console-2026-11-05.json.
+
 
 ```powershell
 .\.venv\Scripts\python -m swiftletcare_ai offline --camera H1-F0-CAMERA --out data\out\H1
@@ -4954,7 +4963,7 @@ Không có quyền tạo Release: dùng kho lưu trữ khác có link tải, ghi
 8. Chạy `.\.venv\Scripts\python scripts\download_weights.py` (hoặc `--verify-only`) → `Nap duoc …`; ghi S15 (chênh lệch bản Ultralytics nếu có, cả vào spec 2.6).
 9. Chạy lại `.\.venv\Scripts\python -m pytest` → `test_mo_hinh_that_nap_duoc_va_du_lop` không còn `SKIPPED`, PASS.
 
-- [ ] **Step 9: Commit (dữ liệu và trọng số)**
+- [x] **Step 9: Commit (dữ liệu và trọng số)**
 
 ```powershell
 git status   # chi SOURCES.md, splits.csv, weights.json, RESULTS.md, spec; KHONG co anh, video, best.pt
@@ -5639,6 +5648,14 @@ Kiem chung 03/11/2026: 12 test metrics PASS; toan bo suite 274 PASS, 6 subtests 
 
 - [ ] **Step 7: Đo thật (tay, theo mốc 01/11–04/11)**
 
+Cập nhật05/11: đã có speed/detector/detector_map/events/counting/false_alarms/
+offline_vs_live và bằng chứng backend. V08 nguồn DVIDS xác nhận Mariana swiftlet,
+đo âm tính26giây; V03đếm thay thế25,96giây do agent tham chiếu, chưa TV5đếm lại.
+AP và sửa phép đo timestamp cần lượt bổ sung với cùng model/config, đã ghi lệch
+quy tắc test-một-lần; không chọn lại ngưỡng. Giữ bước này chưa hoàn tất nghiêm
+ngặt do chưa có kiểm đếm độc lập; không tích checkbox chỉ vì đủ fileCSV.
+
+
 Thứ tự, đúng quy tắc 6.1:
 1. **Trên tập val** (trước 01/11): chọn `swiftlet.confidence`, `predator.confidence`, vị trí vạch, `confirm_frames`/`confirm_seconds`, kích thước ảnh suy luận. Ghi S18. Không xem tập test để chỉnh.
 2. **01/11 (M3)**: đóng băng `weights.json` và `cameras/*.yaml`; ghi commit vào `results/README.md`.
@@ -5741,9 +5758,18 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ## Kiểm tra cuối cùng (trước khi mở PR `ai-vision` → `main`)
 
-- [ ] `cd ai-vision; .\.venv\Scripts\python -m pytest -v` → PASS (test mô hình thật không còn `SKIPPED` khi đã có `best.pt`; test fixture hợp đồng PASS sau khi PR hợp đồng đã merge).
-- [ ] `git status --short` không có `.venv`, `data\`, `*.pt`, `.env`, ảnh, video.
-- [ ] `spikes/RESULTS.md` không còn dòng trống: mỗi mục có kết quả hoặc "chưa kiểm được" + lý do.
+- [x] `cd ai-vision; .\.venv\Scripts\python -m pytest -v` → PASS (test mô hình thật không còn `SKIPPED` khi đã có `best.pt`; test fixture hợp đồng PASS sau khi PR hợp đồng đã merge).
+- [x] `git status --short` không có `.venv`, `data\`, `*.pt`, `.env`, ảnh, video.
+- [x] `spikes/RESULTS.md` không còn dòng trống: mỗi mục có kết quả hoặc "chưa kiểm được" + lý do.
 - [ ] Spec ai-vision đã ghi lại mọi chỗ lệch phát hiện khi thực thi (bản Python, phiên bản gói, hành vi vạch đếm, `MIN_BOX_PX`, chênh lệch Ultralytics) và đã báo nhóm.
-- [ ] Rà nhánh bằng `superpowers:requesting-code-review`; sửa vấn đề nghiêm trọng.
+- [x] Rà nhánh bằng `superpowers:requesting-code-review`; sửa vấn đề nghiêm trọng.
+  Review agent độc lập05/11 phát hiện lỗi timestamp, đã sửa TDD; không thay review/duyệt của người trong nhóm.
 - [ ] Mở PR `ai-vision` → `main`, ít nhất một người duyệt (CLAUDE.md); nội dung PR liệt kê task đã làm, kết quả S2, S3, S20, S22 và trạng thái `results/`.
+
+## Trạng thái cuối lượt05/11
+
+Xem ai-vision/reports/2026-11-05-task-status.md. Không đánh dấu hoàn tất toàn bộ
+plan khi R05 chưa có giấy phép gốc và chưa có TV5 kiểm đếm độc lập. Ctrl+C kép
+bàn phím và NTP hệ thống chưa kiểm đầy đủ; đã có test logic, console signal thật
+và đối chiếu HTTPS Date sau live. Người dùng yêu cầu commit/push trực tiếp main;
+đó là ngoại lệ workflow của phiên, không ghi là PR đã được người duyệt.

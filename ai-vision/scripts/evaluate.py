@@ -38,10 +38,18 @@ def _seconds(at: str, t0) -> float:
     return (parse_utc(at) - t0).total_seconds()
 
 
+def _media_seconds(row: dict, t0) -> float:
+    # Old CSVs have only whole-second UTC; new offline CSVs retain media precision.
+    value = float(row['media_seconds']) if row.get('media_seconds') not in (None, '') else _seconds(row['at'], t0)
+    if not math.isfinite(value) or value < 0:
+        raise ValueError('media_seconds phai huu han va khong am')
+    return value
+
+
 def cmd_events(a) -> int:
     t0 = parse_utc(a.t0)
     gt = [(r['video'], r['class'], float(r['bat_dau_s']), float(r['ket_thuc_s'])) for r in _read(a.gt)]
-    events = [(run.name, r['class'], _seconds(r['at'], t0)) for run in a.runs for r in _read(run / 'predators.csv')]
+    events = [(run.name, r['class'], _media_seconds(r, t0)) for run in a.runs for r in _read(run / 'predators.csv')]
     m = event_metrics(events, gt)
     _write(a.out / 'events.csv', [{'lop': c, **v} for c, v in m.items()])
     return 0
@@ -69,7 +77,7 @@ def cmd_false_alarms(a) -> int:
 
 def cmd_counting(a) -> int:
     t0 = parse_utc(a.t0)
-    crossings = {run.name: [(_seconds(r['at'], t0), r['chieu']) for r in _read(run / 'crossings.csv')] for run in a.runs}
+    crossings = {run.name: [(_media_seconds(r, t0), r['chieu']) for r in _read(run / 'crossings.csv')] for run in a.runs}
     rows = []
     for s in _read(a.segments):
         ai_in, ai_out = segment_counts(crossings[s['video']], float(s['bat_dau_s']), float(s['ket_thuc_s']))

@@ -169,3 +169,22 @@ không nhận là TV5 đã duyệt. Metadata đóng băng: results/video-freeze-
 V07 chỉ đo âm tính nền rừng bổ sung; không thay mục 6.5 video chỉ có chim yến.
 
 Video V03-V07 duoc tach rieng trong splits_video_20261105.csv (test), khong dua vao train/val hoac thay splits_v4.csv. Pham vi fallback/generic-background van theo metadata tung video.
+
+## V08 — nguồn chim yến bổ sung 05/11/2026
+
+| Mã | Người tạo | Nguồn | Giấy phép | Tập | Mục đích |
+|---|---|---|---|---|---|
+| V08 | Amy Burrell / U.S. Navy / NAVFAC Marianas | [Mariana Swiftlet Count on Guam B-Roll, DVIDS949024](https://www.dvidshub.net/video/949024/mariana-swiftlet-count-guam-b-roll) | PUBLIC DOMAIN theo trang; [điều kiện sử dụng DVIDS](https://www.dvidshub.net/about/copyright) | test | Báo động giả trên nguồn chim yến |
+
+Đọc luồng HLS720p từ player công khai /video/embed/949024, không đăng nhập,
+không dùng đường tải yêu cầu tài khoản. File MP4 gốc public492MB không tải;
+đã tải variantHLS khoảng88MB, decode tuần tự448,3giây. Lấy khung8000..9299
+(t160..186s), xuất mp4v1280x720,50FPS,26s, không âm thanh. Loại phần sau có cut
+sang người đếm chim, trước inference. Không ghép với train/val; toàn nguồn là test.
+Đã xem mẫu2FPS và điểm cuối, không thấy rat/snake/owl. Loài theo mô tả của nguồn,
+không phải chuyên gia xác nhận; chim rất nhỏ. Không dùng clip này để chứng minh
+MAE đếm vì chuyển động camera/chim xa, chỉ đo false alarms. Metadata/hash/quyền
+sử dụng ở reports/2026-11-05-V08-provenance.json; hash trước suy luận tại
+results/V08-freeze-2026-11-05.json. Media không vào Git.
+
+The appearance of U.S. Department of War (DoW) visual information does not imply or constitute DoW endorsement.

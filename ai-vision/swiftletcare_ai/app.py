@@ -193,18 +193,19 @@ def run_offline(camera: str, out: Path, weights: Path, imgsz: int | None, t0: da
             (out / 'crossings.csv').open('w', encoding='utf-8', newline='') as fx:
         counts, preds, crossings = csv.writer(fc), csv.writer(fp), csv.writer(fx)
         counts.writerow(['camera', 'windowStart', 'in', 'out'])
-        preds.writerow(['camera', 'class', 'confidence', 'at'])
-        crossings.writerow(['at', 'chieu', 'track_id'])
+        preds.writerow(['camera', 'class', 'confidence', 'at', 'media_seconds'])
+        crossings.writerow(['at', 'chieu', 'track_id', 'media_seconds'])
 
         def on_confirmed(c: Confirmed):
             at = utc_iso(c.at)
-            preds.writerow([camera, c.cls, c.confidence, at])
+            preds.writerow([camera, c.cls, c.confidence, at, (c.at - t0).total_seconds()])
             name = f'{c.cls}_{at.replace(":", "")}.jpg'
             (out / 'snapshots' / name).write_bytes(encode_snapshot(c.frame, c.boxes, env.snapshot_max_bytes))
 
         windows = WindowCounter(lambda ws, i, o: counts.writerow([camera, utc_iso(ws), i, o]))
         pipe = Pipeline(cfg, detector.names, windows, PredatorConfirmer(cfg.predator), log,
-                        lambda at, d, tid: crossings.writerow([utc_iso(at), d, tid]), on_confirmed, deps.make_tracker)
+                        lambda at, d, tid: crossings.writerow([utc_iso(at), d, tid, (at - t0).total_seconds()]),
+                        on_confirmed, deps.make_tracker)
         started = time.perf_counter()
         writer, size = None, None
         try:

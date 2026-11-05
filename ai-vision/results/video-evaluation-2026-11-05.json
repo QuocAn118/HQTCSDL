@@ -120,7 +120,8 @@
     "V03 birds are not identified as swiftlets by source; fallback only",
     "Single 25.96-second counting segment; agent visual reference, not TV5 independent review",
     "Forest negative is 10.6106 seconds; hourly rates are extrapolations and cooldown caps long-run rate",
-    "No parameter changes after inference"
+    "No parameter changes after inference",
+    "V08 species identification follows DVIDS source, no expert verification; sample only26seconds"
   ],
   "files": {
     "counting.csv": "429941fdcc8b4580f8d51b02e71e92733c2d10ca6c8ddf97418d4757b406e5fc",
@@ -128,7 +129,53 @@
     "counting_summary.csv": "e3bc0bd469b58da3317973679657a85e247c41598ca2f28cc5a251a051426d4d",
     "events.csv": "950c36acd40b130adc07824f6137c713aca45c46ca39bbf11f421ff8d7ca7709",
     "events_gt.csv": "39dd652e14f852e883176f73bfbca7a31ffaae898c68e06d77c2c361ded4b2bd",
-    "false_alarms.csv": "9c8046205689cafa2d1aa0457eef780f737cc9daff432efec6cba9977e3fc859",
+    "false_alarms.csv": "e0d908d8d799d443cb27b7522712820c666977024d6f859d67dd2c1d34a0177f",
     "false_alarms_background.csv": "b13b89a2cc159632725a6f1b4068247e1b53c7c9e65a4dd87071c67a9ec5eea0"
-  }
+  },
+  "timingCorrection": {
+    "preciseField": "media_seconds",
+    "scope": "Offline CSV only; HTTP UTC second-Z contract unchanged",
+    "rerunReason": "Independent review found subsecond truncation; supplementary same-parameter measurement correction, not tuning",
+    "rawOutput": "data/out/eval_precise_20261105",
+    "wholeClipResultsChanged": false
+  },
+  "falseAlarmsSwiftletSourceV08": [
+    {
+      "lop": "rat",
+      "gio_video": "0.007",
+      "confirmed": "1",
+      "blocked": "355",
+      "per_hour_cooldown": "138.46153846153848",
+      "per_hour_raw": "49292.307692307695",
+      "video": "V08",
+      "duration_seconds": 26.0,
+      "scope": "source_identified_Mariana_swiftlet_negative_clip",
+      "extrapolated_under_one_hour": "true"
+    },
+    {
+      "lop": "snake",
+      "gio_video": "0.007",
+      "confirmed": "0",
+      "blocked": "0",
+      "per_hour_cooldown": "0.0",
+      "per_hour_raw": "0.0",
+      "video": "V08",
+      "duration_seconds": 26.0,
+      "scope": "source_identified_Mariana_swiftlet_negative_clip",
+      "extrapolated_under_one_hour": "true"
+    },
+    {
+      "lop": "owl",
+      "gio_video": "0.007",
+      "confirmed": "0",
+      "blocked": "0",
+      "per_hour_cooldown": "0.0",
+      "per_hour_raw": "0.0",
+      "video": "V08",
+      "duration_seconds": 26.0,
+      "scope": "source_identified_Mariana_swiftlet_negative_clip",
+      "extrapolated_under_one_hour": "true"
+    }
+  ],
+  "V08Provenance": "reports/2026-11-05-V08-provenance.json"
 }

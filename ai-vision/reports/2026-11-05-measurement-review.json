@@ -1,0 +1,17 @@
+{
+  "issue": "Offline UTC at values lose fractional seconds; segment boundaries can be mis-scored",
+  "fix": "Add precise media_seconds to offline CSV and prefer it during evaluation; old CSVs remain readable",
+  "TDD": "Two boundary tests and offline writer test failed before fix, passed after fix; writer verifies 2.1 seconds",
+  "httpContractChanged": false,
+  "originalFreezeUnchanged": true,
+  "rerun": "V03-V07 identical weights, inputs, config and GT, newly measured in data/out/eval_precise_20261105",
+  "wholeClipScoresChanged": false,
+  "files": {
+    "swiftletcare_ai/app.py": "e371f67327a0f11b107bf923e9fe4d76c2f37ad13b9eb5b6248c9a0f92c2948a",
+    "scripts/evaluate.py": "fe04261ed35e6864aec7f18cfe4df041c698ca889895377b2e1a57f3203d87c6",
+    "scripts/eval_detector.py": "1e0a338148886d840c7c95ef5faba6d803d040768490f867ba5795989d897668",
+    "tests/test_metrics.py": "45a5650e02af923e72fdfe399407fa12ba262a63a5c92b5c4a06260cb7cc1651",
+    "tests/test_app.py": "9cad1723ca765a05b95dba6640b3651c9471d37622c373329910c0ec7ba52a88",
+    "tests/test_eval_detector_cli.py": "710e2ee2fb3fe318677dcc3635f2e77810aefb6428d95b7530b6f20dea7e4bc1"
+  }
+}

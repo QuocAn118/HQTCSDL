@@ -22,12 +22,12 @@ minh; không suy ra module đã chạy đầu-cuối trên video thật.
 | S15 | Nạp trọng số máy nhóm | Hash đúng metadata; best.pt nạp bốn lớp trên CPU. Torch Windows 2.15.0+cpu khác Colab; Ultralytics cùng bản. |
 | S16 | Ảnh nền | Train có 0/3104 nhãn rỗng, backgroundRatio=0.0. Đã tra hướng dẫn YOLOv5 của Ultralytics nêu gợi ý 0–10%; chưa chứng minh tỷ lệ tối ưu cho mô hình chim yến này. Xem nguồn bên dưới. |
 | S17 | Đọc/bỏ khung thật | V01.webm: 1280×720, 25 FPS, 2933 khung. Spike 300 lượt read và 300 lượt grab: read 0,79 ms/khung, grab 0,52 ms/khung. Chỉ là tốc độ giải mã/bỏ khung, không phải FPS nhận dạng hay số đo chất lượng đếm. |
-| S18 | Ngưỡng và MIN_BOX_PX | Đóng băng mặc định swiftlet 0,40/predator 0,50, 3 khung/2 giây, cooldown 300 giây trước đo ảnh test. Chưa tối ưu trên val thiên địch vì val chỉ có swiftlet; MIN_BOX_PX chưa chốt. |
+| S18 | Ngưỡng và MIN_BOX_PX | Đóng băng mặc định swiftlet 0,40/predator 0,50, 3 khung/2 giây, cooldown 300 giây trước đo ảnh test. Chưa tối ưu trên val thiên địch vì val chỉ có swiftlet; MIN_BOX_PX=8 chỉ cho tham chiếu V03, chốt trước suy luận05/11; không sửa nhãn train cũ. |
 | S19 | Giới hạn ảnh | Backend/AI đang chạy cùng SNAPSHOT_MAX_BYTES=2097152, service key khớp; đã nhận JPEG qua HTTP và tải lại từ API. |
 | S20 | Vạch đếm | 7 test đạt; SV_IN_MEANS=out. Mất track trước vạch rồi ID mới phía kia: in=0/out=0. Lượn lên–xuống–lên: in=1/out=2, đếm mỗi lần qua vạch. |
 | S21 | Video đúng góc | V01/V02 là video martin/én có chuyển động camera, chưa gán test hoặc có nhãn đếm tay. V01 đã dùng smoke live/backend thật ngày 04/11, có nhận dạng sai tổ/chim thành thiên địch; không coi là đánh giá chất lượng đếm. |
 | S22 | 404 backend thật | 04/11: POST /api/ai/khong-co với khóa đúng trả 404 NOT_FOUND, sqlNumber=null/details=null. Sai khóa ở bird-counts trả 401 UNAUTHENTICATED. GET health 200; heartbeat object đúng trả 200 accepted=1/rejected=0. |
-| S23 | API metrics | Metric.ap_class_index/class_result tồn tại. Đã đo P/R từng lớp tại ngưỡng cố định, IoU 0,5, 1905 ảnh test ở 640/320 bằng eval_fixed_detector.py; detector.csv có TP/FP/FN. Chưa đo mAP/chỉ số sự kiện video. |
+| S23 | API metrics | Metric.ap_class_index/class_result tồn tại. Đã đo P/R từng lớp tại ngưỡng cố định, IoU 0,5, 1905 ảnh test ở 640/320 bằng eval_fixed_detector.py; detector.csv có TP/FP/FN. 05/11 đã bổ sung AP vào detector_map.csv và sự kiện vào events.csv, ghi rõ lượt test bổ sung và ngưỡng không đổi. |
 
 Lượt suite cuối ngày 04/11: **327 test và 6 subtest đạt**, có một FutureWarning
 ByteTrack đã nêu ở S4. Test `test_offline_smoke.py` đọc MP4 tổng hợp qua OpenCV,
@@ -70,3 +70,31 @@ minimum_matching_threshold=0.8, frame_rate=30, minimum_consecutive_frames=1)`.
 
 Trước khi nâng supervision lên 0.31 hoặc đổi gói tracker, cần cập nhật spec,
 kiểm lại API, ánh xạ chiều và tracker thật. Không tự nâng bản.
+
+## Kiểm bổ sung05/11
+
+- S1: Python3.12.10 trực tiếp từ .venv/Scripts/python, không yêu cầu py launcher.
+- S8: thêm live602,98giây trên video thiên địch thật, restart48,61giây; tổng cuối,
+  heartbeat/snapshot/cooldown/backend Dev đạt. Ctrl+C console thực; bàn phím kép
+  vẫn chưa được người thao tác kiểm, không đánh dấu đã làm.
+- S9: GitHub HTTPS Date header ba mẫu lệch localUTC khoảng-0,48..-1,04giây,
+  RTT0,55..0,57giây; receipt clock-check-2026-11-05.json. Đây chỉ là đối chiếu
+  hiện tại sau live, không thay NTP hoặc chứng minh đồng bộ tại lúc bắt đầu.
+- S13: R05trang gốc vẫn403/người dùng chưa cung cấp giấy phép; giữ chưa xác minh.
+- S21: V03video thay thế có tham chiếu agent, V04–V06thiên địch, V07nền rừng,
+  V08nguồn Mariana swiftlet để đo false alarms; nguồn/hash/giới hạn trong SOURCES.
+- S23: P/Rfixed giữ nguyên; AP640/320, sự kiện, đếm, false alarms, offline/live
+  đều có CSV. Đã sửa thời điểm offline giữ giây lẻ, không đổi hợp đồng HTTP.
+- Suite cuối330test+6subtest đạt; pip check đạt. Review độc lập không còn blocker
+  trong sửa đổi code; không phải người trong nhóm đã review dữ liệu/duyệt PR.
+
+- S9b: w32tm/stripchart đọc NTPtime.windows.com thành công,3mẫu lúc17:32:38–42VN
+  lệch+1,1398/+1,1386/+1,1493giây, exit0; ntp-offset-2026-11-05.json. Không bật
+  WindowsTime/tự chỉnh đồng hồ; phép kiểm sau live, không nhận đã đồng bộ tự động.
+
+- S8b: đã gửi CTRL_C_EVENTthật với model/video thật tới console con, backendcổng3999
+  không có listener theo Task12Step9. Một tín hiệu→exit0 sau2,812giây, hai tín hiệu
+  cách0,5giây→exit130 sau2,812giây tính từ tín hiệu đầu; cả hai xóa khóa. Không
+  nhận là bấm bàn phím tay. Receipt ctrlc-console-2026-11-05.json. Lần harness
+  đầu bị thuộc tính ignoreCtrlCkế thừa ở child, đã sửa helper theo tài liệuMicrosoft,
+  không sửa code production để ép kết quả; chỉ dọn tiến trình/khóa probe lỗi.
