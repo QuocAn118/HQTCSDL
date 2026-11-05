@@ -1,0 +1,25 @@
+{
+  "frozenAtUtc": "2026-11-05T09:54:30.704003Z",
+  "status": "pre_inference",
+  "weights": "data/weights/best.pt",
+  "weightsSha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "cameraConfig": "cameras/H1-F0-CAMERA.yaml",
+  "cameraConfigSha256": "a093ca1f5c24b4ba37f51daf820ebf2d5e4cadc16810ffd8036bf281b6aa68af",
+  "imgsz": 640,
+  "eventsGroundTruthSha256": "39dd652e14f852e883176f73bfbca7a31ffaae898c68e06d77c2c361ded4b2bd",
+  "intakeSha256": "c3b46023f455b72f2357d58c43e01e0faa31915c000ef48d36d0fe5032f551b4",
+  "videos": {
+    "V04.mp4": "7b7961d793860abbdb0e2d478d4107cf9efa916baf574ae596236d6667ca5ffc",
+    "V05.mp4": "c0cf98ac6553c39f59db9653054292ae98690c8952e26a711e9380c91e71134d",
+    "V06.mp4": "c72e3043d8b85a9a43204da058e4db8e54e76c14995d6e3d6fcd7e659dc89c9a",
+    "V07.mp4": "8134606691e6b7f729aa6bfabd93ab810b59583eb85bf8dd01df04978cbcd8d6"
+  },
+  "t0": "2000-01-01T00:00:00Z",
+  "parameters": "Unchanged v3 confidence .5 predators/.4 swiftlet, 3 frames/2 sec, cooldown 300 sec",
+  "limitations": [
+    "V03 source does not identify birds as swiftlets",
+    "V07 forest is not swiftlet-only negative video",
+    "Visual event review approx 4 fps, not expert or independent human verification",
+    "Pexels originals not redistributed in Git; no use for training"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "purpose": "Start owl clip first within five minutes of previous owl alert to test backend cooldown",
+  "configuration": {
+    "camera": "H1-F0-CAMERA",
+    "playlist": [
+      "../../videos/V06.mp4",
+      "../../videos/V04.mp4",
+      "../../videos/V05.mp4",
+      "../../videos/V07.mp4"
+    ],
+    "line": {
+      "start": [
+        0.1,
+        0.55
+      ],
+      "end": [
+        0.9,
+        0.55
+      ]
+    },
+    "swiftlet": {
+      "confidence": 0.4
+    },
+    "predator": {
+      "confidence": 0.5,
+      "confirm_frames": 3,
+      "confirm_seconds": 2,
+      "cooldown_seconds": 300
+    },
+    "process_fps": null
+  }
+}

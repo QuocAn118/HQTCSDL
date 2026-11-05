@@ -5690,7 +5690,13 @@ khớp, Ctrl+C/heartbeat/cooldown sau restart đã kiểm. V01 là video chạy 
 nhận dạng sai, chưa có video thiên địch được duyệt; **không đánh dấu hoàn tất
 Step 3/Task 16**. Xem results/e2e.md.
 
-- [ ] **Step 3: Chạy theo 7 bước spec 7.5**
+- [x] **Step 3: Chạy theo 7 bước spec 7.5**
+
+Cập nhật 05/11: live 602,98 giây với V04–V07 đã có nguồn Pexels; ảnh chuột
+thật GET200, 20 heartbeat200/12 counts200, cửa sổ API khớp, restart owl trong
+277 giây trả COOLDOWN. Ctrl+C bằng tín hiệu console Windows thật, không nhận
+là thao tác bàn phím tay; chưa xác nhận NTP. Chi tiết results/e2e.md.
+
 
 1. `.\.venv\Scripts\python -m swiftletcare_ai live --camera H1-F0-CAMERA` **ít nhất 10 phút**.
 2. Số đếm trên web/API đúng cửa sổ 5 phút (so với dòng `counts.sent` trong `data\logs\H1-F0-CAMERA.log`).
@@ -5720,7 +5726,7 @@ Ghi chú: test hình dạng và backend giả không chứng minh AI chạy đú
 
 Bước nào không đạt: dùng `superpowers:systematic-debugging`, báo TV2 nếu lỗi ở backend; **không tự sửa hợp đồng**.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add ai-vision/results/e2e.md ai-vision/spikes/RESULTS.md

@@ -1,0 +1,134 @@
+{
+  "scope": "v3 frozen model, new Pexels clips; fallback flock and generic forest clearly separated",
+  "weightsVersion": "split_v3 best.pt 50 epochs",
+  "imgsz": 640,
+  "predatorConfidence": 0.5,
+  "swiftletConfidence": 0.4,
+  "events": [
+    {
+      "lop": "rat",
+      "n_events": "1",
+      "tp_events": "1",
+      "precision": "1.0",
+      "n_segments": "1",
+      "detected": "1",
+      "recall": "1.0"
+    },
+    {
+      "lop": "snake",
+      "n_events": "2",
+      "tp_events": "1",
+      "precision": "0.5",
+      "n_segments": "1",
+      "detected": "1",
+      "recall": "1.0"
+    },
+    {
+      "lop": "owl",
+      "n_events": "1",
+      "tp_events": "1",
+      "precision": "1.0",
+      "n_segments": "1",
+      "detected": "1",
+      "recall": "1.0"
+    }
+  ],
+  "counting": [
+    {
+      "chieu": "in",
+      "tong_tay": "2",
+      "tong_ai": "0",
+      "mae": "2.0",
+      "sai_so_tuong_doi": "1.0",
+      "sai_lech_co_dau": "-1.0"
+    },
+    {
+      "chieu": "out",
+      "tong_tay": "3",
+      "tong_ai": "1",
+      "mae": "2.0",
+      "sai_so_tuong_doi": "0.6666666666666666",
+      "sai_lech_co_dau": "-0.6666666666666666"
+    }
+  ],
+  "falseAlarmsFlock": [
+    {
+      "lop": "rat",
+      "gio_video": "0.007",
+      "confirmed": "0",
+      "blocked": "0",
+      "per_hour_cooldown": "0.0",
+      "per_hour_raw": "0.0",
+      "video": "V03",
+      "duration_seconds": 25.96,
+      "scope": "fallback_unspecified_birds_not_verified_swiftlet",
+      "extrapolated_under_one_hour": "true"
+    },
+    {
+      "lop": "snake",
+      "gio_video": "0.007",
+      "confirmed": "0",
+      "blocked": "0",
+      "per_hour_cooldown": "0.0",
+      "per_hour_raw": "0.0",
+      "video": "V03",
+      "duration_seconds": 25.96,
+      "scope": "fallback_unspecified_birds_not_verified_swiftlet",
+      "extrapolated_under_one_hour": "true"
+    },
+    {
+      "lop": "owl",
+      "gio_video": "0.007",
+      "confirmed": "0",
+      "blocked": "0",
+      "per_hour_cooldown": "0.0",
+      "per_hour_raw": "0.0",
+      "video": "V03",
+      "duration_seconds": 25.96,
+      "scope": "fallback_unspecified_birds_not_verified_swiftlet",
+      "extrapolated_under_one_hour": "true"
+    }
+  ],
+  "falseAlarmsForest": [
+    {
+      "lop": "rat",
+      "gio_video": "0.003",
+      "confirmed": "0",
+      "blocked": "0",
+      "per_hour_cooldown": "0.0",
+      "per_hour_raw": "0.0"
+    },
+    {
+      "lop": "snake",
+      "gio_video": "0.003",
+      "confirmed": "1",
+      "blocked": "52",
+      "per_hour_cooldown": "339.2833581512827",
+      "per_hour_raw": "17982.017982017984"
+    },
+    {
+      "lop": "owl",
+      "gio_video": "0.003",
+      "confirmed": "0",
+      "blocked": "0",
+      "per_hour_cooldown": "0.0",
+      "per_hour_raw": "0.0"
+    }
+  ],
+  "limitations": [
+    "One positive clip per class; no confidence intervals or reliability guarantee",
+    "V03 birds are not identified as swiftlets by source; fallback only",
+    "Single 25.96-second counting segment; agent visual reference, not TV5 independent review",
+    "Forest negative is 10.6106 seconds; hourly rates are extrapolations and cooldown caps long-run rate",
+    "No parameter changes after inference"
+  ],
+  "files": {
+    "counting.csv": "429941fdcc8b4580f8d51b02e71e92733c2d10ca6c8ddf97418d4757b406e5fc",
+    "counting_segments.csv": "aa18971f9bec37516f2c233721bb53a6fb168a4814edacbd54279d8fd0ec28c8",
+    "counting_summary.csv": "e3bc0bd469b58da3317973679657a85e247c41598ca2f28cc5a251a051426d4d",
+    "events.csv": "950c36acd40b130adc07824f6137c713aca45c46ca39bbf11f421ff8d7ca7709",
+    "events_gt.csv": "39dd652e14f852e883176f73bfbca7a31ffaae898c68e06d77c2c361ded4b2bd",
+    "false_alarms.csv": "9c8046205689cafa2d1aa0457eef780f737cc9daff432efec6cba9977e3fc859",
+    "false_alarms_background.csv": "b13b89a2cc159632725a6f1b4068247e1b53c7c9e65a4dd87071c67a9ec5eea0"
+  }
+}

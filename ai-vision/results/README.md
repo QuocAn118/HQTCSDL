@@ -82,3 +82,68 @@ Mô hình: 5 khung warmup + 300 khung đo. Toàn luồng offline xử lý toàn 
 Đầu ra: speed.csv. Đây là một lượt benchmark trên máy hiện tại, không phải
 ước lượng độ chính xác. 640 thấp hơn FPS video (~29,97); live có thể bỏ khung.
 Không tự đổi cấu hình runtime xuống 320, vì recall ảnh test ở 320 thấp hơn.
+
+## Đo video Pexels bổ sung — 05/11/2026
+
+Phần ghi chưa có nhãn/CSV ngày 04/11 ở trên là lịch sử. Đã nhận V03–V07,
+đối chiếu URL và giấy phép Pexels trong SOURCES.md. Giữ v3 best.pt và tham số
+đã khóa: imgsz 640, swiftlet 0,40, predator 0,50, 3 khung/2 giây, cooldown 300 giây.
+Không sửa ngưỡng theo kết quả. results/video-freeze-2026-11-05.json ghi hash
+video, nhãn sự kiện và cấu hình trước suy luận. counting-freeze-2026-11-05.json
+ghi riêng nhãn tham chiếu V03 trước khi chạy V03. Video/ảnh/log gốc không vào Git.
+
+### Sự kiện thiên địch
+
+Agent xem ảnh mẫu khoảng 4 FPS toàn thời lượng V04/V05/V06, ghi mỗi clip một
+đoạn liên tục từ đầu tới cuối vào events_gt.csv, rồi mới chạy offline từng clip.
+Nhãn không dựa trên dự đoán AI; không tuyên bố có TV5 hoặc chuyên gia duyệt.
+Các clip chỉ dài 20,64 / 5,04 / 14,25 giây, mỗi lớp một clip: số đo mẫu nhỏ,
+không chứng minh khả năng tổng quát ngoài thực tế. Kết quả events.csv:
+
+| Lớp | Sự kiện đúng / phát ra | Đoạn phát hiện / GT | Precision | Recall |
+|---|---:|---:|---:|---:|
+| rat | 1/1 | 1/1 | 1,00 | 1,00 |
+| snake | 1/2 | 1/1 | 0,50 | 1,00 |
+| owl | 1/1 | 1/1 | 1,00 | 1,00 |
+
+Đây là P/R theo sự kiện, không phải P/R theo khung trong detector.csv.
+
+### Đếm trên video thay thế V03
+
+Trang nguồn chỉ mô tả birds, không xác nhận swiftlet. Chỉ dùng phương án
+đàn chim quay cố định theo mục 1.3; không gán nhãn loài swiftlet cho nguồn.
+Vạch giữ nguyên (0,10;0,55) → (0,90;0,55), bay xuống=in, bay lên=out.
+Agent duyệt 66 ảnh cách 0,4 giây, sau đó duyệt chi tiết cách 0,2 giây tại
+7,8–14,2 giây; dùng tâm thân, không tính cánh vừa chạm vạch. MIN_BOX_PX=8
+trên ảnh gốc cho lượt tham chiếu này; các chim được đếm đều lớn hơn ngưỡng.
+Không đổi nhãn train cũ. Chi tiết nhãn trước suy luận nằm ở
+reports/2026-11-05-counting-reference.json. Chưa có TV5 đếm lại độc lập;
+đây là nhãn tham chiếu của agent cần người đối chiếu, không coi là ground truth
+người đếm đã được xác minh. Video chỉ 25,96 giây, một đoạn, ngắn hơn đề xuất
+khoảng một phút; không coi nhiều vòng phát lặp là nhiều mẫu độc lập.
+
+| Chiều | Tham chiếu agent | AI | MAE trên 1 đoạn | Sai số tương đối | Sai lệch có dấu |
+|---|---:|---:|---:|---:|---:|
+| in | 2 | 0 | 2 | 100% | -100% |
+| out | 3 | 1 | 2 | 66,67% | -66,67% |
+
+counting.csv/counting_summary.csv giữ tên cột tay_* của công cụ; ở lượt này
+chúng chứa số tham chiếu thị giác agent, không phải xác nhận TV3/TV5 đã đếm tay.
+Kết quả thấp được giữ nguyên. Không thay trọng số/ngưỡng để cải thiện trên test.
+
+### Báo động giả
+
+- false_alarms.csv và false_alarms_fallback.csv: V03, 25,96 giây, 0 lần confirmed
+  và 0 lần blocked cả ba lớp. Đây là video đàn chim chưa xác nhận loài, **không
+  hoàn tất riêng yêu cầu video chỉ có chim yến mục 6.5**.
+- false_alarms_background.csv: V07 nền rừng 10,6106 giây; snake 1 confirmed,
+  52 cooldown_blocked, tương ứng 339,28 / 17.982,02 lần mỗi giờ nếu ngoại suy
+  theo hai định nghĩa; rat/owl 0. Đây là phép đo bổ sung nền chung.
+- Các tỷ lệ/giờ đều tính từ thời lượng ngắn, không phải quan sát một giờ thực tế.
+  Đặc biệt 339,28/h không phải tốc độ báo động dài hạn khi giữ cooldown 300 giây:
+  phép ngoại suy từ lần xác nhận đầu clip có thể vượt trần dài hạn của cooldown.
+  Cột gio_video bị làm tròn ba chữ số; phép chia dùng thời lượng chính xác local.
+
+Tổng hợp máy đọc được: video-evaluation-2026-11-05.json. Chưa có video swiftlet
+được xác nhận để kết luận mục 6.5; chưa có TV5 đếm lại. Không ghi hoàn tất các
+điều kiện đó chỉ vì đã có CSV.

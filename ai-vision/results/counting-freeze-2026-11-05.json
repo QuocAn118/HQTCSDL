@@ -1,0 +1,12 @@
+{
+  "frozenAtUtc": "2026-11-05T09:58:57.808613Z",
+  "status": "before_V03_inference",
+  "videoSha256": "ca65bf66e2f2a495a0ed7799a149940028c44642c1228be39df7fb87e8554220",
+  "referenceSha256": "987c718668305c515ad23cd5f72ef61bd75a17b5842b63e96becb1e932816e06",
+  "segmentsSha256": "aa18971f9bec37516f2c233721bb53a6fb168a4814edacbd54279d8fd0ec28c8",
+  "weightsSha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "cameraConfigSha256": "a093ca1f5c24b4ba37f51daf820ebf2d5e4cadc16810ffd8036bf281b6aa68af",
+  "imgsz": 640,
+  "t0": "2000-01-01T00:00:00Z",
+  "scope": "fallback counting on fixed-frame flock video, not swiftlet-specific accuracy"
+}

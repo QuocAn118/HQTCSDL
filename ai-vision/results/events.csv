@@ -1,0 +1,4 @@
+lop,n_events,tp_events,precision,n_segments,detected,recall
+rat,1,1,1.0,1,1,1.0
+snake,2,1,0.5,1,1,1.0
+owl,1,1,1.0,1,1,1.0

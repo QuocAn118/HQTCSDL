@@ -1,0 +1,40 @@
+{
+  "playlist": [
+    "V04.mp4",
+    "V05.mp4",
+    "V06.mp4",
+    "V07.mp4"
+  ],
+  "profile": "data/local-setup/e2e-20261105/cameras/H1-F0-CAMERA.yaml",
+  "configurationSha256": "ef4113bae6909f805ec48455f9311ccb161b3c738bedfad06a31befe7df5525f",
+  "configuration": {
+    "camera": "H1-F0-CAMERA",
+    "playlist": [
+      "../../videos/V04.mp4",
+      "../../videos/V05.mp4",
+      "../../videos/V06.mp4",
+      "../../videos/V07.mp4"
+    ],
+    "line": {
+      "start": [
+        0.1,
+        0.55
+      ],
+      "end": [
+        0.9,
+        0.55
+      ]
+    },
+    "swiftlet": {
+      "confidence": 0.4
+    },
+    "predator": {
+      "confidence": 0.5,
+      "confirm_frames": 3,
+      "confirm_seconds": 2,
+      "cooldown_seconds": 300
+    },
+    "process_fps": null
+  },
+  "note": "Separate local ai_dir with private .env; frozen root camera configs unchanged; playlist paths resolve from that ai_dir; no V03 inference in live test"
+}

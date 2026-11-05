@@ -136,3 +136,36 @@ R07 hiện dùng bộ `rat-fsvlk` do người phụ trách cung cấp thay cho b
 
 Mỗi lớp đã có hai mã nguồn, mỗi nguồn chỉ thuộc một tập; các ảnh gần trùng đã phát hiện với nguồn cũ được loại khỏi test. Việc rà toàn bộ nhãn, xác minh thêm cảnh/nguồn gốc nếu có nghi vấn và bổ sung val thiên địch vẫn cần hoàn tất trước khi tinh chỉnh hoặc đo chính thức. Chưa chạy mô hình để đo trên test.
 
+
+## Video nhận thêm ngày 05/11/2026 — trạng thái ban đầu khi nhận
+
+Đã nhận V03.mp4 (đàn chim bay, 25,96 s), V04.mp4 (chuột, 20,64 s),
+V05.mp4 (rắn, 5,04 s), V06.mp4 (cú, 14,25 s), V07.mp4 (đường rừng, 10,61 s).
+Metadata/hash và trạng thái duyệt: reports/2026-11-05-video-intake.json.
+Mới xem 16 khung rải đều mỗi video; chưa duyệt toàn bộ, chưa gán nhãn sự kiện
+hoặc số đếm, chưa chạy mô hình, chưa gán split. Đang chờ người cung cấp gửi
+URL/tác giả/giấy phép hoặc xác nhận tự quay. Không đưa vào bộ đánh giá chính thức
+khi chưa rõ quyền sử dụng. V03 chưa xác nhận là swiftlet; V07 chỉ là nền chung,
+không đáp ứng riêng phép đo false alarms trên video chỉ có chim yến.
+
+### Nguồn đã xác minh và nhãn sự kiện trước suy luận
+
+| Mã | Tác giả | URL | Giấy phép | Tập/mục đích |
+|---|---|---|---|---|
+| V03 | Taryn Elliott | https://www.pexels.com/video/flock-of-birds-flying-in-the-sky-9285718/ | [Pexels License](https://www.pexels.com/license/) | fallback_bird_counting_candidate_species_unspecified |
+| V04 | Pixabay | https://www.pexels.com/video/video-of-rodent-854528/ | [Pexels License](https://www.pexels.com/license/) | test |
+| V05 | Ruslan Sikunov | https://www.pexels.com/video/snake-on-the-ground-8083244/ | [Pexels License](https://www.pexels.com/license/) | test |
+| V06 | Nicky Pe | https://www.pexels.com/video/habichtkautz-16346351/ | [Pexels License](https://www.pexels.com/license/) | test |
+| V07 | Street Donkey | https://www.pexels.com/video/a-shot-of-a-forest-path-through-the-trees-4372540/ | [Pexels License](https://www.pexels.com/license/) | generic_background_diagnostic |
+
+Đối chiếu 05/11/2026: giấy phép cho dùng và chỉnh sửa miễn phí; không bán bản
+nguyên gốc hoặc phân phối trên nền tảng stock/wallpaper. Không đưa media vào Git,
+không dùng nguồn này để train/publish dataset. V03 chỉ ghi birds, không xác nhận
+swiftlet. V05 bản local 25 FPS dù trang ghi 50; V06 tải bản 2560x1440 dù trang có
+3840x2160; dùng đúng bytes/FPS local, không đổi tên thành loài hoặc sửa thời lượng.
+Agent xem khoảng 4 fps toàn thời lượng V04–V07; V04 rat, V05 snake, V06 owl hiện
+liên tục từ đầu đến cuối theo lượt duyệt. events_gt.csv lập trước inference,
+không nhận là TV5 đã duyệt. Metadata đóng băng: results/video-freeze-2026-11-05.json.
+V07 chỉ đo âm tính nền rừng bổ sung; không thay mục 6.5 video chỉ có chim yến.
+
+Video V03-V07 duoc tach rieng trong splits_video_20261105.csv (test), khong dua vao train/val hoac thay splits_v4.csv. Pham vi fallback/generic-background van theo metadata tung video.

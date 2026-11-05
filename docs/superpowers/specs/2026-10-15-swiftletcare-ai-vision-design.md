@@ -105,6 +105,11 @@ Tên lớp trên Roboflow viết **đúng chữ thường như trên**, để AI
 4. Ảnh không có con vật nào giữ lại làm **ảnh nền** để giảm báo động giả. Tỷ lệ ảnh nền **tối đa mặc định 10%** số ảnh train; TV3 chốt lại khi đã đếm số ảnh, ghi **tỷ lệ thực tế đã dùng** vào `weights.json` (mục 2.6).
 5. Cắt khung hình từ video **thưa**, không lấy các khung gần giống nhau liền nhau. Khoảng cách TV3 chọn theo từng video, ghi vào `SOURCES.md`.
 
+Cập nhật 05/11/2026: lượt tham chiếu đếm video thay thế V03 chốt **MIN_BOX_PX=8**
+trên ảnh gốc trước suy luận. Không áp lại ngưỡng để thay nhãn train/test ảnh cũ;
+V03 là birds chưa xác nhận swiftlet, nhãn do agent duyệt, chưa TV5 đếm lại.
+Tham chiếu và giới hạn ở reports/2026-11-05-counting-reference.json.
+
 ### 2.4 Chia tập theo nguồn
 
 - Tên ảnh **bắt đầu bằng mã nguồn**, VD `V01_000123.jpg`.

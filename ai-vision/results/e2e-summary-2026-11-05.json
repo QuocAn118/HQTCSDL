@@ -1,0 +1,282 @@
+{
+  "database": "SwiftletCare_Dev",
+  "cameraId": 26,
+  "cameraStatus": "ONLINE",
+  "lastSeenAt": "2026-11-05T10:06:23.000Z",
+  "windows": [
+    {
+      "windowStart": "2026-11-05T09:55:00Z",
+      "sentIn": 0,
+      "sentOut": 0,
+      "apiIn": 0,
+      "apiOut": 0,
+      "matches": true
+    },
+    {
+      "windowStart": "2026-11-05T10:00:00Z",
+      "sentIn": 0,
+      "sentOut": 0,
+      "apiIn": 0,
+      "apiOut": 0,
+      "matches": true
+    },
+    {
+      "windowStart": "2026-11-05T10:05:00Z",
+      "sentIn": 0,
+      "sentOut": 0,
+      "apiIn": 0,
+      "apiOut": 0,
+      "matches": true
+    }
+  ],
+  "lockRemoved": true,
+  "weightsSha256": "0dbec2d3176e637873a7ea3209c23c97a5a41806cc3b8c250ed55c7b2fee5cc9",
+  "commitAtRun": "92cb6f240dc979f4b04f1642c18fe7fc81e53eb7",
+  "heartbeatEnabled": true,
+  "playlistManifest": "e2e-playlist-2026-11-05.json",
+  "restartPlaylistManifest": "e2e-restart-playlist-2026-11-05.json",
+  "limitations": [
+    "No verified swiftlet video in this live playlist; counts validate transport only",
+    "Ctrl+C sent via real Windows console signal, not keyboard manual double interrupt",
+    "Windows Time service not running; no independent NTP synchronization verification",
+    "Independent human label recount not performed"
+  ],
+  "live": {
+    "start": "2026-11-05T09:55:42Z",
+    "finishedAt": "2026-11-05T10:05:45.868037+00:00",
+    "elapsedSeconds": 602.98,
+    "exitCode": 0,
+    "ctrlCDispatched": true,
+    "heartbeat200": 20,
+    "counts200": 12,
+    "errors": 0,
+    "fpsMin": 10.4,
+    "fpsMax": 13.65,
+    "predatorResponses": [
+      {
+        "ts": "2026-11-05T09:55:45Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "rat",
+        "at": "2026-11-05T09:55:43Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 18,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-05T09:55:45Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "snake",
+        "at": "2026-11-05T09:55:45Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 19,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-05T09:56:11Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "owl",
+        "at": "2026-11-05T09:56:08Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 20,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-05T10:00:46Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "snake",
+        "at": "2026-11-05T10:00:46Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 21,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-05T10:00:51Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "rat",
+        "at": "2026-11-05T10:00:51Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 22,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-05T10:01:17Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "owl",
+        "at": "2026-11-05T10:01:16Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 23,
+        "skipReason": null
+      }
+    ],
+    "stop": [
+      {
+        "ts": "2026-11-05T10:05:45Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "stop",
+        "reason": "ctrl+c",
+        "exitCode": 0
+      }
+    ]
+  },
+  "restart": {
+    "start": "2026-11-05T10:05:53Z",
+    "finishedAt": "2026-11-05T10:06:42.824244+00:00",
+    "elapsedSeconds": 48.61,
+    "exitCode": 0,
+    "ctrlCDispatched": true,
+    "heartbeat200": 2,
+    "counts200": 1,
+    "errors": 0,
+    "fpsMin": null,
+    "fpsMax": null,
+    "predatorResponses": [
+      {
+        "ts": "2026-11-05T10:05:55Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "owl",
+        "at": "2026-11-05T10:05:53Z",
+        "attempt": 1,
+        "status": 200,
+        "created": false,
+        "alertId": null,
+        "skipReason": "COOLDOWN"
+      },
+      {
+        "ts": "2026-11-05T10:06:11Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "rat",
+        "at": "2026-11-05T10:06:08Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 24,
+        "skipReason": null
+      },
+      {
+        "ts": "2026-11-05T10:06:11Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "predator.sent",
+        "class": "snake",
+        "at": "2026-11-05T10:06:08Z",
+        "attempt": 1,
+        "status": 200,
+        "created": true,
+        "alertId": 25,
+        "skipReason": null
+      }
+    ],
+    "stop": [
+      {
+        "ts": "2026-11-05T10:06:42Z",
+        "level": "info",
+        "camera": "H1-F0-CAMERA",
+        "type": "stop",
+        "reason": "ctrl+c",
+        "exitCode": 0
+      }
+    ]
+  },
+  "createdAlertsVisibleViaApi": [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25
+  ],
+  "snapshots": [
+    {
+      "alertId": 18,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 2017724,
+      "sha256": "82dfcac64e9e693df3d4087ee8d8d4a2f5fe24b66d7170f10572685e5512eeff"
+    },
+    {
+      "alertId": 19,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 2069657,
+      "sha256": "8dc0a61fbe375c0c8bff0543a74b7b4effa70c5327a9f618b4d82430d1958fb4"
+    },
+    {
+      "alertId": 20,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 668202,
+      "sha256": "b413f026fe31ae506875392473acf27df56030abbc165b9b8df18186bce805c2"
+    },
+    {
+      "alertId": 21,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 1923899,
+      "sha256": "b13e4fe69391256d512384d642122c6ca4fca43580f0a039ec548a98e3dba3d7"
+    },
+    {
+      "alertId": 22,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 2017724,
+      "sha256": "82dfcac64e9e693df3d4087ee8d8d4a2f5fe24b66d7170f10572685e5512eeff"
+    },
+    {
+      "alertId": 23,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 668202,
+      "sha256": "b413f026fe31ae506875392473acf27df56030abbc165b9b8df18186bce805c2"
+    },
+    {
+      "alertId": 24,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 2017724,
+      "sha256": "82dfcac64e9e693df3d4087ee8d8d4a2f5fe24b66d7170f10572685e5512eeff"
+    },
+    {
+      "alertId": 25,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 1864453,
+      "sha256": "2b470c82ecc328b4ed8020852c65c34342f53fad81b0f491d5ad73b6bd83d1bb"
+    }
+  ],
+  "health": {
+    "status": "ok",
+    "db": "ok",
+    "mqtt": "connected"
+  }
+}

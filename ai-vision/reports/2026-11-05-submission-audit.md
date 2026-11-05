@@ -3,9 +3,9 @@
 | Mục | Trạng thái | Bằng chứng / phần thiếu |
 |---|---|---|
 | 1. Đóng băng trọng số | Đạt về artifact | weights.json: frozen, best.pt v3, 50 epoch thực tế, URL Release. Tải lại asset và xác minh SHA-256 ngày 05/11; toàn bộ hash freeze.json vẫn khớp. Không có nghĩa chất lượng mô hình đạt. |
-| 2. Video và playlist | Đạt phần thống nhất tên; thiếu video đánh giá | H1 dùng V01.webm, H2 dùng V02.ogv, có nguồn trong SOURCES.md; không còn R02.mp4/S01.mp4. Hai video là martin, không phải swiftlet, không phù hợp đếm qua vạch cố định. |
-| 3. Task 15 | Chưa hoàn tất | detector.csv có P/R từng lớp trên 1.905 ảnh tại imgsz 640/320. predator.confidence=0.50 và tham số được khóa trong freeze.json trước test. Chưa có counting.csv/counting_summary.csv/false_alarms.csv; counting_segments.csv và events_gt.csv chỉ có tiêu đề. Thiếu video đúng mục tiêu và nhãn trước suy luận; không được ghi số 0 thay kết quả chưa đo. |
-| 4. Task 16 | Đã kiểm tích hợp; chưa hoàn tất toàn bộ | e2e.md, e2e_summary.json, e2e_windows.csv: live 602,55 giây với backend/SQL/MQTT thật, 20 heartbeat HTTP 200 và 12 lần gửi đếm HTTP 200; restart/cooldown có bằng chứng. Video smoke V01 và nhận sai thiên địch không chứng minh độ chính xác. Còn video đếm/thiên địch được duyệt, đối chiếu nhãn, xác nhận đồng bộ giờ và thao tác Ctrl+C kép bằng bàn phím. |
+| 2. Video và playlist | Đã có V03–V07 và profile kiểm riêng; V03 là video thay thế | H1 dùng V01.webm, H2 dùng V02.ogv, có nguồn trong SOURCES.md; không còn R02.mp4/S01.mp4. Hai video là martin, không phải swiftlet, không phù hợp đếm qua vạch cố định. |
+| 3. Task 15 | Có CSV video bổ sung, còn giới hạn | detector.csv có P/R ảnh; events.csv có P/R sự kiện. Đã có counting.csv/counting_summary.csv và false_alarms.csv từ V03 thay thế. Nhãn agent chưa TV5 đếm lại; loài V03 chưa xác nhận swiftlet nên chưa hoàn tất điều kiện swiftlet-only. Tham số và nhãn đã lưu hash trước suy luận. |
+| 4. Task 16 | Đã kiểm lại với video thiên địch thật | e2e.md và evidence hậu tố2026-11-05: live602,98 giây,20 heartbeat200/12 counts200, ảnh chuột thật, restart owl COOLDOWN, tổng cuối API khớp, khóa xóa. Ctrl+C bằng tín hiệu console; chưa kiểm bàn phím kép hoặc NTP độc lập. Số đếm playlist này chỉ kiểm vận chuyển. |
 | 5. Xóa output notebook | Đạt | colab-setup.ipynb và train-v4-pilot.ipynb đều outputs rỗng, execution_count null. |
 
 ## Trọng số dùng trong hồ sơ
@@ -45,3 +45,24 @@ không đổi ID loài của runtime chỉ để làm phép đo có kết quả.
 của nhóm qua đường dẫn local trong khi tiếp tục benchmark.
 
 Kết quả benchmark đã lưu results/speed.csv: FPS toàn luồng 15,00 (640), 46,35 (320).
+
+## Cập nhật sau khi người dùng bổ sung V03–V07
+
+Đã xác minh nguồn Pexels và quyền dùng theo trang license. Đã bổ sung events_gt.csv,
+events.csv, counting_segments.csv, counting.csv, counting_summary.csv,
+false_alarms.csv (V03 thay thế), false_alarms_background.csv (V07 rừng).
+Nhãn và tham số được ghi hash trước suy luận. Kết quả/giới hạn ở results/README.md.
+Bản đếm do agent duyệt, chưa có TV5 kiểm độc lập; nguồn V03 không xác nhận swiftlet.
+Do đó đã có số đo video thay thế nhưng chưa thể đánh dấu hoàn tất nghiêm ngặt
+mục 6.5 (swiftlet-only) hoặc kiểm đếm độc lập TV5. Đang kiểm Task 16 thêm bằng
+playlist có thiên địch thực, không dùng V01 nữa; chỉ ghi hoàn tất sau khi có receipt.
+
+## Chốt sau lượt live mới
+
+Task16 đã có kiểm tích hợp với thiên địch thật: live602,98 giây, exit0,
+20 heartbeat200,12 counts200, ảnh chuột đúng có khung bao/API200; restart48,61 giây,
+owl277 giây sau lần tạo trước trả COOLDOWN không retry, không tạo owl mới.
+Ba cửa sổ API khớp tổng cuối; khóa xóa. Bằng chứng results/e2e.md và các file
+hậu tố2026-11-05. Bộ test mới nhất327 passed,6 subtests passed,1 FutureWarning.
+Task15 hiện có CSV sự kiện, đếm tham chiếu agent và báo động giả video thay thế;
+vẫn chưa đạt điều kiện nghiêm ngặt swiftlet-only và TV5 đếm lại độc lập.

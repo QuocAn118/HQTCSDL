@@ -1,0 +1,72 @@
+{
+  "video": "V03",
+  "status": "agent_visual_reference_pending_TV5_recount",
+  "sourceSpecies": "unspecified birds; not verified swiftlet",
+  "scope": "fallback counting on fixed-frame flock video, not swiftlet-specific accuracy",
+  "review": "66 frames at 0.4-second spacing across whole clip; detail at 0.2 seconds from 7.8 through 14.2 seconds; no model predictions used",
+  "line": {
+    "start": [
+      0.1,
+      0.55
+    ],
+    "end": [
+      0.9,
+      0.55
+    ],
+    "unchangedFromFrozenConfig": true
+  },
+  "referenceAnchor": "visible body center; wings touching line alone do not count",
+  "minBoxPx": 8,
+  "minBoxNote": "Original-resolution short side; all visually counted birds are clearly larger; not a filter applied to old training data",
+  "referenceCrossings": [
+    {
+      "direction": "in",
+      "timeBracketSeconds": [
+        8.6,
+        8.8
+      ],
+      "bird": "initial upper-right"
+    },
+    {
+      "direction": "out",
+      "timeBracketSeconds": [
+        9.6,
+        10.0
+      ],
+      "bird": "initial upper-right"
+    },
+    {
+      "direction": "in",
+      "timeBracketSeconds": [
+        10.4,
+        10.8
+      ],
+      "bird": "initial upper-right"
+    },
+    {
+      "direction": "out",
+      "timeBracketSeconds": [
+        12.6,
+        13.0
+      ],
+      "bird": "initial upper-right"
+    },
+    {
+      "direction": "out",
+      "timeBracketSeconds": [
+        13.6,
+        14.0
+      ],
+      "bird": "initial lower-right"
+    }
+  ],
+  "in": 2,
+  "out": 3,
+  "independentHumanReview": false,
+  "limitations": [
+    "Single 25.96-second segment rather than approximately one-minute segments",
+    "Species unspecified",
+    "Body center reference can differ from predicted whole-box center",
+    "TV5 recount not performed; no claim that human count is verified"
+  ]
+}

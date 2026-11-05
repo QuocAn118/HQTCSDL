@@ -1,8 +1,8 @@
-# AI Vision với backend Dev thật — 04/11/2026
+# AI Vision với backend Dev thật — 04–05/11/2026
 
-Đã kiểm chứng tích hợp bằng mô hình thật và video chạy thử V01. **Chưa hoàn
-tất Task 16 với video thiên địch được duyệt.** Không dùng lượt này làm số đo
-độ chính xác đếm hoặc báo động giả/giờ.
+Cập nhật 05/11: đã chạy lại hơn 10 phút bằng playlist có video thiên địch thật,
+kiểm API, snapshot, restart/cooldown và tổng cuối thành công; xem phần 05/11
+bên dưới. Phần 04/11 là lịch sử chạy thử V01, không phải số đo độ chính xác.
 
 ## Môi trường
 
@@ -103,7 +103,7 @@ khôi phục byte LF gốc và thêm `.gitattributes` cho artifact đã đóng b
 Không đổi `freeze.json`, trọng số, tham số hoặc số đo; không đo lại test.
 Test hồi quy kiểm hash các file nguồn sau checkout.
 
-## Còn thiếu để hoàn tất Task 16
+## Các mục còn thiếu tại thời điểm 04/11 (lịch sử)
 
 - Video thiên địch được duyệt, có nguồn/giấy phép và nhãn trước suy luận.
 - Video đếm qua vạch cố định và nhãn đếm tay; TV5 đối chiếu.
@@ -115,3 +115,46 @@ Backend và broker được giữ chạy nền; AI đã dừng để tránh ti�
 báo sai. Camera có thể chuyển OFFLINE sau 5 phút nếu không bật lại AI, đúng
 nghiệp vụ. Cảnh báo DEVICE_OFFLINE của cảm biến khi chưa bật simulator là
 hành vi nhịp nền với seed hôm trước, không phải lỗi heartbeat camera.
+
+## Kiểm lại với video thiên địch thật — 05/11/2026
+
+Model v3 best.pt, SHA-256 không đổi; code AI/backend tại commit
+92cb6f240dc979f4b04f1642c18fe7fc81e53eb7. Backend Dev local, SQL Express
+SwiftletCare_Dev và Mosquitto thật; health trả status=ok, db=ok, mqtt=connected.
+Không reset DB. Playlist mới V04 (rat), V05 (snake), V06 (owl), V07 (rừng),
+nguồn Pexels đã xác minh; cấu hình/nhãn trước inference ở video-freeze-2026-11-05.json.
+Dùng ai_dir cục bộ riêng data/local-setup/e2e-20261105, giữ ngưỡng 0,50/0,40,
+3 khung/2 giây, cooldown 300 giây, imgsz 640. Cấu hình camera đóng băng ở gốc
+không đổi byte. Manifest playlist từng pha nằm trong results/e2e-*-playlist-2026-11-05.json.
+
+| Kiểm | Kết quả thực tế |
+|---|---|
+| Live >=10 phút | 09:55:42Z → 10:05:45Z (16:55:42 → 17:05:45 VN); 602,98 giây, exit 0 |
+| Heartbeat | 20 lần HTTP 200 trong live; restart thêm 2; LastSeenAt 10:06:23Z, ONLINE lúc kiểm |
+| Gửi số đếm | Live 12 lần HTTP 200, gồm tổng cuối; restart thêm 1 lần |
+| Cửa sổ API | 09:55, 10:00, 10:05 UTC đều khớp counts.sent cuối: in=0/out=0 |
+| Thiên địch thật + snapshot | Rat AlertId18 at09:55:43Z; ảnh GET200 image/jpeg, 2.017.724 byte; đã xem khung đỏ bao chuột thật |
+| Các ảnh cảnh báo | AlertId18–25 đều truy cập được API và tải snapshot HTTP200, dưới 2 MiB |
+| Restart/cooldown | Restart10:05:53Z; owl HTTP200 created=false, skipReason=COOLDOWN, attempt=1, alertId=null |
+| Ctrl+C và khóa | Cả hai lượt dừng bằng GenerateConsoleCtrlEvent(CTRL_C_EVENT), exit0, file khóa đã xóa |
+| Lỗi runtime | 0 dòng error ở cả hai lượt; FPS phút live 10,40–13,65 |
+
+Mốc restart chuẩn là **10:05:53Z**, kết thúc **10:06:42Z**, 48,61 giây.
+Để owl xuất hiện trong 5 phút, chỉ đổi thứ tự playlist khi restart thành
+V06 → V04 → V05 → V07; không đổi trọng số/ngưỡng. Owl cuối live tạo AlertId23
+at10:01:16Z; owl sau restart at10:05:53Z cách 277 giây, bị backend COOLDOWN,
+không tạo alert owl mới, không retry. Rat/snake lúc10:06:08Z đã hết cooldown
+của lớp tương ứng nên tạo ID24/25 là đúng; không ghi là tất cả lớp đều bị chặn.
+
+Số đếm0 ở playlist này chỉ kiểm vận chuyển/lưu cửa sổ, không chứng minh đếm
+chim đúng. Không có V03 trong lượt live; đánh giá đếm thay thế nằm riêng ở
+counting.csv. Nhận dạng vẫn có báo nhầm, không dùng kết quả tích hợp để khẳng
+định mô hình chính xác. Không có phát hiện giả được chèn vào luồng.
+
+Bằng chứng máy đọc: e2e-summary-2026-11-05.json, e2e-windows-2026-11-05.csv.
+Receipt/log/snapshot gốc nằm trong data/local-setup/e2e-20261105/ (gitignore).
+Probe API thu thập đầu tiên dùng fractional seconds bị400; sửa probe sang ISO
+UTC chính xác đến giây rồi đọc API thành công, không đổi hợp đồng/backend.
+Windows Time service không chạy, chưa xác nhận NTP độc lập; không tự sửa đồng hồ.
+Đây là điều khiển tự động bằng tín hiệu console thật, chưa tuyên bố Ctrl+C kép
+bằng bàn phím tay đã kiểm. Đã dừng AI sau kiểm; backend/broker giữ chạy.
