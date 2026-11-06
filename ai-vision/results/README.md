@@ -67,6 +67,20 @@ Chạy `offline` riêng từng video với cùng `--t0`; đặt tên thư mục 
 mã video để các script ghép đúng nguồn. Tổng video dưới một giờ thì số báo
 động giả mỗi giờ là ngoại suy và phải ghi rõ trong báo cáo.
 
+## Hạn chế đã biết
+
+Số liệu lấy từ `*.csv`, đo bằng trọng số v3 đã đóng băng. Các số này không chứng minh mô hình đủ tin cậy để triển khai.
+
+- **Chim yến gần như không được phát hiện trên ảnh test:** Recall 1,54% ở imgsz 640 (TP 110, FN 7.021) và 0,18% ở imgsz 320; Precision 73,33% và 68,42% (`detector.csv`).
+- **Cú rất yếu:** Precision 6,35%, Recall 9,52% ở imgsz 640; Precision 4,55%, Recall 7,14% ở imgsz 320 (`detector.csv`).
+- **MAE đếm chỉ đo trên 1 đoạn 25,96 giây của V03:** MAE bằng 2 ở mỗi chiều. Chiều in: tham chiếu 2, AI 0. Chiều out: tham chiếu 3, AI 1 (`counting_segments.csv`, `counting_summary.csv`). Nguồn V03 chỉ ghi birds, không xác nhận là chim yến.
+- **Chưa có người đếm lại độc lập:** các cột `nguoi_dem_lai_*` đang trống. Cột `tay_*` chứa số tham chiếu do agent duyệt, không phải số người đếm (`counting.csv`).
+- **Báo động giả mỗi giờ là ngoại suy từ clip V08 26 giây, không phải quan sát một giờ thật:** lớp rat có 1 lần xác nhận và 355 lần bị cooldown chặn, ngoại suy thành 138,46 lần/giờ khi có cooldown và 49.292,31 lần/giờ khi không tính cooldown; snake và owl bằng 0 (`false_alarms.csv`).
+- **`offline_vs_live` chỉ có 1 cửa sổ:** 2026-11-05T10:10:00Z, live 0 in/0 out, offline 0 in/1 out (`offline_vs_live.csv`). Không suy rộng sang video hoặc máy khác.
+- **R05 chưa xác minh giấy phép trên trang gốc:** nguồn này nằm trong val của v3 (`../SOURCES.md`).
+- **Không có val độc lập cho thiên địch:** val của v3 chỉ có swiftlet, nên ngưỡng rat, snake, owl giữ mặc định, chưa chọn trên val. `v4-pilot-val.csv` (13 ảnh) thuộc bản thử v4, không phải trọng số đóng băng.
+- **Không dùng số đếm demo làm bằng chứng đếm đúng:** cả 3 cửa sổ trong `e2e-windows-2026-11-05.csv` đều 0 in/0 out và khớp API. Kết quả này chỉ chứng minh số đếm được gửi và lưu đúng.
+
 ## Đo tốc độ CPU bổ sung — 05/11/2026
 
 V3 best.pt đã đóng băng, Intel Core i7-12700H, RAM 15,64 GiB, chạy CPU.

@@ -4,6 +4,20 @@ Spec: [AI Vision](../docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-de
 Plan: [triển khai](../docs/superpowers/plans/2026-10-16-swiftletcare-ai-vision.md).
 Chạy `git status` trước mỗi lần commit; không commit video, ảnh, trọng số hoặc `.env`.
 
+## Hạn chế đã biết
+
+Số liệu lấy từ `results/*.csv`, đo bằng trọng số v3 đã đóng băng. Các số này không chứng minh mô hình đủ tin cậy để triển khai.
+
+- **Chim yến gần như không được phát hiện trên ảnh test:** Recall 1,54% ở imgsz 640 (TP 110, FN 7.021) và 0,18% ở imgsz 320; Precision 73,33% và 68,42% (`results/detector.csv`).
+- **Cú rất yếu:** Precision 6,35%, Recall 9,52% ở imgsz 640; Precision 4,55%, Recall 7,14% ở imgsz 320 (`results/detector.csv`).
+- **MAE đếm chỉ đo trên 1 đoạn 25,96 giây của V03:** MAE bằng 2 ở mỗi chiều. Chiều in: tham chiếu 2, AI 0. Chiều out: tham chiếu 3, AI 1 (`results/counting_segments.csv`, `results/counting_summary.csv`). Nguồn V03 chỉ ghi birds, không xác nhận là chim yến.
+- **Chưa có người đếm lại độc lập:** các cột `nguoi_dem_lai_*` đang trống. Cột `tay_*` chứa số tham chiếu do agent duyệt, không phải số người đếm (`results/counting.csv`).
+- **Báo động giả mỗi giờ là ngoại suy từ clip V08 26 giây, không phải quan sát một giờ thật:** lớp rat có 1 lần xác nhận và 355 lần bị cooldown chặn, ngoại suy thành 138,46 lần/giờ khi có cooldown và 49.292,31 lần/giờ khi không tính cooldown; snake và owl bằng 0 (`results/false_alarms.csv`).
+- **`offline_vs_live` chỉ có 1 cửa sổ:** 2026-11-05T10:10:00Z, live 0 in/0 out, offline 0 in/1 out (`results/offline_vs_live.csv`). Không suy rộng sang video hoặc máy khác.
+- **R05 chưa xác minh giấy phép trên trang gốc:** nguồn này nằm trong val của v3 (`SOURCES.md`).
+- **Không có val độc lập cho thiên địch:** val của v3 chỉ có swiftlet, nên ngưỡng rat, snake, owl giữ mặc định, chưa chọn trên val. `results/v4-pilot-val.csv` (13 ảnh) thuộc bản thử v4, không phải trọng số đóng băng.
+- **Không dùng số đếm demo làm bằng chứng đếm đúng:** cả 3 cửa sổ trong `results/e2e-windows-2026-11-05.csv` đều 0 in/0 out và khớp API. Kết quả này chỉ chứng minh số đếm được gửi và lưu đúng.
+
 ## Vòng train cải thiện đang chuẩn bị
 
 Đã có bộ **v4 pilot riêng** (3.106 train, 13 val đủ bốn lớp), loại 3 ảnh nghi
