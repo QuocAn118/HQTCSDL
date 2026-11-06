@@ -165,6 +165,94 @@ describe('Main simulator', () => {
     assert.ok(clients.every(client => client.endCalls === 1));
   });
 
+  function connectingClient(created) {
+    return (url, options) => {
+      const client = new FakeClient();
+
+      client.connected = true;
+      client.clientId = options.clientId;
+      client.published = [];
+      client.publish = (topic, payload, publishOptions, callback) => {
+        client.published.push(payload);
+        callback?.(null);
+      };
+      client.endAsync = async () => {
+        client.connected = false;
+      };
+
+      created.push(client);
+      return client;
+    };
+  }
+
+  it('sends queued readings when the client reconnects after a broker outage', async () => {
+    const created = [];
+
+    const result = startMain({
+      env: createEnvironment(),
+      connect: connectingClient(created),
+      logger: { log() {}, error() {} },
+      processLike: new EventEmitter(),
+      setIntervalFn: () => 1,
+      clearIntervalFn: () => {}
+    });
+
+    const sensor = created.find(client => client.clientId === 'H1-F1-SENSOR');
+
+    sensor.connected = false;
+    result.simulator.tick();
+    result.simulator.tick();
+    assert.equal(sensor.published.length, 0);
+
+    sensor.connected = true;
+    sensor.emit('connect');
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(sensor.published.length, 2);
+    assert.equal(result.simulator.queueSize('H1-F1-SENSOR'), 0);
+
+    result.stop();
+  });
+
+  it('keeps waiting when the broker is still down after --drop-for', async () => {
+    const created = [];
+    const timers = [];
+
+    const result = startMain({
+      env: createEnvironment(),
+      argv: ['--drop', 'H1-F1-SENSOR', '--drop-after', '1', '--drop-for', '7'],
+      connect: connectingClient(created),
+      logger: { log() {}, error() {} },
+      processLike: new EventEmitter(),
+      setIntervalFn: () => 1,
+      clearIntervalFn: () => {},
+      setTimeoutFn: callback => {
+        timers.push(callback);
+        return timers.length;
+      },
+      clearTimeoutFn: () => {}
+    });
+
+    await timers.shift()();
+    result.simulator.tick();
+
+    const restoring = timers.shift()();
+    const fresh = created.at(-1);
+
+    fresh.emit('error', new Error('ECONNREFUSED'));
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(result.simulator.dropped.has('H1-F1-SENSOR'), true);
+
+    fresh.emit('connect');
+    await restoring;
+
+    assert.equal(result.simulator.dropped.has('H1-F1-SENSOR'), false);
+    assert.equal(fresh.published.length, 1);
+
+    result.stop();
+  });
+
   it('logs MQTT errors without exposing credentials', () => {
     const errors = [];
 

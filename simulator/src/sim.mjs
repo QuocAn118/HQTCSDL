@@ -21,6 +21,9 @@ import {
 
 import { makeNoise } from './noise.mjs';
 
+// Khoảng 2,8 giờ số đo ở nhịp 10 giây; đầy thì bỏ tin cũ nhất (spec 2.6).
+export const MAX_QUEUE_PER_DEVICE = 1000;
+
 export function createSimulator({
   scenario,
   clients,
@@ -40,6 +43,8 @@ export function createSimulator({
   // Hàng đợi các bản tin QoS 1 của thiết bị bị ngắt.
   const dropped = new Set();
   const messageQueues = new Map();
+  const flushing = new Set();
+  const overflowed = new Set();
 
   // Khởi động từ mức normal rồi trôi dần về nền kịch bản (spec 2.2).
   const normal = loadScenario('normal');
@@ -67,13 +72,30 @@ export function createSimulator({
       messageQueues.set(code, []);
     }
 
-    messageQueues.get(code).push({
+    const queue = messageQueues.get(code);
+
+    if (queue.length >= MAX_QUEUE_PER_DEVICE) {
+      queue.shift();
+
+      if (!overflowed.has(code)) {
+        overflowed.add(code);
+        console.warn(
+          `[QUEUE] ${code}: full (${MAX_QUEUE_PER_DEVICE}), dropping oldest readings`
+        );
+      }
+    }
+
+    queue.push({
       topic,
       payload
     });
   }
 
-  // Gửi dữ liệu QoS 1 hoặc lưu lại nếu thiết bị đang bị drop.
+  function queueSize(code) {
+    return messageQueues.get(code)?.length ?? 0;
+  }
+
+  // Gửi dữ liệu QoS 1, hoặc xếp hàng nếu đang mất kết nối hay còn tin chưa gửi bù (giữ thứ tự).
   function send(code, topic, payload, qos = 1) {
     const client = clients.get(code);
 
@@ -81,7 +103,11 @@ export function createSimulator({
       throw new Error(`Missing MQTT client: ${code}`);
     }
 
-    if (dropped.has(code) || client.connected === false) {
+    if (
+      dropped.has(code) ||
+      client.connected === false ||
+      queueSize(code) > 0
+    ) {
       if (qos === 1) {
         queueMessage(code, topic, payload);
       }
@@ -174,6 +200,42 @@ export function createSimulator({
     });
   }
 
+  // Gửi bù hàng đợi theo thứ tự; lỗi giữa chừng thì giữ phần còn lại cho lần kết nối sau.
+  async function flush(code) {
+    if (dropped.has(code) || flushing.has(code) || queueSize(code) === 0) {
+      return;
+    }
+
+    const queue = messageQueues.get(code);
+
+    flushing.add(code);
+
+    try {
+      while (queue.length > 0) {
+        const client = clients.get(code);
+
+        if (client.connected === false) {
+          return;
+        }
+
+        const message = queue[0];
+
+        await publishQueuedMessage(client, message);
+
+        // Hàng đợi đầy có thể đã bỏ tin này trong lúc chờ PUBACK.
+        if (queue[0] === message) {
+          queue.shift();
+        }
+      }
+
+      overflowed.delete(code);
+    } catch (error) {
+      console.error(`[QUEUE] ${code}: flush failed: ${error.message}`);
+    } finally {
+      flushing.delete(code);
+    }
+  }
+
   // Tạo kết nối mới và gửi bù dữ liệu theo thứ tự.
   async function restore(codes) {
     const selectedCodes = Array.isArray(codes)
@@ -191,30 +253,15 @@ export function createSimulator({
 
       console.log(`[RESTORE] Reconnecting: ${code}`);
 
-      const client = await reconnectClient(code);
-
-      clients.set(code, client);
-
-      const queue = messageQueues.get(code) ?? [];
+      clients.set(code, await reconnectClient(code));
 
       console.log(
-        `[RESTORE] ${code}: ${queue.length} queued messages`
+        `[RESTORE] ${code}: ${queueSize(code)} queued messages`
       );
 
-      // Chỉ xóa từng tin sau khi gửi thành công.
-      while (queue.length > 0) {
-        try {
-          await publishQueuedMessage(client, queue[0]);
-          queue.shift();
-        } catch (error) {
-          throw new Error(
-            `[RESTORE] Failed to send queued message for ${code}: ${error.message}`
-          );
-        }
-      }
-
-      messageQueues.delete(code);
       dropped.delete(code);
+
+      await flush(code);
 
       console.log(`[RESTORE] Completed: ${code}`);
     }
@@ -309,6 +356,8 @@ export function createSimulator({
     setCommand,
     drop,
     restore,
+    flush,
+    queueSize,
     dropped,
 
     getEnvironment: zone => environment.get(zone),

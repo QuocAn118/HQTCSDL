@@ -60,6 +60,8 @@ export function startMain({
           { qos: 1 }
         );
       }
+
+      simulator?.flush(device.code);
     });
 
     client.on('message', (topic, message) => {
@@ -120,19 +122,12 @@ export function startMain({
 
     const client = createDeviceClient(device);
 
-    return new Promise((resolve, reject) => {
-      const onConnect = () => {
-        client.removeListener('error', onError);
-        resolve(client);
-      };
+    // Ghi ngay để Ctrl+C đóng được client đang chờ broker bật lại.
+    clients.set(code, client);
 
-      const onError = error => {
-        client.removeListener('connect', onConnect);
-        reject(error);
-      };
-
-      client.once('connect', onConnect);
-      client.once('error', onError);
+    // Broker còn tắt thì mqtt.js tự thử lại; chờ tới khi kết nối được.
+    return new Promise(resolve => {
+      client.once('connect', () => resolve(client));
     });
   }
 
