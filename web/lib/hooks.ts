@@ -2,9 +2,10 @@
 // Du lieu song cua mot nha: thiet bi (giu device.state trong luc REST tai, roi ap lai), so do moi nhat, canh bao dang mo.
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './api';
+import { DEVICE_POLL_MS } from './config';
 import { ApiError } from './errors';
 import { useLive, useReloadOnConnect } from './live';
-import { applyDeviceState, createLoadGate, markOnline, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates, type LatestMap } from './merge';
+import { applyDeviceState, createLoadGate, markOnline, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates, shouldPollDevices, type LatestMap } from './merge';
 import type { Alert, AlertCreated, AlertUpdated, Device, DeviceState, LatestReading, Page, ReadingsNew } from './types';
 
 export function useLiveDevices(houseId: number) {
@@ -26,7 +27,7 @@ export function useLiveDevices(houseId: number) {
   }), [subscribe, houseId, gate]);
 
   // Mount va connect deu tai lai -> hai lan tai co the chong nhau; chi lan moi nhat ap REST + su kien da giu.
-  const load = useCallback(async () => {
+  const run = useCallback(async (background: boolean) => {
     const id = gate.begin();
     try {
       const rest = await api<Device[]>(`/api/houses/${houseId}/devices`);
@@ -39,11 +40,20 @@ export function useLiveDevices(houseId: number) {
       const held = gate.end(id);
       if (held) {
         setDevices((d) => (d ? replayDeviceStates(d, held) : d));
-        setError(e as ApiError);
+        // Lan tai nen loi: giu du lieu cu, khong hien thong bao cho thao tac nguoi dung khong lam; lan sau tu thu lai.
+        if (!background) setError(e as ApiError);
       }
     }
   }, [houseId, gate]);
+  const load = useCallback(() => run(false), [run]);
   useReloadOnConnect(load);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (shouldPollDevices(document.visibilityState, gate.isLoading())) void run(true);
+    }, DEVICE_POLL_MS);
+    return () => clearInterval(timer);
+  }, [run, gate]);
 
   return { devices, setDevices, error, reload: load };
 }

@@ -1,6 +1,8 @@
 // Huy hieu OFFLINE cho co cau chap hanh/camera chi bat khi heartbeat (duoi ranh gioi cat) cua simulator,
 // backend, ai-vision da lam xong (spec web 2.2). Chua lam -> chi SENSOR co huy hieu.
-export const HEARTBEAT_ENABLED = false;
+export const HEARTBEAT_ENABLED = true;
+// Hop dong khong co su kien doi status thiet bi: web tu tai lai REST theo chu ky nay de huy hieu OFFLINE tu cap nhat.
+export const DEVICE_POLL_MS = 30_000;
 
 export const METRIC_LABELS: Record<string, string> = { TEMP: 'Nhiệt độ', HUMID: 'Độ ẩm', CO2: 'CO₂', LIGHT: 'Ánh sáng' };
 export const DEVICE_LABELS: Record<string, string> = {
