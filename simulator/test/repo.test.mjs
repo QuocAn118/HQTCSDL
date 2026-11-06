@@ -105,6 +105,18 @@ describe('Repository configuration', () => {
     }
   });
 
+  it('spike khong rong va RESULTS.md khong con Pending', () => {
+    for (const file of ['connections.mjs', 'drop-a.mjs']) {
+      const content = readFileSync(new URL(`../spikes/${file}`, import.meta.url), 'utf8');
+
+      assert.ok(content.trim().length > 0, file);
+    }
+
+    const results = readFileSync(new URL('../spikes/RESULTS.md', import.meta.url), 'utf8');
+
+    assert.equal(results.includes('Pending'), false);
+  });
+
   it('README and spike files exist', () => {
     assert.equal(existsSync(new URL('../README.md', import.meta.url)), true);
     assert.equal(existsSync(new URL('../spikes/RESULTS.md', import.meta.url)), true);
