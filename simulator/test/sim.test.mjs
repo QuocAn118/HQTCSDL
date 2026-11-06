@@ -188,3 +188,52 @@ describe('Simulator', () => {
     assert.ok(Date.parse(second) > Date.parse(first));
   });
 });
+
+// Spec 2.2: khoi dong tu muc normal roi troi dan ve nen cua kich ban.
+function startupValues(scenarioName, code, zone, metric) {
+  let currentTime = Date.parse('2026-11-03T10:00:00Z');
+
+  const client = new FakeClient();
+  const simulator = createSimulator({
+    scenario: loadScenario(scenarioName),
+    clients: new Map([[code, client]]),
+    devices: [{ code, type: 'SENSOR', zone }],
+    now: () => currentTime
+  });
+
+  const values = [];
+
+  for (let i = 0; i < 12; i++) {
+    const reading = simulator.tick().find(item => item.metric === metric);
+    values.push(reading.value);
+    currentTime += 10_000;
+  }
+
+  return values;
+}
+
+describe('Khoi dong kich ban (spec 2.2)', () => {
+  it('hot: H1-F2 bat dau o 28 do roi tang don dieu ve 32', () => {
+    const temps = startupValues('hot', 'H1-F2-SENSOR', 'H1-F2', 'TEMP');
+
+    assert.equal(temps[0], 28);
+
+    for (let i = 1; i < temps.length; i++) {
+      assert.ok(temps[i] > temps[i - 1], `tick ${i}: ${temps}`);
+    }
+
+    assert.ok(temps.at(-1) < 32);
+  });
+
+  it('dry: H1-F3 bat dau o 82 % roi giam don dieu ve 70', () => {
+    const humids = startupValues('dry', 'H1-F3-SENSOR', 'H1-F3', 'HUMID');
+
+    assert.equal(humids[0], 82);
+
+    for (let i = 1; i < humids.length; i++) {
+      assert.ok(humids[i] < humids[i - 1], `tick ${i}: ${humids}`);
+    }
+
+    assert.ok(humids.at(-1) > 70);
+  });
+});

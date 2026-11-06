@@ -8,7 +8,7 @@ import {
   METRICS
 } from './model.mjs';
 
-import { baseFor } from './scenarios.mjs';
+import { baseFor, loadScenario } from './scenarios.mjs';
 import { ActuatorState } from './commands.mjs';
 
 import {
@@ -41,12 +41,14 @@ export function createSimulator({
   const dropped = new Set();
   const messageQueues = new Map();
 
-  // Khởi tạo môi trường cho từng khu vực.
+  // Khởi động từ mức normal rồi trôi dần về nền kịch bản (spec 2.2).
+  const normal = loadScenario('normal');
+
   for (const zone of zones) {
     const values = {};
 
     for (const metric of METRICS) {
-      values[metric] = baseFor(scenario, zone, metric);
+      values[metric] = baseFor(normal, zone, metric);
     }
 
     environment.set(zone, values);
