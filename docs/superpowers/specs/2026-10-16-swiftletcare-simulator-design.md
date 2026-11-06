@@ -163,6 +163,10 @@ Hai cách giữ số đo trong lúc ngắt. **Chốt cách B** (ghi thêm 17/10/
 
 Gửi bù trùng vô hại: SP khử trùng theo (thiết bị, chỉ số, `at`).
 
+**Broker đứt ngoài `--drop` (ghi thêm 06/11/2026):** số đo cũng vào hàng đợi trên. Khi `mqtt.js` tự kết nối lại, simulator gửi bù theo thứ tự, giữ `at` gốc; số đo mới sinh trong lúc gửi bù xếp sau tin cũ. Lỗi giữa chừng thì giữ phần còn lại cho lần kết nối sau.
+
+**Giới hạn hàng đợi:** **1000 tin mỗi thiết bị** (khoảng 2,8 giờ ở nhịp 10 giây; dùng chung cho `--drop` và broker đứt). Đầy thì **bỏ tin cũ nhất** và cảnh báo một lần trong log.
+
 ### 2.7 Hạn chế
 
 1. Từ lúc khởi động đến lúc tin retained đến, cơ cấu chấp hành **coi như tắt**, nên số đo trong vài giây đầu bị tính sai tác động.
@@ -226,6 +230,6 @@ Thêm vào cùng PR hợp đồng ở backend 7.6:
 
 ### 3.5 Chưa kiểm chứng
 
-- Cách A ở mục 2.6 trên Mosquitto thật (đã thử trên broker Node trong máy: mất tin; không chặn vì đã chốt cách B).
+- Cách A ở mục 2.6 trên Mosquitto thật: **đã kiểm 06/11/2026, không đạt** (spike S4: sau khi kết nối lại chỉ nhận tin `1`, mất `2,3,4`), nên giữ cách B.
 - Hằng số τ = 3 phút và mức tác động: test bất đẳng thức xác nhận thiết bị tắt được; độ dài chu kỳ mới tính tay, xác nhận ở kiểm tay 3.3.
-- Mở 26 kết nối cùng lúc tới Mosquitto bằng cùng một tài khoản.
+- Mở 26 kết nối cùng lúc tới Mosquitto bằng cùng một tài khoản: **đã kiểm 06/11/2026, đạt 26/26** (spike S3).

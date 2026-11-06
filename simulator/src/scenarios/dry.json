@@ -1,0 +1,14 @@
+{
+  "name": "dry",
+  "defaults": {
+    "TEMP": 28,
+    "HUMID": 82,
+    "CO2": 600,
+    "LIGHT": 2
+  },
+  "zones": {
+    "H1-F3": {
+      "HUMID": 70
+    }
+  }
+}
