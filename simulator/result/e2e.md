@@ -22,6 +22,7 @@ Chạy lại ngày **06/11/2026** trên nhánh `simulator-fix`, thay kết quả
 | Broker đứt 60 giây | **Đạt** | Không mất mốc nào, khoảng cách lớn nhất 10 giây |
 | Tắt simulator | **Đạt**, khác lời mô tả cũ | 26 thiết bị `OFFLINE` sau 5 phút 27 giây |
 | `NOISE_SEED=2`, 2 phút | **Đạt** | Chuỗi TEMP khác hạt giống 1 (trùng nhiều nhất 4/13 mốc); cùng hạt giống trùng 22/22 |
+| Backend chạy, simulator chưa từng gửi | **Đạt** | Đúng 6 `DEVICE_OFFLINE`, đều là cảm biến |
 
 ## `normal`
 
@@ -88,6 +89,14 @@ Chạy `normal` 2 phút, chỉ đổi biến môi trường `NOISE_SEED=2`, bậ
 - So chuỗi TEMP H1-F2 với `normal` (hạt giống 1), thử mọi độ lệch từ -40 tới 40 mốc: trùng nhiều nhất **4/13 mốc**.
 - Đối chứng cùng hạt giống 1: `outage` trùng `normal` **22/22 mốc** tại độ lệch 2; `npm start` `hot` trùng `hot` **31/31 mốc** tại độ lệch 0.
 - Giá trị trong CSDL có nhiễu: TEMP H1-F2 27,95–28,04. `ControlLogs` 0 dòng.
+
+## Backend chạy, simulator chưa từng gửi
+
+Chỉ bật Mosquitto và backend, backend sẵn sàng lúc 05:23:13, quan sát 3 phút.
+
+- 05:24:10: **6 cảnh báo `DEVICE_OFFLINE`**, đúng 6 cảm biến, trạng thái `NEW`.
+- 20 cơ cấu chấp hành và 2 camera `OFFLINE` sẵn từ dữ liệu mẫu, không sinh cảnh báo.
+- Khác ca tắt simulator (26 cảnh báo), vì ở đây heartbeat chưa từng đưa cơ cấu chấp hành về `ONLINE`.
 
 ## Giới hạn của lần kiểm này
 
