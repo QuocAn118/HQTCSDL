@@ -230,6 +230,6 @@ Thêm vào cùng PR hợp đồng ở backend 7.6:
 
 ### 3.5 Chưa kiểm chứng
 
-- Cách A ở mục 2.6 trên Mosquitto thật (đã thử trên broker Node trong máy: mất tin; không chặn vì đã chốt cách B).
+- Cách A ở mục 2.6 trên Mosquitto thật: **đã kiểm 06/11/2026, không đạt** (spike S4: sau khi kết nối lại chỉ nhận tin `1`, mất `2,3,4`), nên giữ cách B.
 - Hằng số τ = 3 phút và mức tác động: test bất đẳng thức xác nhận thiết bị tắt được; độ dài chu kỳ mới tính tay, xác nhận ở kiểm tay 3.3.
-- Mở 26 kết nối cùng lúc tới Mosquitto bằng cùng một tài khoản.
+- Mở 26 kết nối cùng lúc tới Mosquitto bằng cùng một tài khoản: **đã kiểm 06/11/2026, đạt 26/26** (spike S3).
