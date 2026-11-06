@@ -23,6 +23,7 @@ Chạy lại ngày **06/11/2026** trên nhánh `simulator-fix`, thay kết quả
 | Tắt simulator | **Đạt**, khác lời mô tả cũ | 26 thiết bị `OFFLINE` sau 5 phút 27 giây |
 | `NOISE_SEED=2`, 2 phút | **Đạt** | Chuỗi TEMP khác hạt giống 1 (trùng nhiều nhất 4/13 mốc); cùng hạt giống trùng 22/22 |
 | Backend chạy, simulator chưa từng gửi | **Đạt** | Đúng 6 `DEVICE_OFFLINE`, đều là cảm biến |
+| `--drop H1-F2-FAN`, 11 phút | **Đạt** | `DEVICE_OFFLINE` đúng thiết bị, mở 05:16:13, đóng 05:18:35 |
 
 ## `normal`
 
@@ -98,11 +99,22 @@ Chỉ bật Mosquitto và backend, backend sẵn sàng lúc 05:23:13, quan sát 
 - 20 cơ cấu chấp hành và 2 camera `OFFLINE` sẵn từ dữ liệu mẫu, không sinh cảnh báo.
 - Khác ca tắt simulator (26 cảnh báo), vì ở đây heartbeat chưa từng đưa cơ cấu chấp hành về `ONLINE`.
 
+## `--drop H1-F2-FAN --drop-after 2 --drop-for 7` (cơ cấu chấp hành)
+
+Kịch bản `normal`, simulator bật 05:09:31, backend sẵn sàng 05:10:19. Dùng `--drop-after 2`, không phải 1 như ca cảm biến, để backend kịp nhận heartbeat trước khi ngắt.
+
+- `DEVICE_OFFLINE` của `H1-F2-FAN`: **mở 05:16:13, đóng 05:18:35**, trạng thái cuối `RESOLVED`.
+- Đây là `DEVICE_OFFLINE` **duy nhất** của ca này. Không thiết bị nào khác bị ảnh hưởng.
+- Log simulator: `[RESTORE] H1-F2-FAN: 0 queued messages`. Đúng thiết kế: heartbeat QoS 0 không được xếp hàng hay gửi bù.
+- Cuối ca: cả 6 FAN `ONLINE`, `H1-F2-FAN` có `LastSeenAt` 05:21:04. `ControlLogs` 0 dòng.
+- 6 cảm biến đều có 67 mốc, khoảng cách lớn nhất 10 giây, không trùng.
+- Log simulator không có giờ. Tính từ giờ bật và tham số thì ngắt khoảng 05:11:31, nối lại khoảng 05:18:31, nên cảnh báo mở sau khoảng 4 phút 42 giây và đóng sau khoảng 4 giây. Mở sớm hơn 5 phút được suy ra là do tính từ heartbeat cuối, gửi trước lúc ngắt tối đa 30 giây; chưa đo riêng.
+
 ## Giới hạn của lần kiểm này
 
 1. Kiểm trên CSDL, **không mở web** như spec 3.3 mô tả.
 2. Broker mới mỗi kịch bản nên backend chưa có phiên; số đo gửi trước khi backend subscribe không vào CSDL. Vì vậy mốc đầu trong CSDL chậm hơn lúc bật simulator từ 20 tới 63 giây, tùy lần chạy. Với broker giữ phiên backend (`clean: false`), các tin này được giữ lại, nhưng lần này chưa kiểm.
 3. Cấu hình broker khác `infra/mosquitto/mosquitto.conf` ở thư mục persistence mới và `autosave_interval 1`, để `taskkill` không làm mất phiên.
-4. Chỉ kiểm cảm biến với `--drop`. Chưa kiểm `--drop` cho cơ cấu chấp hành, và heartbeat QoS 0 không được gửi bù.
+4. Heartbeat QoS 0 không được gửi bù (ca `--drop H1-F2-FAN` ghi 0 tin trong hàng đợi), nên giai đoạn ngắt không để lại dấu vết heartbeat trong CSDL.
 5. Broker đứt chỉ kiểm 60 giây. Giới hạn 1000 tin chỉ kiểm bằng test đơn vị, chưa chạy thật tới mức đầy.
 6. Dùng `node` trực tiếp, không qua `npm start`. `npm start` chỉ kiểm ở `spikes/RESULTS.md` S1 và S6.
