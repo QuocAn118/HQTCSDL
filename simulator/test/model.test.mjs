@@ -94,3 +94,32 @@ describe('Environmental model', () => {
     assert.ok(Number.isFinite(effectPerMinute('TEMP', actuators)));
   });
 });
+
+
+describe('Don vi thoi gian (spec 3.1)', () => {
+  it('6 buoc 10 giay cho cung ket qua 1 buoc 60 giay (sai so <= 1e-9)', () => {
+    const fan = [{ type: 'FAN', isOn: true, level: 100 }];
+    const target = equilibrium('TEMP', 32, fan);
+
+    let small = 32;
+
+    for (let i = 0; i < 6; i++) {
+      small = step(small, target, 10);
+    }
+
+    assert.ok(Math.abs(small - step(32, target, 60)) <= 1e-9);
+  });
+
+  it('FAN Level 50 tac dong bang mot nua Level 100', () => {
+    const half = effectPerMinute('TEMP', [{ type: 'FAN', isOn: true, level: 50, mode: 'MANUAL' }]);
+
+    assert.equal(half, effectPerMinute('TEMP', [{ type: 'FAN', isOn: true, level: 100 }]) / 2);
+  });
+
+  it('thiet bi bat lau: x dung o nen + tau * tac dong', () => {
+    const target = equilibrium('TEMP', 32, [{ type: 'FAN', isOn: true, level: 100 }]);
+
+    assert.equal(target, 27.5);
+    assert.ok(Math.abs(step(32, target, 3600) - 27.5) < 1e-6);
+  });
+});

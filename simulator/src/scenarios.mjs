@@ -8,7 +8,7 @@ export function loadScenario(name = 'normal') {
     throw new Error(`Unknown scenario: ${name}`);
   }
 
-  const url = new URL(`../scenarios/${name}.json`, import.meta.url);
+  const url = new URL(`./scenarios/${name}.json`, import.meta.url);
   return JSON.parse(readFileSync(url, 'utf8'));
 }
 
