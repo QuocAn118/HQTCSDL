@@ -8,7 +8,7 @@ Chạy lại ngày **06/11/2026** trên nhánh `simulator-fix`, thay kết quả
 - **Mỗi kịch bản chạy riêng:** `deploy.ps1 -Database SwiftletCare_Dev -Reset -AnchorDateVn 2026-11-05`, broker mới không còn tin retained, bật simulator trước, 5 giây sau bật backend.
 - Sau mỗi lần reset đều kiểm cột `SensorReadings.Value`: **`DECIMAL(9,2)`**. Không chạy `ALTER` nào.
 - Số liệu lấy từ `ControlLogs`, `Alerts`, `SensorReadings`, `Devices`. Giờ dưới đây là UTC.
-- Nhiễu bật với `NOISE_SEED=1`.
+- Nhiễu bật với `NOISE_SEED=1`, trừ ca `NOISE_SEED=2`.
 
 ## Tổng hợp
 
@@ -21,6 +21,7 @@ Chạy lại ngày **06/11/2026** trên nhánh `simulator-fix`, thay kết quả
 | `--drop`, 11 phút | **Đạt** | `DEVICE_OFFLINE` mở rồi đóng; 42 tin gửi bù đủ, không trùng |
 | Broker đứt 60 giây | **Đạt** | Không mất mốc nào, khoảng cách lớn nhất 10 giây |
 | Tắt simulator | **Đạt**, khác lời mô tả cũ | 26 thiết bị `OFFLINE` sau 5 phút 27 giây |
+| `NOISE_SEED=2`, 2 phút | **Đạt** | Chuỗi TEMP khác hạt giống 1 (trùng nhiều nhất 4/13 mốc); cùng hạt giống trùng 22/22 |
 
 ## `normal`
 
@@ -79,6 +80,14 @@ HUMID H1-F3 trong khoảng 74,82–82,14. Mốc đầu trong CSDL là 81,55, gi�
 ## Tắt simulator
 
 Tắt lúc 04:19:03. Lúc 04:24:30 có **26 cảnh báo `DEVICE_OFFLINE`** cùng lúc, sau 5 phút 27 giây. `Devices`: FAN 6, HEATER 6, MIST 6, SENSOR 6, SPEAKER 2 đều `OFFLINE`. 20 cơ cấu chấp hành cũng `OFFLINE` vì trước đó heartbeat đã đưa chúng về `ONLINE`, điều này đồng thời xác nhận heartbeat tới được backend.
+
+## `NOISE_SEED=2`
+
+Chạy `normal` 2 phút, chỉ đổi biến môi trường `NOISE_SEED=2`, bật lúc 04:57:47.
+
+- So chuỗi TEMP H1-F2 với `normal` (hạt giống 1), thử mọi độ lệch từ -40 tới 40 mốc: trùng nhiều nhất **4/13 mốc**.
+- Đối chứng cùng hạt giống 1: `outage` trùng `normal` **22/22 mốc** tại độ lệch 2; `npm start` `hot` trùng `hot` **31/31 mốc** tại độ lệch 0.
+- Giá trị trong CSDL có nhiễu: TEMP H1-F2 27,95–28,04. `ControlLogs` 0 dòng.
 
 ## Giới hạn của lần kiểm này
 
