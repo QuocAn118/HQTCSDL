@@ -1,131 +1,90 @@
-# Task 8 – End-to-End Testing Results
+# Kiểm tra đầu-cuối simulator
 
-## 1. Scenario HOT
+Chạy lại ngày **06/11/2026** trên nhánh `simulator-fix`, thay kết quả cũ. Bản cũ còn trong lịch sử git (`83f5f59`).
 
-- **Scenario:** `hot`
-- **Device:** `H1-F2-SENSOR`, `H1-F2-FAN`
-- **Expected:** FAN tự động bật khi nhiệt độ cao và giúp nhiệt độ giảm về mức phù hợp.
+## Cách chạy
 
-### Temperature Monitoring Results
+- Thành phần thật: SQL Server, Mosquitto, backend (`node dist/main.js`, build từ chính nhánh này), simulator (`node --env-file=.env src/main.mjs`).
+- **Mỗi kịch bản chạy riêng:** `deploy.ps1 -Database SwiftletCare_Dev -Reset -AnchorDateVn 2026-11-05`, broker mới không còn tin retained, bật simulator trước, 5 giây sau bật backend.
+- Sau mỗi lần reset đều kiểm cột `SensorReadings.Value`: **`DECIMAL(9,2)`**. Không chạy `ALTER` nào.
+- Số liệu lấy từ `ControlLogs`, `Alerts`, `SensorReadings`, `Devices`. Giờ dưới đây là UTC.
+- Nhiễu bật với `NOISE_SEED=1`.
 
-| Time | Temperature (°C) |
-|---|---:|
-| 08:51:33 | 27.99 |
-| 08:53:13 | 29.40 |
-| 08:54:53 | 30.51 |
-| 08:56:13 | 30.35 |
-| 08:57:33 | 29.33 |
-| 08:59:13 | 28.55 |
-| 09:01:13 | 28.04 |
-| 09:03:13 | 28.87 |
-| 09:05:13 | 29.70 |
-| 09:08:03 | 28.36 |
+## Tổng hợp
 
-### Summary
+| Kịch bản | Kết quả | Bằng chứng chính |
+|---|---|---|
+| `normal`, 10 phút | **Đạt**, có một ghi chú | Không có dòng `ControlLogs` nào; TEMP H1-F2 27,95–28,05 |
+| `hot`, 18 phút | **Đạt** | FAN H1-F2 bật, tắt, lặp lại; chu kỳ 7 phút 11 giây và 6 phút 51 giây |
+| FAN Level 50 | **Đạt** | TEMP giảm 0,91 °C so với 1,86 °C của Level 100 trong cùng 100 giây |
+| `dry`, 15 phút | **Đạt** | MIST H1-F3 bật, tắt, lặp lại; chu kỳ 6 phút 31 giây và 6 phút 30 giây |
+| `--drop`, 11 phút | **Đạt** | `DEVICE_OFFLINE` mở rồi đóng; 42 tin gửi bù đủ, không trùng |
+| Broker đứt 60 giây | **Đạt** | Không mất mốc nào, khoảng cách lớn nhất 10 giây |
+| Tắt simulator | **Đạt**, khác lời mô tả cũ | 26 thiết bị `OFFLINE` sau 5 phút 27 giây |
 
-| Item | Result |
-|---|---|
-| Total readings | 100 |
-| Minimum temperature | 27.94°C |
-| Maximum temperature | 30.87°C |
-| Monitoring period | 08:51:33 – 09:08:03 |
-| Fan mode | AUTO |
-| Fan status | ON |
-| Fan level | 100% |
+## `normal`
 
-- **Actual result:** Temperature readings changed over time, reaching a maximum of 30.87°C before decreasing. The FAN was observed in AUTO mode and ON at Level 100 when its current status was queried.
-- **Status:** PARTIAL – Temperature variation and current FAN status were verified. Repeated FAN ON/OFF transitions have not yet been confirmed.
+- `ControlLogs` từ lúc chạy: **0 dòng**. Không FAN, MIST, HEATER nào bật.
+- **Ghi chú:** `Devices` vẫn có `H1-F0-SPEAKER` và `H2-F0-SPEAKER` với `IsOn = 1`. Không có dòng `ControlLogs` nào trong lần chạy, nên trạng thái này có từ trước khi chạy, không do kịch bản bật.
+- Mỗi cảm biến 60 mốc từ 03:02:42 tới 03:12:32, khoảng cách lớn nhất 10 giây, không trùng.
+- Cảnh báo HUMID của dữ liệu mẫu đóng lúc 03:02:43, đúng checklist spec 2.8.
 
-## 2. Scenario DRY
+## `hot`
 
-- **Scenario:** `dry`
-- **Device:** `H1-F3-SENSOR`, `H1-F3-MIST`
-- **Expected:** MIST tự động bật khi độ ẩm thấp và giúp độ ẩm tăng về mức phù hợp.
+Simulator bật lúc 03:13:56.
 
-### Humidity Monitoring Results
+| Giờ | FAN H1-F2 | Lý do trong `ControlLogs` |
+|---|---|---|
+| 03:16:19 | Bật, Level 100, AUTO | TEMP 30.05 > Max 30 |
+| 03:21:20 | Tắt | Nha chot: TEMP 27.98 |
+| 03:23:30 | Bật, Level 100, AUTO | TEMP 30.08 > Max 30 |
+| 03:28:11 | Tắt | Nha chot: TEMP 28 |
+| 03:30:21 | Bật, Level 100, AUTO | TEMP 30.06 > Max 30 |
 
-| Time     | Humidity (%) |
-| :------- | ------------: |
-| 09:17:05 |         70.00 |
-| 09:30:45 |         70.81 |
-| 09:30:55 |         71.58 |
-| 09:31:05 |         72.30 |
-| 09:31:15 |         72.99 |
-| 09:31:25 |         73.64 |
-| 09:31:35 |         74.26 |
+- Lần bật đầu sau 2 phút 23 giây, spec tính tay ≈ 2,1 phút.
+- TEMP H1-F2 trong khoảng 27,98–30,08. Mốc đầu trong CSDL là 28,63 lúc 03:14:38 rồi tăng dần, không nhảy thẳng lên 32 như trước khi sửa.
 
-### Summary
+## FAN Level 50
 
-| Item             | Result                 |
-| :--------------- | :--------------------- |
-| Total readings   | Not yet confirmed      |
-| Minimum humidity | 70.00%                 |
-| Maximum humidity | Above 82% (observed)   |
-| Monitoring period| Not fully confirmed    |
-| Mist mode        | AUTO                   |
-| Mist status      | ON (current status)    |
-| Mist level       | NULL                   |
+Cùng lúc 03:35:08 gửi `POST /api/devices/{id}/control` với `mode: "MANUAL"`, dùng `accessToken` của `owner1`: `H1-F1-FAN` Level 50 và `H1-F3-FAN` Level 100. Cả hai trả 200, `ControlLogs` có đúng hai dòng. Ca BLOCKED cũ do đọc sai trường token; dùng `accessToken` thì đăng nhập được.
 
-- **Actual result:** Humidity readings changed over time, increasing from 70.00% to above 82% during the monitoring period. The MIST was observed in AUTO mode and ON when its current status was queried.
-- **Status:** PARTIAL – Humidity variation and current MIST status were verified. Historical
+| Khu vực | Level | TEMP 03:35:09 | TEMP 03:36:50 | Giảm | Tính theo mô hình | CO2 03:36:50 |
+|---|---|---:|---:|---:|---:|---:|
+| H1-F1 | 50 | 27,90 | 26,99 | **0,91** | 0,96 | 492,66 |
+| H1-F3 | 100 | 27,81 | 25,95 | **1,86** | 1,92 | 398,99 |
 
-## 3. Scenario NORMAL
+Chỉ so tới 03:36:50 vì sau đó `H1-F3-HEATER` tự bật (03:36:52, TEMP 25.95 < Min 26), đây là luật AUTO chạy đúng.
 
-- **Scenario:** `normal`
-- **Device:** `H1-F0-SENSOR`, `H1-F1-SENSOR`, `H1-F2-SENSOR`, `H1-F3-SENSOR`
-- **Expected:** Môi trường duy trì trong điều kiện bình thường. FAN, HEATER và MIST không tự động bật.
+## `dry`
 
-### Environmental Monitoring Results
+| Giờ | MIST H1-F3 | Lý do trong `ControlLogs` |
+|---|---|---|
+| 03:50:12 | Bật, AUTO | HUMID 74.82 < Min 75 |
+| 03:54:02 | Tắt | Nha chot: HUMID 82.05 |
+| 03:56:43 | Bật, AUTO | HUMID 74.99 < Min 75 |
+| 04:00:32 | Tắt | Nha chot: HUMID 82.14 |
 
-| Sensor | Metric | Total Readings | Minimum | Maximum |
-| :--- | :--- | ---: | ---: | ---: |
-| H1-F0-SENSOR | TEMP | 1,169 | 28.00°C | 28.00°C |
-| H1-F1-SENSOR | TEMP | 1,169 | 28.00°C | 28.00°C |
-| H1-F2-SENSOR | TEMP | 1,169 | 27.85°C | 32.00°C |
-| H1-F3-SENSOR | TEMP | 1,169 | 28.00°C | 28.00°C |
-| H1-F0-SENSOR | HUMID | 1,169 | 82.00% | 82.00% |
-| H1-F1-SENSOR | HUMID | 1,169 | 82.00% | 82.00% |
-| H1-F2-SENSOR | HUMID | 1,169 | 82.00% | 82.00% |
-| H1-F3-SENSOR | HUMID | 1,169 | 70.00% | 84.30% |
+HUMID H1-F3 trong khoảng 74,82–82,14. Mốc đầu trong CSDL là 81,55, giảm dần chứ không bắt đầu từ 70.
 
-### Summary
+## `--drop H1-F1-SENSOR --drop-after 1 --drop-for 7`
 
-| Item | Result |
-| :--- | :--- |
-| Total readings per sensor/metric | 1,169 |
-| Monitoring period | 03:40:11 – 09:43:44 |
-| FAN status | OFF (all 4 devices) |
-| MIST status | OFF (all 4 devices) |
-| FAN mode | AUTO |
-| MIST mode | AUTO |
+- `DEVICE_OFFLINE` của `H1-F1-SENSOR`: **mở 04:10:21, đóng 04:11:49**, trạng thái cuối `RESOLVED`.
+- Log simulator: `[RESTORE] H1-F1-SENSOR: 42 queued messages`, rồi `Completed`.
+- `H1-F1-SENSOR` có **67 mốc** từ 04:04:28 tới 04:15:28, bằng đúng các cảm biến không bị ngắt. Khoảng cách lớn nhất 10 giây, **không trùng**, nên đủ cả 42 tin.
 
-- **Actual result:** Sensor readings were successfully received and stored in SQL Server. Most sensors maintained stable temperature and humidity values. FAN and MIST devices were observed in AUTO mode and OFF when their current statuses were queried.
-- **Status:** PARTIAL – Sensor data collection and current actuator statuses were verified. However, H1-F2 temperature reached 32.00°C and H1-F3 humidity varied between 70.00% and 84.30%. Further verification is needed to confirm that the NORMAL scenario was running with the intended environmental conditions throughout the monitoring period.
+## Broker đứt 60 giây (không dùng `--drop`)
 
-## 4. Manual FAN Control
+`taskkill` broker lúc 02:57:51, bật lại lúc 02:58:51. Cả 6 cảm biến có 23 mốc liên tục từ 02:56:43 tới 03:00:23, khoảng cách lớn nhất **10 giây**, không trùng.
 
-- **Device:** `H1-F2-FAN`
-- **Expected:** Manual control at Level 50 and Level 100 through the API.
-- **Actual result:** Unable to complete because login did not return a Bearer Token.
-- **Status:** BLOCKED.
+## Tắt simulator
 
-## 5. Overall Result
+Tắt lúc 04:19:03. Lúc 04:24:30 có **26 cảnh báo `DEVICE_OFFLINE`** cùng lúc, sau 5 phút 27 giây. `Devices`: FAN 6, HEATER 6, MIST 6, SENSOR 6, SPEAKER 2 đều `OFFLINE`. 20 cơ cấu chấp hành cũng `OFFLINE` vì trước đó heartbeat đã đưa chúng về `ONLINE`, điều này đồng thời xác nhận heartbeat tới được backend.
 
-### Test Summary
+## Giới hạn của lần kiểm này
 
-| Test Case | Result | Status |
-| :--- | :--- | :--- |
-| HOT | Temperature variation verified; FAN currently ON at Level 100 in the earlier check. | PARTIAL |
-| DRY | Humidity variation verified; MIST currently ON in the earlier check. | PARTIAL |
-| NORMAL | 1,243 readings per sensor/metric collected; FAN and MIST currently OFF. | PARTIAL |
-| Manual FAN Control | Unable to complete due to login authentication issue. | BLOCKED |
-
-### Overall Conclusion
-
-The SwiftletCare Simulator successfully connected to the Backend through MQTT and transmitted sensor readings to SQL Server. The system collected environmental data for the HOT, DRY, and NORMAL scenarios.
-
-Temperature and humidity variations were observed in the HOT and DRY scenarios. In the NORMAL scenario, 1,243 readings per sensor/metric were recorded from 03:40:11 to 09:56:04. FAN and MIST devices were observed in AUTO mode and OFF during the latest status check.
-
-However, repeated actuator ON/OFF transitions have not been fully verified through historical control records. Manual FAN control testing was also blocked by an authentication issue.
-
-**Final Result:** PARTIAL – The simulator-to-backend-to-database data flow was verified successfully. Further verification of automatic actuator transitions and manual control is required to complete all E2E test cases.
+1. Kiểm trên CSDL, **không mở web** như spec 3.3 mô tả.
+2. Broker mới mỗi kịch bản nên backend chưa có phiên; số đo gửi trước khi backend subscribe không vào CSDL. Vì vậy mốc đầu trong CSDL chậm hơn lúc bật simulator từ 20 tới 63 giây, tùy lần chạy. Với broker giữ phiên backend (`clean: false`), các tin này được giữ lại, nhưng lần này chưa kiểm.
+3. Cấu hình broker khác `infra/mosquitto/mosquitto.conf` ở thư mục persistence mới và `autosave_interval 1`, để `taskkill` không làm mất phiên.
+4. Chỉ kiểm cảm biến với `--drop`. Chưa kiểm `--drop` cho cơ cấu chấp hành, và heartbeat QoS 0 không được gửi bù.
+5. Broker đứt chỉ kiểm 60 giây. Giới hạn 1000 tin chỉ kiểm bằng test đơn vị, chưa chạy thật tới mức đầy.
+6. Dùng `node` trực tiếp, không qua `npm start`. `npm start` chỉ kiểm ở `spikes/RESULTS.md` S1 và S6.
