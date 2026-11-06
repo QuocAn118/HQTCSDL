@@ -53,3 +53,42 @@
 ## Dữ liệu sau khi kiểm
 
 `SwiftletCare_Dev` về đúng mốc chụp trước khi kiểm: 12 cảnh báo, lịch sử tới #18, 15 nhật ký, 54164 số đo, 864 đếm chim; checksum `Devices`, `Thresholds`, `Users`, `Houses`, `Zones` khớp. Ảnh thử trong `backend/storage` đã xóa. Các dòng ZZ-TEST có từ trước vẫn còn.
+
+## Task 12: huy hiệu `OFFLINE` khi đã có heartbeat (06/11/2026)
+
+- Cách chạy: nhánh `web-heartbeat` (từ `main` `3910f4c`) với `HEARTBEAT_ENABLED = true` chưa commit; `npm run build` + `next start -p 3001`; backend `dist` build từ `main`; simulator kịch bản `normal`; Mosquitto với thư mục persistence mới; CSDL `SwiftletCare_Dev` vừa `deploy.ps1 -Reset` (ngày neo 05/11/2026). Simulator bật trước backend. Trình duyệt: Chromium của Playwright MCP, tài khoản `owner1`, nhà 1.
+- Mốc giờ dưới đây là UTC.
+
+| # | Kiểm | Kết quả | Đạt |
+|---|---|---|---|
+| 1 | Điều kiện: `GET /api/houses/1/devices` khi simulator đang chạy | Sau gần 2 phút: 18 thiết bị; FAN 4, MIST 4, HEATER 4, SPEAKER 1, SENSOR 4 đều `ONLINE`; CAMERA 1 `OFFLINE` vì không chạy `ai-vision` | Đạt |
+| 2 | Simulator chạy: không có huy hiệu | Tổng quan 0, Thiết bị 0 | Đạt |
+| 3 | Tắt simulator lúc 10:13:59, sau 6 phút, tải lại trang | API: 17/17 cảm biến và cơ cấu chấp hành `OFFLINE`. Thiết bị: 13 huy hiệu (trang này chỉ liệt kê cơ cấu chấp hành). Tổng quan: 17 huy hiệu (4 cảm biến, 13 cơ cấu chấp hành). CSDL: 26 `DEVICE_OFFLINE`; 20 cơ cấu chấp hành lúc 10:18:50 (sau 4 phút 51 giây), 6 cảm biến lúc 10:19:50 (sau 5 phút 51 giây) | Đạt |
+| 4 | Trang đang mở, không tải lại, sau 6 phút | Thiết bị vẫn 0 huy hiệu, đúng hạn chế đã ghi trong README | Đúng hạn chế |
+| 5 | Bật lại simulator, tải lại trang | Tổng quan 0, Thiết bị 0. Cả 26 cảnh báo `DEVICE_OFFLINE` đã `RESOLVED` | Đạt |
+| 6 | Bật lại simulator, Tổng quan đang mở, không tải lại: hết huy hiệu khi có số đo | Cảm biến: còn 4 ở lần lấy mẫu đầu (16 giây), về 0 ở lần sau (41 giây) | Đạt |
+| 7 | Như trên: hết huy hiệu khi có heartbeat | Cơ cấu chấp hành: **vẫn 13 huy hiệu ở lần lấy mẫu cuối (102 giây)**, về 0 chỉ sau khi tải lại. Heartbeat không phát sự kiện tới web | Không đạt, ghi hạn chế trong README |
+
+Chưa làm: nhà 2 và `owner2` trên trình duyệt (26 thiết bị chỉ đếm trong CSDL); huy hiệu khi socket kết nối lại; `ai-vision --heartbeat` (camera không có huy hiệu nên không ảnh hưởng hai trang này).
+
+Sau khi kiểm: `deploy.ps1 -Reset` lại `SwiftletCare_Dev` (ngày neo 05/11/2026); đã tắt web, backend, simulator, Mosquitto.
+
+## Sửa lỗi Task 12: tự tải lại REST thiết bị mỗi 30 giây (06/11/2026)
+
+Thay kết quả dòng 4 và dòng 7 của mục Task 12 ở trên (đo trước khi sửa).
+
+- Cách chạy: như mục trên, thêm chu kỳ tải lại chưa commit. Hai tab `owner1` nhà 1, Tổng quan và Thiết bị, **không tải lại trang trong suốt phần chính**. Bộ ghi trong trang lấy mẫu huy hiệu mỗi giây và ghi mọi lượt gọi `/api/houses/1/devices`. Mốc giờ là UTC.
+- **Lệch plan:** plan Task 12 chỉ đổi cờ, không có chu kỳ tải lại; thêm theo yêu cầu vì heartbeat không phát sự kiện tới web. Không sửa backend, không sửa hợp đồng. Thêm ngoài yêu cầu: bỏ qua lượt tải khi lượt trước chưa xong, lần tải nền lỗi không hiện thông báo.
+
+| # | Kiểm | Kết quả | Đạt |
+|---|---|---|---|
+| 1 | Simulator chạy, không tải lại | 0 huy hiệu ở cả hai tab. Gọi REST đúng 30 giây một lần trong suốt lần kiểm | Đạt |
+| 2 | Tắt simulator 11:56:28, không tải lại: `OFFLINE` xuất hiện trong khoảng 30 giây sau mốc backend | Backend đánh dấu 12:01:30, đủ 26 `DEVICE_OFFLINE` (sau 5 phút 2 giây). Tổng quan: 4 cảm biến và 13 cơ cấu chấp hành lúc 12:01:37 (sau 7 giây). Thiết bị: 13 lúc 12:01:39 (sau 9 giây) | Đạt |
+| 3 | Bật lại simulator 12:03:34, không tải lại: huy hiệu mất trong khoảng 30 đến 60 giây | Cảm biến: lúc 12:03:50 (16 giây). Cơ cấu chấp hành: Tổng quan 12:04:37 (63 giây), Thiết bị 12:04:39 (65 giây). Chậm hơn 60 giây một chút: lượt tải 12:04:06 và 12:04:08 chưa thấy `ONLINE`, phải chờ lượt sau | Đạt, chậm hơn mức 60 giây 3 đến 5 giây |
+| 4 | Rời trang (bấm sang Cảnh báo): dọn timer | 70 giây không có lượt gọi nào | Đạt |
+| 5 | Tab ẩn | Giả lập `document.visibilityState = 'hidden'`: 70 giây không gọi. Trả về hiện: có lượt gọi trong 35 giây | Đạt, trạng thái ẩn là giả lập |
+| 6 | Tắt backend, trang Thiết bị đang mở | 70 giây: vẫn gọi theo chu kỳ, danh sách giữ nguyên, có thanh mất kết nối, không có nút "Thử lại". Bật lại: hết thanh mất kết nối, huy hiệu không đổi | Đạt |
+
+Chưa làm: nhà 2 và `owner2` trên trình duyệt; bấm điều khiển đúng lúc lượt tải nền về (phản hồi POST bị bỏ qua vì so object, trạng thái dựa vào `device.state` hoặc lượt tải sau, chỉ đọc code, chưa đo); tab ẩn thật của trình duyệt.
+
+Sau khi kiểm: `deploy.ps1 -Reset` lại `SwiftletCare_Dev` (ngày neo 05/11/2026); đã tắt Playwright, web, backend, simulator, Mosquitto.

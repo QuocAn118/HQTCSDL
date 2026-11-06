@@ -65,12 +65,14 @@ Theo spec 3.4:
 4. Trạng thái thiết bị sau khi kết nối lại dựa vào thứ tự sự kiện, không dựa vào mốc thời gian.
 5. `NEXT_PUBLIC_API_URL` cố định lúc build.
 6. `/admin/tools` chỉ ẩn ở client; bảo vệ thật ở backend.
-7. Huy hiệu `OFFLINE` chỉ cho cảm biến vì chưa làm heartbeat.
 
 Thêm:
 
-- **Heartbeat và thu hoạch đã cắt** (`web/spikes/RESULTS.md`): không có huy hiệu `OFFLINE` cho quạt, phun sương, sưởi, loa, camera (`HEARTBEAT_ENABLED = false`); không có trang Thu hoạch và báo cáo tương quan vì Task 25 backend đã cắt.
-- **`OFFLINE` chỉ cập nhật trực tiếp theo chiều lên:** huy hiệu tắt ngay khi nhận `readings.new` của cảm biến đó. Cảm biến **im lặng** thì chỉ chuyển sang `OFFLINE` khi trang tải lại REST (vào lại trang hoặc socket kết nối lại), vì hợp đồng không có sự kiện đổi trạng thái thiết bị.
+- **Thu hoạch đã cắt** (`web/spikes/RESULTS.md`): không có trang Thu hoạch và báo cáo tương quan vì Task 25 backend đã cắt.
+- **Huy hiệu `OFFLINE`** (`HEARTBEAT_ENABLED = true`): có cho cảm biến (trang Tổng quan) và quạt, phun sương, sưởi, loa (Tổng quan và Thiết bị). Camera không có huy hiệu vì hai trang này không liệt kê camera.
+- **Tắt simulator khoảng 5 phút thì cả 26 thiết bị `OFFLINE`** (6 cảm biến, 20 cơ cấu chấp hành). Đo ngày 06/11: cơ cấu chấp hành sau 4 phút 51 giây, cảm biến sau 5 phút 51 giây (`web/results/e2e.md`).
+- **`SPEAKER` có `IsOn` từ dữ liệu mẫu:** loa hiện "Bật" ngay từ đầu, kể cả khi đang `OFFLINE`.
+- **`OFFLINE` cập nhật theo chu kỳ 30 giây:** hợp đồng không có sự kiện đổi trạng thái thiết bị và heartbeat không phát sự kiện tới web, nên khi tab đang hiện, Tổng quan và Thiết bị tự tải lại REST thiết bị mỗi 30 giây. Huy hiệu xuất hiện trong khoảng 30 giây sau mốc backend đánh dấu. Bật lại simulator: cảm biến hết huy hiệu khi nhận `readings.new`, cơ cấu chấp hành hết sau khi có heartbeat cộng một chu kỳ (đo được 63 đến 65 giây). Tab ẩn không tải lại; quay về tab thì chờ tối đa 30 giây. Lần tải nền lỗi không hiện thông báo, giữ dữ liệu cũ và lần sau tự thử lại.
 - **Mất mạng rồi bấm sang tab khác:** trang của Next phải tải từ máy chủ web, nên trình duyệt hiện trang lỗi mạng của nó. Có mạng lại thì tải lại trang, phiên vẫn còn. Đứng yên ở trang đang mở thì chỉ hiện thông báo lỗi và thanh mất kết nối.
 - **Thanh mất kết nối hiện chậm khi mạng phía trình duyệt đứt:** đo được khoảng 27 giây, do chờ Socket.IO hết hạn ping. Khi backend tắt thì thanh hiện ngay.
 - **Tiêu đề nhà:** mở trang lúc backend lỗi thì tiêu đề giữ "Nhà yến" đến khi tải lại trang, dù nội dung đã tự hồi phục.
