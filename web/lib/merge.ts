@@ -86,6 +86,9 @@ export function createLoadGate<E>() {
       if (loading) held.push(ev);
       return loading;
     },
+    isLoading(): boolean {
+      return loading;
+    },
     end(id: number): E[] | null {
       if (id !== seq) return null;
       const out = held;
@@ -94,6 +97,11 @@ export function createLoadGate<E>() {
       return out;
     },
   };
+}
+
+// begin() xoa su kien dang giu, nen khong chen lan tai dinh ky vao lan tai dang chay.
+export function shouldPollDevices(visibility: string, loading: boolean): boolean {
+  return visibility === 'visible' && !loading;
 }
 
 // readings.new: thiet bi vua gui so do coi la ONLINE (T7W-1). Chieu nguoc lai (im lang -> OFFLINE) chi khi tai lai REST.

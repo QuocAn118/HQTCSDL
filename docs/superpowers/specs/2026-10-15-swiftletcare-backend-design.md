@@ -719,5 +719,5 @@ Mục 1 chỉ sửa câu chữ; mục 2–5 kèm fixture trong cùng PR.
 - `ALTER DATABASE … SET OFFLINE` chạy được với tài khoản test và Prisma kết nối lại sau `SET ONLINE`; không được thì test câu 6.6 lùi về Jest với SP giả.
 - `FormData`/`Blob` có sẵn trong Node 25 để gửi multipart (có từ Node 18, chưa thử với backend này).
 - `node dist/main.js` nhận SIGINT trên Windows khi là tiến trình con; không được thì kill, chốt trong plan.
-- "6 cảm biến OFFLINE" theo dữ liệu mẫu (6 cảm biến H1 + H2; cơ cấu chấp hành không có `LastSeenAt`, mặc định OFFLINE nên không đổi trạng thái): chưa đếm lại trên CSDL thật.
+- "6 cảm biến OFFLINE" theo dữ liệu mẫu (6 cảm biến H1 + H2; cơ cấu chấp hành không có `LastSeenAt`, mặc định OFFLINE nên không đổi trạng thái): đã đo: 6 `DEVICE_OFFLINE` khi simulator chưa gửi (`simulator/result/e2e.md`).
 - Quyền `swiftlet_dev` cho `RESTORE` và thời gian mỗi lần `RESTORE` (bước 1).

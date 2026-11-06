@@ -166,6 +166,7 @@ Cập nhật 17/10/2026 theo plan (thêm `components/` và các file `lib/` tác
 | 400 `CONSTRAINT_VIOLATION` | Báo ngưỡng không hợp lệ (VD Min ≥ Max) |
 | 409 `DUPLICATE` | Báo trùng tên hoặc trùng mã |
 | 400 `VALIDATION_ERROR` | Hiện `details` cạnh trường sai |
+| 400 `INVALID_PARAMETER` | Báo "Khoảng thời gian không hợp lệ: "Từ" phải trước "Đến"; khoảng quá dài thì gom theo nhiều phút hơn." |
 | 404 `NOT_FOUND` | Trang "Không tìm thấy". OWNER gõ URL nhà người khác cũng nhận 404, không biết nhà đó có tồn tại |
 | 503 `RETRY_LATER` | Báo "hệ thống bận" kèm nút "Thử lại". Không tự gửi lại thao tác ghi |
 | Mất mạng | Thanh báo "không kết nối được máy chủ" |
@@ -264,7 +265,7 @@ Chạy với CSDL Dev vừa nạp dữ liệu mẫu, cùng Mosquitto, simulator 
 4. Trạng thái thiết bị sau khi kết nối lại dựa vào thứ tự sự kiện (mục 2.4), không dựa vào mốc thời gian.
 5. `NEXT_PUBLIC_API_URL` cố định lúc build.
 6. `/admin/tools` chỉ ẩn ở client; bảo vệ thật ở backend.
-7. Huy hiệu `OFFLINE` chỉ cho SENSOR nếu chưa làm heartbeat.
+7. Huy hiệu `OFFLINE` cho SENSOR và cơ cấu chấp hành (heartbeat đã bật). Hợp đồng không có sự kiện đổi trạng thái thiết bị, nên web tải lại REST thiết bị mỗi 30 giây khi tab đang hiện; huy hiệu cập nhật trễ theo chu kỳ này.
 
 ### 3.5 Phụ thuộc vào module khác
 

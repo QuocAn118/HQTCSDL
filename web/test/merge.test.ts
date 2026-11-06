@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { appendLive, applyControlResult, applyDeviceState, createLoadGate, latestKey, markOnline, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates } from '../lib/merge';
-import type { Alert, Device, DeviceState, LatestReading } from '../lib/types';
+import { appendLive, applyControlResult, applyDeviceState, createLoadGate, latestKey, markOnline, mergeAlert, mergeAlerts, mergeLatest, replayDeviceStates, shouldPollDevices } from '../lib/merge';
+import type { Alert, Device, DeviceState, LatestReading, ReadingsNew } from '../lib/types';
 
 const reading = (value: number, at: string): LatestReading => ({
   houseId: 1, zoneId: 2, zoneName: 'Tang 1', deviceId: 5, deviceCode: 'H1-F1-SENSOR', deviceStatus: 'ONLINE',
@@ -236,5 +236,36 @@ describe('applyControlResult', () => {
   it('su kien cua thiet bi KHAC den trong luc cho -> van ap phan hoi', () => {
     const list = applyDeviceState([fan, other], state({ deviceId: 10, isOn: true, level: null }));
     expect(applyControlResult(list, fan, res)[0]).toMatchObject({ mode: 'AUTO' });
+  });
+});
+
+describe('tai lai thiet bi dinh ky', () => {
+  it('chi tai khi tab dang hien va khong co lan tai nao dang chay', () => {
+    expect(shouldPollDevices('visible', false)).toBe(true);
+    expect(shouldPollDevices('hidden', false)).toBe(false);
+    expect(shouldPollDevices('visible', true)).toBe(false);
+  });
+
+  it('isLoading: dung den khi lan tai moi nhat ket thuc, lan cu ket thuc khong tat', () => {
+    const g = createLoadGate<string>();
+    expect(g.isLoading()).toBe(false);
+    const a = g.begin();
+    const b = g.begin();
+    g.end(a);
+    expect(g.isLoading()).toBe(true);
+    g.end(b);
+    expect(g.isLoading()).toBe(false);
+  });
+
+  it('REST cu cua lan tai dinh ky khong de su kien da giu: device.state va markOnline thang', () => {
+    const fan: Device = { ...device, status: 'OFFLINE', isOn: false };
+    const g = createLoadGate<DeviceState | ReadingsNew>();
+    const id = g.begin();
+    const ev = { houseId: 1, deviceId: fan.deviceId, mode: 'MANUAL', isOn: true, level: 70 } as DeviceState;
+    const reading = { houseId: 1, readings: [{ deviceId: fan.deviceId }] } as unknown as ReadingsNew;
+    expect(g.hold(ev)).toBe(true);
+    expect(g.hold(reading)).toBe(true);
+    const r = replayDeviceStates([fan], g.end(id)!);
+    expect(r[0]).toMatchObject({ status: 'ONLINE', mode: 'MANUAL', isOn: true, level: 70 });
   });
 });

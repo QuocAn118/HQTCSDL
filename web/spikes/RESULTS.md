@@ -14,5 +14,5 @@ Máy: Windows 10 IoT Enterprise LTSC, Node v25.8.0, npm 11.11.0. Backend thật:
 
 | Task plan web | Nội dung | Lý do | Hạn chế để lại |
 |---|---|---|---|
-| Task 12 | Huy hiệu `OFFLINE` cho cơ cấu chấp hành và camera | Heartbeat đã cắt | `HEARTBEAT_ENABLED` giữ `false`: chỉ `SENSOR` có huy hiệu `OFFLINE` |
+| Task 12 | Huy hiệu `OFFLINE` cho cơ cấu chấp hành | **Đã làm ngày 06/11/2026** sau khi heartbeat chạy thật (simulator, backend Task 26), không còn bỏ qua | `HEARTBEAT_ENABLED = true`, web tải lại REST thiết bị mỗi 30 giây. Camera không có huy hiệu vì Tổng quan và Thiết bị không liệt kê camera |
 | Task 13 | Thu hoạch và báo cáo tương quan | Task 25 backend đã cắt, không có endpoint | Không có trang `harvests`, đã gỡ tab "Thu hoạch" khỏi layout nhà |
