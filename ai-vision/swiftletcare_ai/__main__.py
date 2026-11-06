@@ -19,10 +19,10 @@ def build_parser() -> argparse.ArgumentParser:
         s.add_argument('--camera', required=True, choices=CAMERAS)
         s.add_argument('--weights', type=Path, default=DEFAULT_WEIGHTS)
         s.add_argument('--imgsz', type=int, default=None, help='kich thuoc anh suy luan (mac dinh theo trong so)')
+        s.add_argument('--playlist', nargs='+', default=None, help='thay playlist trong YAML (duong dan tinh tu ai-vision/)')
     live.add_argument('--heartbeat', action='store_true', help='gui heartbeat 30 giay (can backend co /api/ai/heartbeat)')
     off.add_argument('--out', type=Path, required=True)
     off.add_argument('--t0', default=None, help='moc bat dau dang YYYY-MM-DDTHH:MM:SSZ (mac dinh: gio chay)')
-    off.add_argument('--playlist', nargs='+', default=None, help='thay playlist trong YAML (duong dan tinh tu ai-vision/)')
     off.add_argument('--annotated-video', action='store_true', help='ghi them out/annotated.mp4 co khung bao va vach dem')
     return p
 
@@ -34,7 +34,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.cmd == 'live':
-        return run_live(args.camera, args.weights, args.imgsz, args.heartbeat, Deps())
+        return run_live(args.camera, args.weights, args.imgsz, args.heartbeat, Deps(), playlist=args.playlist)
     try:
         t0 = parse_utc(args.t0) if args.t0 else None
     except ValueError as e:
