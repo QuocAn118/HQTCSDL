@@ -24,6 +24,7 @@ Chạy lại ngày **06/11/2026** trên nhánh `simulator-fix`, thay kết quả
 | `NOISE_SEED=2`, 2 phút | **Đạt** | Chuỗi TEMP khác hạt giống 1 (trùng nhiều nhất 4/13 mốc); cùng hạt giống trùng 22/22 |
 | Backend chạy, simulator chưa từng gửi | **Đạt** | Đúng 6 `DEVICE_OFFLINE`, đều là cảm biến |
 | `--drop H1-F2-FAN`, 11 phút | **Đạt** | `DEVICE_OFFLINE` đúng thiết bị, mở 05:16:13, đóng 05:18:35 |
+| Đầy hàng đợi, broker đứt 1100 giây | **Simulator đạt; CSDL thiếu số đo do giới hạn backend** | Tối đa 1000 tin, bỏ 91–93 tin cũ nhất, gửi bù 1000 tin đúng thứ tự; backend bỏ 2820 tin |
 
 ## `normal`
 
@@ -110,11 +111,51 @@ Kịch bản `normal`, simulator bật 05:09:31, backend sẵn sàng 05:10:19. D
 - 6 cảm biến đều có 67 mốc, khoảng cách lớn nhất 10 giây, không trùng.
 - Log simulator không có giờ. Tính từ giờ bật và tham số thì ngắt khoảng 05:11:31, nối lại khoảng 05:18:31, nên cảnh báo mở sau khoảng 4 phút 42 giây và đóng sau khoảng 4 giây. Mở sớm hơn 5 phút được suy ra là do tính từ heartbeat cuối, gửi trước lúc ngắt tối đa 30 giây; chưa đo riêng.
 
+## Đầy hàng đợi: broker đứt 1100 giây
+
+- `READING_INTERVAL_SECONDS=1` để đầy nhanh; `MAX_QUEUE_PER_DEVICE` giữ nguyên 1000. Ở nhịp 10 giây thật cần khoảng 2 giờ 47 phút.
+- Chạy `startMain` thật qua một script ngoài repo, chỉ ghi thêm mốc đã sinh và kích thước hàng đợi mỗi nhịp, không sửa mã simulator.
+- Một client độc lập (`e2e-probe`, `clean: false`) ghi thứ tự tin đến broker.
+- Tắt broker lúc 05:29:13, bật lại lúc 05:47:34. Có 1092 nhịp trong lúc đứt.
+
+| Thiết bị | Hàng đợi tối đa | Đầy lúc | Tin bị bỏ | Đoạn bị bỏ | Tin gửi bù | Đảo thứ tự | Trùng |
+|---|---:|---|---:|---|---:|---:|---:|
+| H1-F0-SENSOR | 1000 | 05:46:02 | 93 | 05:29:15–05:30:47 | 1000 | 0 | 0 |
+| H1-F1-SENSOR | 1000 | 05:46:02 | 93 | 05:29:15–05:30:47 | 1000 | 0 | 0 |
+| H1-F2-SENSOR | 1000 | 05:46:02 | 91 | 05:29:15–05:30:45 | 1000 | 0 | 0 |
+| H1-F3-SENSOR | 1000 | 05:46:02 | 93 | 05:29:15–05:30:47 | 1000 | 0 | 0 |
+| H2-F0-SENSOR | 1000 | 05:46:02 | 93 | 05:29:15–05:30:47 | 1000 | 0 | 0 |
+| H2-F1-SENSOR | 1000 | 05:46:02 | 93 | 05:29:15–05:30:47 | 1000 | 0 | 0 |
+| **Tổng** | | | **556** | | **6000** | **0** | **0** |
+
+- **Bỏ tin cũ nhất:** phần thiếu là một đoạn liên tục ngay đầu hàng đợi, mỗi cảm biến một đoạn. Log có đúng 6 dòng `[QUEUE] ... full (1000)`, mỗi cảm biến một dòng.
+- **Không vượt giới hạn:** kích thước lớn nhất đo được ở mọi nhịp là 1000.
+- **Gửi bù theo thứ tự:** theo thứ tự đến tại probe, `at` của từng cảm biến tăng dần, không đảo, không trùng. Hàng đợi về 0 trong khoảng 05:47:36–05:47:40.
+- H1-F2 bỏ ít hơn 2 tin vì nối lại sớm hơn 2 nhịp.
+- Mốc 05:29:14 không vào hàng đợi và probe không nhận được, không tính vào tin bị bỏ. Riêng H1-F1 có danh sách mốc: CSDL có 05:29:14, tức tin đã tới broker và backend trước khi broker chết. Cả 6 cảm biến được suy ra từ đối soát dưới đây, không kiểm từng dòng.
+
+**CSDL không nhận đủ, do giới hạn của backend, không do simulator.** Khi broker bật lại, backend nhận dồn 6000 tin × 4 chỉ số = 24.000 phần tử, vượt `INGEST_RETRY_MAX_ITEMS=10000`. Từ 05:47:38 tới 05:47:40 backend ghi **2820 dòng** `Hang cho vuot INGEST_RETRY_MAX_ITEMS: bo 4 so do cu nhat`, tức 11.280 phần tử.
+
+| Cảm biến | Mốc TEMP trong CSDL từ 05:28:09 | Khoảng hở lớn nhất (giây) |
+|---|---:|---:|
+| H1-F0-SENSOR | 1249 | 193 |
+| H1-F1-SENSOR | 1348 | 169 |
+| H1-F2-SENSOR | 1199 | 296 |
+| H1-F3-SENSOR | 1343 | 166 |
+| H2-F0-SENSOR | 985 | 458 |
+| H2-F1-SENSOR | 1258 | 194 |
+
+Đối soát: backend nhận 10.196 tin (probe 10.166, cộng 30 tin trước khi probe nối) + 6 tin mốc 05:29:14 = 10.202 tin. CSDL có 7382 mốc. Chênh **2820**, khớp đúng số dòng cảnh báo. CSDL không có dòng trùng. Cách bỏ này đúng spec backend mục thu nhận; việc có đổi giới hạn hay không do TV2 quyết định, lần này không sửa.
+
+Tính theo công thức, chưa đo: 10.000 / (6 × 4) ≈ 416 tin mỗi cảm biến, tương đương khoảng 69 phút đứt ở nhịp 10 giây, thì đợt dồn bắt đầu chạm giới hạn.
+
+Trong 1840 giây chạy có 1825 nhịp, 16 lần hai nhịp liền nhau cách quá 1 giây. Số trên so với tập mốc thực sự sinh ra nên không bị ảnh hưởng; nguyên nhân chưa tìm.
+
 ## Giới hạn của lần kiểm này
 
 1. Kiểm trên CSDL, **không mở web** như spec 3.3 mô tả.
 2. Broker mới mỗi kịch bản nên backend chưa có phiên; số đo gửi trước khi backend subscribe không vào CSDL. Vì vậy mốc đầu trong CSDL chậm hơn lúc bật simulator từ 20 tới 63 giây, tùy lần chạy. Với broker giữ phiên backend (`clean: false`), các tin này được giữ lại, nhưng lần này chưa kiểm.
 3. Cấu hình broker khác `infra/mosquitto/mosquitto.conf` ở thư mục persistence mới và `autosave_interval 1`, để `taskkill` không làm mất phiên.
 4. Heartbeat QoS 0 không được gửi bù (ca `--drop H1-F2-FAN` ghi 0 tin trong hàng đợi), nên giai đoạn ngắt không để lại dấu vết heartbeat trong CSDL.
-5. Broker đứt chỉ kiểm 60 giây. Giới hạn 1000 tin chỉ kiểm bằng test đơn vị, chưa chạy thật tới mức đầy.
+5. Đầy hàng đợi kiểm ở nhịp 1 giây, chưa chạy ở nhịp 10 giây thật. Khi đợt gửi bù vượt `INGEST_RETRY_MAX_ITEMS`, CSDL vẫn thiếu số đo dù simulator gửi đủ.
 6. Dùng `node` trực tiếp, không qua `npm start`. `npm start` chỉ kiểm ở `spikes/RESULTS.md` S1 và S6.
