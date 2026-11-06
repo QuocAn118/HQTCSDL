@@ -163,6 +163,14 @@ Chạy thật 5 phút, simulator bật 05:02:11.
 - 6 cảm biến đều có 31 mốc, khoảng cách lớn nhất 10 giây, không trùng.
 - Chỉ chạy 5 phút nên mới có lần bật đầu, chưa tới lúc nhả chốt như ca 18 phút.
 
+## ACL
+
+ACL chi thu tren broker tam 1884, chua co file acl trong repo
+
+## Ctrl+C
+
+Cho TV2 tu bam Ctrl+C mot lan khi chay npm start va node src/main.mjs, xem log tat em
+
 ## Giới hạn của lần kiểm này
 
 1. Kiểm trên CSDL, **không mở web** như spec 3.3 mô tả.
