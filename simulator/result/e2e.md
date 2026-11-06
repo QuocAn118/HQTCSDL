@@ -25,6 +25,7 @@ Chạy lại ngày **06/11/2026** trên nhánh `simulator-fix`, thay kết quả
 | Backend chạy, simulator chưa từng gửi | **Đạt** | Đúng 6 `DEVICE_OFFLINE`, đều là cảm biến |
 | `--drop H1-F2-FAN`, 11 phút | **Đạt** | `DEVICE_OFFLINE` đúng thiết bị, mở 05:16:13, đóng 05:18:35 |
 | Đầy hàng đợi, broker đứt 1100 giây | **Simulator đạt; CSDL thiếu số đo do giới hạn backend** | Tối đa 1000 tin, bỏ 91–93 tin cũ nhất, gửi bù 1000 tin đúng thứ tự; backend bỏ 2820 tin |
+| `npm start`, `hot`, 5 phút | **Đạt** | Chuỗi TEMP trùng 31/31 mốc với `node`; FAN H1-F2 bật cùng lý do; thiếu `.env` thì dừng với exit 1 |
 
 ## `normal`
 
@@ -151,6 +152,17 @@ Tính theo công thức, chưa đo: 10.000 / (6 × 4) ≈ 416 tin mỗi cảm bi
 
 Trong 1840 giây chạy có 1825 nhịp, 16 lần hai nhịp liền nhau cách quá 1 giây. Số trên so với tập mốc thực sự sinh ra nên không bị ảnh hưởng; nguyên nhân chưa tìm.
 
+## `npm start -- --scenario hot`
+
+Chạy thật 5 phút, simulator bật 05:02:11.
+
+- `check-env` qua, log in đúng lệnh `node scripts/check-env.mjs && node --env-file=.env src/main.mjs --scenario hot`, không có dòng lỗi.
+- Khi tạm đổi tên `.env`: exit 1, in `Chua co simulator/.env, chep tu .env.example`. Đã trả lại file.
+- Chuỗi TEMP H1-F2 trùng ca `node` **31/31 mốc** tại độ lệch 0, mốc đầu trong CSDL đều là 28,63.
+- FAN H1-F2 bật 05:04:39 với lý do `TEMP 30.05 > Max 30`, cùng giá trị ca `node`. Thời gian từ lúc bật simulator: 2 phút 28 giây so với 2 phút 23 giây; chênh 5 giây chưa tách phần thời gian khởi động của `npm`.
+- 6 cảm biến đều có 31 mốc, khoảng cách lớn nhất 10 giây, không trùng.
+- Chỉ chạy 5 phút nên mới có lần bật đầu, chưa tới lúc nhả chốt như ca 18 phút.
+
 ## Giới hạn của lần kiểm này
 
 1. Kiểm trên CSDL, **không mở web** như spec 3.3 mô tả.
@@ -158,4 +170,4 @@ Trong 1840 giây chạy có 1825 nhịp, 16 lần hai nhịp liền nhau cách q
 3. Cấu hình broker khác `infra/mosquitto/mosquitto.conf` ở thư mục persistence mới và `autosave_interval 1`, để `taskkill` không làm mất phiên.
 4. Heartbeat QoS 0 không được gửi bù (ca `--drop H1-F2-FAN` ghi 0 tin trong hàng đợi), nên giai đoạn ngắt không để lại dấu vết heartbeat trong CSDL.
 5. Đầy hàng đợi kiểm ở nhịp 1 giây, chưa chạy ở nhịp 10 giây thật. Khi đợt gửi bù vượt `INGEST_RETRY_MAX_ITEMS`, CSDL vẫn thiếu số đo dù simulator gửi đủ.
-6. Dùng `node` trực tiếp, không qua `npm start`. `npm start` chỉ kiểm ở `spikes/RESULTS.md` S1 và S6.
+6. `npm start` chỉ chạy kịch bản `hot` 5 phút; các ca khác dùng `node`. Ca đầy hàng đợi chạy qua script ghi số đo.
