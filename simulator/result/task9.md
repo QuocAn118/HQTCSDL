@@ -1,3 +1,5 @@
+Ban ghi cu cua TV5, da duoc thay bang simulator/result/e2e.md (06/11/2026). Muc PARTIAL/BLOCKED trong file nay da duoc kiem lai va dat; viec ALTER COLUMN Value DECIMAL(12,4) khong con hieu luc, CSDL nhom la DECIMAL(9,2) (da reset bang deploy.ps1 -Reset).
+
 
 
 # Task 9 – MQTT Disconnection, Message Queue and Recovery
