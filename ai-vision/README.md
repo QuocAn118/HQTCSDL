@@ -109,6 +109,47 @@ powershell -ExecutionPolicy Bypass -File scripts/start-cameras.ps1 -Cameras H1-F
 Script mở cửa sổ tương tác riêng cho mỗi camera để dừng bằng Ctrl+C. Tham số
 `-Heartbeat` chỉ dùng khi backend có route heartbeat; mặc định không bật.
 
+## Demo thiên địch trên H1
+
+Demo thiên địch chỉ chạy camera H1, phát lặp V04 → V05 → V06 → V07. Cấu hình H2 giữ nguyên. Không sửa `cameras/*.yaml`: hash của chúng đã ghi trong `results/freeze.json` và `results/video-freeze-2026-11-05.json`. Playlist demo truyền qua `--playlist`.
+
+**1. Lấy video.** Nguồn và giấy phép ở [SOURCES.md](SOURCES.md). Mỗi trang Pexels có thể có nhiều bản, phải tải đúng bản trong bảng:
+
+| File | Nội dung | Trang nguồn | Kích thước | FPS | Số byte |
+|---|---|---|---|---:|---:|
+| `V04.mp4` | Chuột | [Pexels 854528](https://www.pexels.com/video/video-of-rodent-854528/) | 3840×2160 | 25 | 55.855.628 |
+| `V05.mp4` | Rắn | [Pexels 8083244](https://www.pexels.com/video/snake-on-the-ground-8083244/) | 1920×1080 | 25 | 3.025.325 |
+| `V06.mp4` | Cú | [Pexels 16346351](https://www.pexels.com/video/habichtkautz-16346351/) | 2560×1440 | 29,97 | 13.747.574 |
+| `V07.mp4` | Đường rừng | [Pexels 4372540](https://www.pexels.com/video/a-shot-of-a-forest-path-through-the-trees-4372540/) | 3840×2160 | 29,97 | 33.479.137 |
+
+**2. Đặt file** vào `ai-vision/data/videos/`, đổi đúng tên như cột đầu. Thư mục `data/` đã gitignore; không commit video.
+
+**3. Bắt buộc so SHA-256 trước khi chạy.** Từ `ai-vision/`:
+
+```powershell
+$freeze = Get-Content results/video-freeze-2026-11-05.json -Raw | ConvertFrom-Json
+foreach ($name in 'V04.mp4', 'V05.mp4', 'V06.mp4', 'V07.mp4') {
+    $hash = (Get-FileHash "data/videos/$name" -Algorithm SHA256).Hash.ToLower()
+    if ($hash -eq $freeze.videos.$name) { "$name khop" } else { "$name SAI, khong duoc chay" }
+}
+```
+
+Cả bốn dòng phải là `khop`. Lệnh chạy không tự kiểm hash. Nếu file tải về không khớp, xin bản đã đo từ TV3, không dùng file khác hash để demo hay báo số đo.
+
+**4. Chạy** sau khi đã có `data/weights/best.pt`, `.env` và backend (chọn một trong hai lệnh):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-cameras.ps1 -Cameras H1-F0-CAMERA -DemoPredators
+.venv/Scripts/python -m swiftletcare_ai live --camera H1-F0-CAMERA --playlist data/videos/V04.mp4 data/videos/V05.mp4 data/videos/V06.mp4 data/videos/V07.mp4
+```
+
+Nếu bỏ `-Cameras`, script vẫn mở cả H2 với playlist trong YAML của H2, và cửa sổ đó sẽ dừng nếu thiếu `V02.ogv`.
+
+**Lưu ý khi demo:**
+
+- **Có thể có cảnh báo rắn sai:** V04 từng sinh một sự kiện rắn sai (`reports/2026-11-05-video-results.md`); V07 nền rừng từng có 1 lần xác nhận rắn và 52 lần bị cooldown chặn (`results/false_alarms_background.csv`).
+- **Số đếm sẽ bằng 0:** playlist này không có chim, nên số đếm 0 là bình thường và không chứng minh đếm đúng.
+
 ## Task 4: cấu hình camera và môi trường
 
 Hai mẫu nằm trong `cameras/H1-F0-CAMERA.yaml` và `cameras/H2-F0-CAMERA.yaml`.
