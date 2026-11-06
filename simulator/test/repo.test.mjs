@@ -1,7 +1,18 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const packageJson = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8')
@@ -15,7 +26,7 @@ describe('Repository configuration', () => {
   });
 
   it('has the required npm scripts', () => {
-    assert.equal(packageJson.scripts.start, 'node --env-file=.env src/main.mjs');
+    assert.equal(packageJson.scripts.start, 'node scripts/check-env.mjs && node --env-file=.env src/main.mjs');
     assert.equal(packageJson.scripts.test, 'node --test');
   });
 
@@ -47,11 +58,33 @@ describe('Repository configuration', () => {
     assert.match(content, /^simulator\/node_modules\/$/m);
   });
 
-  it('check-env script exists', () => {
-    assert.equal(
-      existsSync(new URL('../scripts/check-env.mjs', import.meta.url)),
-      true
-    );
+  it('check-env: thieu .env thi dung voi cau ro rang; co .env thi qua', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sim-env-'));
+
+    try {
+      mkdirSync(join(dir, 'scripts'));
+      copyFileSync(
+        new URL('../scripts/check-env.mjs', import.meta.url),
+        join(dir, 'scripts', 'check-env.mjs')
+      );
+
+      const run = () => spawnSync(
+        process.execPath,
+        [join(dir, 'scripts', 'check-env.mjs')],
+        { encoding: 'utf8' }
+      );
+
+      const missing = run();
+
+      assert.equal(missing.status, 1);
+      assert.ok(missing.stderr.includes('Chua co simulator/.env, chep tu .env.example'));
+
+      writeFileSync(join(dir, '.env'), 'MQTT_URL=mqtt://localhost:1883');
+
+      assert.equal(run().status, 0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('README and spike files exist', () => {

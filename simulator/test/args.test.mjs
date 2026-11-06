@@ -97,6 +97,30 @@ describe('Command line arguments', () => {
     ]));
   });
 
+  it('rejects an unknown --drop code at startup, naming it', () => {
+    assert.throws(() => parseArgs([
+      '--drop', 'H1-F1-SENSOR,H9-F1-SENSOR',
+      '--drop-after', '1',
+      '--drop-for', '7'
+    ]), /H9-F1-SENSOR/);
+  });
+
+  it('rejects --drop on a camera because the simulator has no camera connection', () => {
+    assert.throws(() => parseArgs([
+      '--drop', 'H1-F0-CAMERA',
+      '--drop-after', '1',
+      '--drop-for', '7'
+    ]), /H1-F0-CAMERA/);
+  });
+
+  it('rejects an empty --drop list', () => {
+    assert.throws(() => parseArgs([
+      '--drop', ' , ',
+      '--drop-after', '1',
+      '--drop-for', '7'
+    ]));
+  });
+
   it('rejects unknown argument', () => {
     assert.throws(() => parseArgs([
       '--unknown'

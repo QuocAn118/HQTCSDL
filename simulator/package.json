@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file=.env src/main.mjs",
+    "start": "node scripts/check-env.mjs && node --env-file=.env src/main.mjs",
     "test": "node --test"
   },
   "dependencies": {

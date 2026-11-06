@@ -1,6 +1,7 @@
+import { loadDevices } from './devices.mjs';
 import { SCENARIOS } from './scenarios.mjs';
 
-export function parseArgs(argv = []) {
+export function parseArgs(argv = [], codes = loadDevices().map(device => device.code)) {
   const options = {
     scenario: 'normal',
     drop: [],
@@ -20,15 +21,13 @@ export function parseArgs(argv = []) {
 
       options.scenario = value;
     } else if (arg === '--drop') {
-      const value = argv[++i];
+      const list = (argv[++i] ?? '').split(',').map(code => code.trim()).filter(Boolean);
 
-      if (!value) {
+      if (list.length === 0) {
         throw new Error('Missing device code for --drop');
       }
 
-      options.drop.push(
-        ...value.split(',').map(code => code.trim()).filter(Boolean)
-      );
+      options.drop.push(...list);
     } else if (arg === '--drop-after') {
       const value = Number(argv[++i]);
 
@@ -48,6 +47,12 @@ export function parseArgs(argv = []) {
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
+  }
+
+  const unknown = options.drop.filter(code => !codes.includes(code));
+
+  if (unknown.length > 0) {
+    throw new Error(`--drop: unknown device code: ${unknown.join(', ')}`);
   }
 
   if (options.drop.length > 0) {
