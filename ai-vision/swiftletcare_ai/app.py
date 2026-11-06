@@ -71,10 +71,11 @@ def _start(cfg, player: VideoPlayer, deps: Deps, weights: Path, imgsz, measure: 
     return detector, fps
 
 
-def run_live(camera: str, weights: Path, imgsz: int | None, heartbeat: bool, deps: Deps) -> int:
+def run_live(camera: str, weights: Path, imgsz: int | None, heartbeat: bool, deps: Deps,
+             playlist: list[str] | None = None) -> int:
     clock, timing = deps.clock, deps.timing
     try:
-        cfg, env = _load(camera, deps, need_backend=True)
+        cfg, env = _load(camera, deps, need_backend=True, playlist=playlist)
     except ConfigError as e:
         print(f'Loi cau hinh: {e}', file=sys.stderr)
         return EXIT_STOP

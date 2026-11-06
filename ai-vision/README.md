@@ -4,6 +4,20 @@ Spec: [AI Vision](../docs/superpowers/specs/2026-10-15-swiftletcare-ai-vision-de
 Plan: [triển khai](../docs/superpowers/plans/2026-10-16-swiftletcare-ai-vision.md).
 Chạy `git status` trước mỗi lần commit; không commit video, ảnh, trọng số hoặc `.env`.
 
+## Hạn chế đã biết
+
+Số liệu lấy từ `results/*.csv`, đo bằng trọng số v3 đã đóng băng. Các số này không chứng minh mô hình đủ tin cậy để triển khai.
+
+- **Chim yến gần như không được phát hiện trên ảnh test:** Recall 1,54% ở imgsz 640 (TP 110, FN 7.021) và 0,18% ở imgsz 320; Precision 73,33% và 68,42% (`results/detector.csv`).
+- **Cú rất yếu:** Precision 6,35%, Recall 9,52% ở imgsz 640; Precision 4,55%, Recall 7,14% ở imgsz 320 (`results/detector.csv`).
+- **MAE đếm chỉ đo trên 1 đoạn 25,96 giây của V03:** MAE bằng 2 ở mỗi chiều. Chiều in: tham chiếu 2, AI 0. Chiều out: tham chiếu 3, AI 1 (`results/counting_segments.csv`, `results/counting_summary.csv`). Nguồn V03 chỉ ghi birds, không xác nhận là chim yến.
+- **Chưa có người đếm lại độc lập:** các cột `nguoi_dem_lai_*` đang trống. Cột `tay_*` chứa số tham chiếu do agent duyệt, không phải số người đếm (`results/counting.csv`).
+- **Báo động giả mỗi giờ là ngoại suy từ clip V08 26 giây, không phải quan sát một giờ thật:** lớp rat có 1 lần xác nhận và 355 lần bị cooldown chặn, ngoại suy thành 138,46 lần/giờ khi có cooldown và 49.292,31 lần/giờ khi không tính cooldown; snake và owl bằng 0 (`results/false_alarms.csv`).
+- **`offline_vs_live` chỉ có 1 cửa sổ:** 2026-11-05T10:10:00Z, live 0 in/0 out, offline 0 in/1 out (`results/offline_vs_live.csv`). Không suy rộng sang video hoặc máy khác.
+- **R05 chưa xác minh giấy phép trên trang gốc:** nguồn này nằm trong val của v3 (`SOURCES.md`).
+- **Không có val độc lập cho thiên địch:** val của v3 chỉ có swiftlet, nên ngưỡng rat, snake, owl giữ mặc định, chưa chọn trên val. `results/v4-pilot-val.csv` (13 ảnh) thuộc bản thử v4, không phải trọng số đóng băng.
+- **Không dùng số đếm demo làm bằng chứng đếm đúng:** cả 3 cửa sổ trong `results/e2e-windows-2026-11-05.csv` đều 0 in/0 out và khớp API. Kết quả này chỉ chứng minh số đếm được gửi và lưu đúng.
+
 ## Vòng train cải thiện đang chuẩn bị
 
 Đã có bộ **v4 pilot riêng** (3.106 train, 13 val đủ bốn lớp), loại 3 ảnh nghi
@@ -94,6 +108,47 @@ powershell -ExecutionPolicy Bypass -File scripts/start-cameras.ps1 -Cameras H1-F
 
 Script mở cửa sổ tương tác riêng cho mỗi camera để dừng bằng Ctrl+C. Tham số
 `-Heartbeat` chỉ dùng khi backend có route heartbeat; mặc định không bật.
+
+## Demo thiên địch trên H1
+
+Demo thiên địch chỉ chạy camera H1, phát lặp V04 → V05 → V06 → V07. Cấu hình H2 giữ nguyên. Không sửa `cameras/*.yaml`: hash của chúng đã ghi trong `results/freeze.json` và `results/video-freeze-2026-11-05.json`. Playlist demo truyền qua `--playlist`.
+
+**1. Lấy video.** Nguồn và giấy phép ở [SOURCES.md](SOURCES.md). Mỗi trang Pexels có thể có nhiều bản, phải tải đúng bản trong bảng:
+
+| File | Nội dung | Trang nguồn | Kích thước | FPS | Số byte |
+|---|---|---|---|---:|---:|
+| `V04.mp4` | Chuột | [Pexels 854528](https://www.pexels.com/video/video-of-rodent-854528/) | 3840×2160 | 25 | 55.855.628 |
+| `V05.mp4` | Rắn | [Pexels 8083244](https://www.pexels.com/video/snake-on-the-ground-8083244/) | 1920×1080 | 25 | 3.025.325 |
+| `V06.mp4` | Cú | [Pexels 16346351](https://www.pexels.com/video/habichtkautz-16346351/) | 2560×1440 | 29,97 | 13.747.574 |
+| `V07.mp4` | Đường rừng | [Pexels 4372540](https://www.pexels.com/video/a-shot-of-a-forest-path-through-the-trees-4372540/) | 3840×2160 | 29,97 | 33.479.137 |
+
+**2. Đặt file** vào `ai-vision/data/videos/`, đổi đúng tên như cột đầu. Thư mục `data/` đã gitignore; không commit video.
+
+**3. Bắt buộc so SHA-256 trước khi chạy.** Từ `ai-vision/`:
+
+```powershell
+$freeze = Get-Content results/video-freeze-2026-11-05.json -Raw | ConvertFrom-Json
+foreach ($name in 'V04.mp4', 'V05.mp4', 'V06.mp4', 'V07.mp4') {
+    $hash = (Get-FileHash "data/videos/$name" -Algorithm SHA256).Hash.ToLower()
+    if ($hash -eq $freeze.videos.$name) { "$name khop" } else { "$name SAI, khong duoc chay" }
+}
+```
+
+Cả bốn dòng phải là `khop`. Lệnh chạy không tự kiểm hash. Nếu file tải về không khớp, xin bản đã đo từ TV3, không dùng file khác hash để demo hay báo số đo.
+
+**4. Chạy** sau khi đã có `data/weights/best.pt`, `.env` và backend (chọn một trong hai lệnh):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-cameras.ps1 -Cameras H1-F0-CAMERA -DemoPredators
+.venv/Scripts/python -m swiftletcare_ai live --camera H1-F0-CAMERA --playlist data/videos/V04.mp4 data/videos/V05.mp4 data/videos/V06.mp4 data/videos/V07.mp4
+```
+
+Nếu bỏ `-Cameras`, script vẫn mở cả H2 với playlist trong YAML của H2, và cửa sổ đó sẽ dừng nếu thiếu `V02.ogv`.
+
+**Lưu ý khi demo:**
+
+- **Có thể có cảnh báo rắn sai:** V04 từng sinh một sự kiện rắn sai (`reports/2026-11-05-video-results.md`); V07 nền rừng từng có 1 lần xác nhận rắn và 52 lần bị cooldown chặn (`results/false_alarms_background.csv`).
+- **Số đếm sẽ bằng 0:** playlist này không có chim, nên số đếm 0 là bình thường và không chứng minh đếm đúng.
 
 ## Task 4: cấu hình camera và môi trường
 

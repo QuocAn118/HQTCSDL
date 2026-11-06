@@ -304,7 +304,7 @@ Mỗi camera **một tiến trình**; **không bao giờ chạy hai tiến trìn
 | `--imgsz <số>` | `live`, `offline` | Kích thước ảnh suy luận; mặc định theo trọng số (dùng khi fps không đủ, mục 3.4) |
 | `--heartbeat` | `live` | Gửi heartbeat 30 giây; **mặc định tắt** (mục 5.2) |
 | `--t0 <YYYY-MM-DDTHH:MM:SSZ>` | `offline` | Mốc bắt đầu (mục 4.1); mặc định giờ chạy |
-| `--playlist <file> …` | `offline` | Thay playlist trong YAML (đường dẫn tính từ `ai-vision\`), để chạy riêng từng video khi đo (Phần 6) |
+| `--playlist <file> …` | `live`, `offline` | Thay playlist trong YAML cho lần chạy đó, không sửa file YAML (đường dẫn tính từ `ai-vision\`). `offline`: chạy riêng từng video khi đo (Phần 6). `live`: chọn video demo mà giữ nguyên cấu hình đã đóng băng |
 | `--annotated-video` | `offline` | Ghi thêm video có khung bao (mục 4.5) |
 
 **Log của `offline`** ghi vào `<out>\<mã camera>.log` (cùng thư mục `--out` với CSV), không ghi vào `data\logs\`, để log của lần chạy offline không lẫn với log `live`.
