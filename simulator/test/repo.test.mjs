@@ -87,6 +87,24 @@ describe('Repository configuration', () => {
     }
   });
 
+  it('README co cach dung kich ban, --drop, heartbeat, .env va checklist demo', () => {
+    const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
+
+    for (const text of [
+      '--scenario hot',
+      '--scenario dry',
+      '`normal`',
+      '--drop H1-F1-SENSOR',
+      'Luôn chạy, không có cờ tắt',
+      'Copy-Item .env.example .env',
+      'simulator, rồi mới backend',
+      'test:contract',
+      'OFFLINE'
+    ]) {
+      assert.ok(readme.includes(text), text);
+    }
+  });
+
   it('README and spike files exist', () => {
     assert.equal(existsSync(new URL('../README.md', import.meta.url)), true);
     assert.equal(existsSync(new URL('../spikes/RESULTS.md', import.meta.url)), true);
