@@ -20,7 +20,7 @@ export function summarize(values, targetMs, lost = 0) {
 }
 
 export function toCsv(rows) {
-  return ['kind,zone,ms,status', ...rows.map((r) => `${r.kind},${r.zone},${r.ms},${r.status}`)].join('\n') + '\n';
+  return ['kind,zone,at,ms,status', ...rows.map((r) => `${r.kind},${r.zone},${r.at},${r.ms},${r.status}`)].join('\n') + '\n';
 }
 
 // Khoa duy nhat cua so do trong CSDL: UQ(DeviceId, MetricCode, RecordedAt) (hop dong 2.2).
@@ -48,15 +48,31 @@ export function createTracker(timeoutMs) {
       if (!p) return false;
       pending.delete(k);
       const ok = Number(r.value) === p.value;
-      rows.push({ kind: 'probe', zone: p.device, ms: ok ? Math.round(t - p.t) : '', status: ok ? 'ok' : 'trung' });
+      rows.push({ kind: 'probe', zone: p.device, at: p.at, ms: ok ? Math.round(t - p.t) : '', status: ok ? 'ok' : 'trung' });
       return ok;
     },
     expire(t) {
       for (const [k, p] of pending) {
         if (t - p.t <= timeoutMs) continue;
         pending.delete(k);
-        rows.push({ kind: 'probe', zone: p.device, ms: '', status: 'mat' });
+        rows.push({ kind: 'probe', zone: p.device, at: p.at, ms: '', status: 'mat' });
       }
     },
   };
 }
+
+const r2 = (v) => Math.round(v * 100) / 100; // DECIMAL(9,2)
+
+// Gia tri de mo canh bao nguong tren (> Max) va dong lai (<= Max - Hysteresis, sp_IngestReadings).
+export function alertValues(th) {
+  if (th?.maxValue == null) return null;
+  const max = Number(th.maxValue);
+  return { high: r2(max + 1.5), close: r2(th.targetValue != null ? Number(th.targetValue) : max - 2) };
+}
+
+export const isProbeAlert = (a, p) =>
+  a.alertType === 'THRESHOLD' && a.zoneId === p.zoneId && a.metricCode === p.metric && Number(a.value) === p.value;
+
+// Ket qua mot lan do canh bao, theo co alert.created khong va dong cua so do mo canh bao trong tracker.
+export const alertStatus = (created, readingRow) =>
+  created ? 'ok' : readingRow?.status === 'trung' ? 'trung' : readingRow?.status === 'ok' ? 'khong-mo' : 'mat';
