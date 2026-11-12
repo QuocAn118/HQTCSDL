@@ -2,8 +2,9 @@
 // Thanh phan dung chung: thong bao loi (chi cau tieng Viet theo ma), trang thai trong, dang tai, the kinh, nhan trang thai.
 import type { ReactNode } from 'react';
 import { ApiError, GENERIC_MESSAGE, messageFor } from '@/lib/errors';
-import { IconAlert, IconBell, IconCheck, IconEye } from './icons';
-import { ALERT_STATUS_LABEL } from './labels';
+import { severityTone } from './alerts';
+import { IconAlert, IconBell, IconCheck, IconEye, IconInfo } from './icons';
+import { ALERT_STATUS_LABEL, SEVERITY_LABEL, viLabel } from './labels';
 
 export function errorText(e: unknown): string {
   return e instanceof ApiError ? messageFor(e.code) : GENERIC_MESSAGE;
@@ -78,4 +79,11 @@ const STATUS_STYLE: Record<string, [Tone, ReactNode]> = {
 export function AlertStatusBadge({ status }: { status: string }) {
   const [tone, icon] = STATUS_STYLE[status] ?? ['neutral', null];
   return <Pill tone={tone} icon={icon}>{ALERT_STATUS_LABEL[status] ?? status}</Pill>;
+}
+
+// Muc do canh bao: Nghiem trong (do), Can chu y (vang), Thong tin (trung tinh); luon kem icon + chu.
+export function SeverityBadge({ severity }: { severity: string }) {
+  const tone = severityTone(severity);
+  const icon = tone === 'neutral' ? <IconInfo className="size-4" /> : <IconAlert className="size-4" />;
+  return <Pill tone={tone} icon={icon}>{viLabel(SEVERITY_LABEL, severity)}</Pill>;
 }

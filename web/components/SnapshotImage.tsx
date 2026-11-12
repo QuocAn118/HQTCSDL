@@ -30,9 +30,9 @@ export function SnapshotImage({ alertId }: { alertId: number }) {
     };
   }, [alertId]);
 
-  if (state === 'loading') return <p className="text-sm text-stone-500">Đang tải ảnh…</p>;
-  if (state === 'none') return <p className="text-sm text-stone-500">Không có ảnh</p>;
-  if (state === 'error' || !url) return <p className="text-sm text-red-700">Không tải được ảnh</p>;
+  if (state === 'loading') return <p className="text-base text-slate-600">Đang tải ảnh…</p>;
+  if (state === 'none') return <p className="text-base text-slate-600">Không có ảnh</p>;
+  if (state === 'error' || !url) return <p className="text-base text-red-800">Không tải được ảnh</p>;
   // eslint-disable-next-line @next/next/no-img-element -- object URL, khong qua toi uu anh cua Next
-  return <img src={url} alt={`Ảnh cảnh báo ${alertId}`} className="max-h-80 rounded border" />;
+  return <img src={url} alt={`Ảnh cảnh báo ${alertId}`} className="h-auto max-h-[70vh] w-full rounded-xl border border-slate-300 bg-slate-900 object-contain" />;
 }
