@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
+import { IconAlert, IconClock, IconGrid, IconHouse, IconLogout, IconSettings, IconSliders, IconWifiOff } from '@/components/icons';
 import { btnGhostCls, Empty } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -12,15 +13,16 @@ import { LiveProvider, useLive } from '@/lib/live';
 import type { House } from '@/lib/types';
 
 const TABS = [
-  ['', 'Tổng quan'], ['/devices', 'Thiết bị'], ['/alerts', 'Cảnh báo'], ['/history', 'Lịch sử'],
-  ['/settings', 'Cài đặt'],
+  ['', 'Tổng quan', IconGrid], ['/devices', 'Thiết bị', IconSliders], ['/alerts', 'Cảnh báo', IconAlert],
+  ['/history', 'Lịch sử', IconClock], ['/settings', 'Cài đặt', IconSettings],
 ] as const;
 
 function ConnectionBar() {
   const { status } = useLive();
   if (status === 'connected') return null;
   return (
-    <div className="bg-amber-100 px-4 py-1 text-center text-sm text-amber-900">
+    <div role="status" className="flex items-center justify-center gap-2 border-b border-amber-300 bg-amber-100 px-4 py-2 text-base font-medium text-amber-950">
+      <IconWifiOff className="size-5" />
       {status === 'connecting' ? 'Đang kết nối máy chủ…' : 'Mất kết nối máy chủ, đang kết nối lại…'}
     </div>
   );
@@ -45,23 +47,34 @@ export default function HouseLayout({ children }: { children: ReactNode }) {
   return (
     <LiveProvider>
       <HouseChangedContext.Provider value={setHouse}>
+      <div className="sticky top-0 z-20">
       <ConnectionBar />
-      <header className="flex flex-wrap items-center gap-4 border-b border-stone-200 bg-white px-6 py-3">
-        <Link href="/houses?all=1" className="font-semibold">{house?.name ?? 'Nhà yến'}</Link>
-        <nav className="flex flex-wrap gap-1">
-          {TABS.map(([path, label]) => {
-            const href = base + path;
-            const active = pathname === href;
-            return (
-              <Link key={path} href={href} className={`rounded px-3 py-1 text-sm ${active ? 'bg-emerald-700 text-white' : 'hover:bg-stone-100'}`}>
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-        <button className={`${btnGhostCls} ml-auto`} onClick={() => logout()}>Đăng xuất</button>
+      <header className="glass rounded-none border-x-0 border-t-0">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:px-6">
+          <Link href="/houses?all=1" className="inline-flex min-h-10 items-center gap-2 rounded-lg pr-2 text-lg font-bold text-slate-900 hover:text-emerald-800">
+            <IconHouse className="size-6 text-emerald-700" />
+            {house?.name ?? 'Nhà yến'}
+          </Link>
+          <nav className="order-last -mx-1 flex w-full gap-1 overflow-x-auto px-1 pb-1 md:order-none md:w-auto md:pb-0">
+            {TABS.map(([path, label, Icon]) => {
+              const href = base + path;
+              const active = pathname === href;
+              return (
+                <Link key={path} href={href} aria-current={active ? 'page' : undefined}
+                  className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-base whitespace-nowrap ${active
+                    ? 'bg-white font-semibold text-emerald-800 shadow-sm ring-1 ring-emerald-700/40'
+                    : 'text-slate-700 hover:bg-white/70 hover:text-slate-900'}`}>
+                  <Icon className="size-5" />
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+          <button className={`${btnGhostCls} ml-auto`} onClick={() => logout()}><IconLogout className="size-5" />Đăng xuất</button>
+        </div>
       </header>
-      <main className="mx-auto max-w-6xl p-6">{children}</main>
+      </div>
+      <main className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">{children}</main>
       </HouseChangedContext.Provider>
     </LiveProvider>
   );

@@ -1,9 +1,80 @@
 @import "tailwindcss";
 
+/* Huong C "Kinh sang": nen gradient CSS, the kinh trang mo. --glass-blur = 0px hoac class no-glass tren <html> de giam tai. */
 :root {
   color-scheme: light;
+  --glass-blur: 14px;
+  --glass-bg: rgb(255 255 255 / 0.7);
+  --glass-dense-bg: rgb(255 255 255 / 0.88);
+  --glass-solid-bg: rgb(255 255 255 / 0.95);
+}
+
+html {
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  @apply bg-stone-50 text-stone-900 antialiased;
+  @apply min-h-screen text-base text-slate-900 antialiased;
+  background-color: #e0f2fe;
+}
+
+/* Gradient nam tren lop co dinh rieng: cuon trang khong phai ve lai nen. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(135deg, #ccfbf1 0%, #e0f2fe 50%, #dbeafe 100%);
+}
+
+::selection {
+  background: #99f6e4;
+  color: #0f172a;
+}
+
+:focus-visible {
+  outline: 3px solid #0f766e;
+  outline-offset: 2px;
+}
+
+@utility glass {
+  background-color: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.15);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.15);
+  border: 1px solid rgb(255 255 255 / 0.85);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 10px 28px -12px rgb(15 23 42 / 0.18);
+}
+
+/* Bang day va bieu do: it trong suot hon de chu va duong ve ro. */
+@utility glass-dense {
+  background-color: var(--glass-dense-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgb(255 255 255 / 0.9);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 10px 28px -12px rgb(15 23 42 / 0.18);
+}
+
+/* Phuong an giam: bo backdrop-filter, dung nen gan dac (may yeu, may chieu giat, hoac nguoi dung chon). */
+html.no-glass .glass,
+html.no-glass .glass-dense {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background-color: var(--glass-solid-bg);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-dense {
+    background-color: var(--glass-solid-bg);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-dense {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: var(--glass-solid-bg);
+  }
 }
