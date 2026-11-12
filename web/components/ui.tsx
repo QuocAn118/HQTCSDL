@@ -61,7 +61,7 @@ export type Tone = keyof typeof TONES;
 // Nhan trang thai: luon co icon + chu + vien, khong chi dung mau.
 export function Pill({ tone, icon, children }: { tone: Tone; icon?: ReactNode; children: ReactNode }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-sm font-semibold ${TONES[tone]}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-0.5 text-base font-semibold ${TONES[tone]}`}>
       {icon}
       {children}
     </span>
