@@ -53,7 +53,7 @@ if (-not (Test-Path (Join-Path $Repo 'backend\dist\main.js'))) {
 }
 Step 'Backend: node dist/main.js (DEMO_TOOLS=true, ban sao .env)'
 Start-Tracked 'backend' (Join-Path $Repo 'backend') "`$env:ENV_FILE='$BackendEnvCopy'; node dist/main.js" | Out-Null
-if (-not (Wait-Http "http://localhost:$($benv.PORT)/api/health" 60 '"db":"ok"')) { throw 'Backend chua bao health db=ok sau 60 giay (xem cua so demo: backend)' }
+if (-not (Wait-Http "http://localhost:$($benv.PORT)/api/health" 120 '"db":"ok"')) { throw 'Backend chua bao health db=ok sau 120 giay (xem cua so demo: backend)' }
 Step 'Backend: health ok'
 
 # 4. Web: next build roi next start -p 3001
