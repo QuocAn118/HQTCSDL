@@ -10,13 +10,14 @@ export function errorText(e: unknown): string {
   return e instanceof ApiError ? messageFor(e.code) : GENERIC_MESSAGE;
 }
 
-export function Banner({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
+// message: cau rieng thay cho cau theo ma (dang nhap sai: dung chu spec "Sai tên đăng nhập hoặc mật khẩu").
+export function Banner({ error, onRetry, message }: { error: unknown; onRetry?: () => void; message?: string }) {
   if (!error) return null;
   const retry = error instanceof ApiError && (error.code === 'RETRY_LATER' || error.code === 'NETWORK') && onRetry;
   return (
     <div role="alert" className="my-3 flex flex-wrap items-center gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-base text-red-900">
       <IconAlert className="size-5 text-red-700" />
-      <span className="flex-1">{errorText(error)}</span>
+      <span className="flex-1">{message ?? errorText(error)}</span>
       {retry ? <button className="min-h-10 rounded-lg border border-red-400 bg-white px-3 font-medium hover:bg-red-100" onClick={onRetry}>Thử lại</button> : null}
     </div>
   );

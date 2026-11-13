@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Banner, btnCls, btnGhostCls, Card, Empty, fieldError, inputCls, Loading } from '@/components/ui';
+import { IconHouse, IconLogout, IconPower } from '@/components/icons';
+import { Banner, btnCls, btnGhostCls, Card, Empty, fieldError, inputCls, Loading, Pill } from '@/components/ui';
 import { api } from '@/lib/api';
 import { NAME_PATTERN } from '@/lib/form';
 import { useAuth } from '@/lib/auth';
@@ -48,35 +49,41 @@ export default function HousesPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      <header className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Nhà yến của {session.user.fullName}</h1>
-        <button className={btnGhostCls} onClick={() => logout()}>Đăng xuất</button>
+    <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+      <header className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-bold text-slate-900">Danh sách nhà</h1>
+          <p className="text-base text-slate-700">Tài khoản: {session.user.fullName}</p>
+        </div>
+        <button className={btnGhostCls} onClick={() => logout()}><IconLogout className="size-5" />Đăng xuất</button>
       </header>
       <Banner error={error} onRetry={() => load(false)} />
       {houses === null && !error ? <Loading /> : null}
       {houses && houses.length === 0 ? <Empty>Chưa có nhà nào.</Empty> : null}
-      <ul className="mb-6 grid gap-3">
+      <ul className="mb-6 grid gap-4 sm:grid-cols-2">
         {houses?.map((h) => (
           <li key={h.houseId}>
-            <Link href={`/houses/${h.houseId}`} className="block rounded-lg border border-stone-200 bg-white p-4 hover:border-emerald-600">
-              <span className="font-medium">{h.name}</span>
-              <span className="ml-2 text-sm text-stone-500">{h.address ?? ''}</span>
-              {!h.isActive ? <span className="ml-2 text-xs text-stone-500">(ngừng dùng)</span> : null}
+            <Link href={`/houses/${h.houseId}`} className="glass flex h-full items-start gap-3 rounded-2xl p-5 transition-shadow hover:ring-2 hover:ring-emerald-700/50">
+              <IconHouse className="mt-0.5 size-6 shrink-0 text-emerald-700" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-lg font-semibold text-slate-900">{h.name}</span>
+                {h.address ? <span className="block text-base text-slate-700">{h.address}</span> : null}
+              </span>
+              {!h.isActive ? <Pill tone="neutral" icon={<IconPower className="size-4" />}>Ngừng dùng</Pill> : null}
             </Link>
           </li>
         ))}
       </ul>
       <Card title="Tạo nhà mới">
-        <form onSubmit={create} className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col text-sm">Tên
+        <form onSubmit={create} className="grid items-start gap-3 sm:grid-cols-[1fr_1fr_auto]">
+          <label className="flex flex-col gap-1.5 text-base font-medium text-slate-800">Tên
             <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={100} pattern={NAME_PATTERN} title="Tên không được để trống" />
-            <span className="text-xs text-red-700">{fieldError(formError, 'name')}</span>
+            <span className="text-base font-normal text-red-800">{fieldError(formError, 'name')}</span>
           </label>
-          <label className="flex flex-col text-sm">Địa chỉ
+          <label className="flex flex-col gap-1.5 text-base font-medium text-slate-800">Địa chỉ
             <input className={inputCls} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} maxLength={255} />
           </label>
-          <button className={btnCls}>Tạo</button>
+          <button className={`${btnCls} sm:mt-[1.875rem]`}>Tạo</button>
         </form>
         <Banner error={formError} />
       </Card>
