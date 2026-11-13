@@ -4,17 +4,20 @@
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { pivotDaily } from '@/components/history';
 import { Banner, btnCls, Card, Empty, inputCls, Loading } from '@/components/ui';
 import { api, qs } from '@/lib/api';
 import { METRIC_LABELS } from '@/lib/config';
 import { useLive, useReloadOnConnect } from '@/lib/live';
 import { appendLive, createLoadGate, type ChartPoint } from '@/lib/merge';
 import { formatVnTime, msToVnInput, todayVn, toMs, vnInputToIso } from '@/lib/time';
-import type { BirdFlow, DailyStat, Metric, ReadingBucket, ReadingsNew, Zone } from '@/lib/types';
+import type { BirdFlow, DailyStat, Metric, MetricInfo, ReadingBucket, ReadingsNew, Zone } from '@/lib/types';
 
 const METRICS: Metric[] = ['TEMP', 'HUMID', 'CO2', 'LIGHT'];
 const BUCKETS = [5, 15, 60, 1440];
 const DAY = 24 * 60 * 60 * 1000;
+const labelCls = 'flex flex-col gap-1.5 text-base font-medium text-slate-800';
+const tick = { fill: '#334155', fontSize: 14 };
 
 export default function HistoryPage() {
   const houseId = Number(useParams<{ houseId: string }>().houseId);
@@ -31,6 +34,8 @@ export default function HistoryPage() {
   const [error, setError] = useState<unknown>(null);
   const [statsError, setStatsError] = useState<unknown>(null);
   const [flowError, setFlowError] = useState<unknown>(null);
+  // Don vi lay tu /api/metrics; loi thi chi thieu don vi, khong chan trang.
+  const [units, setUnits] = useState<Record<string, string>>({});
   const view = useRef<{ zoneId: number; metric: string; fromMs: number; toMs: number } | null>(null);
   const [gate] = useState(createLoadGate<ReadingsNew>);
   const statsSeq = useRef(0);
@@ -90,6 +95,9 @@ export default function HistoryPage() {
   useEffect(() => {
     void loadZones().catch(() => {});
   }, [loadZones]);
+  useEffect(() => {
+    api<MetricInfo[]>('/api/metrics').then((m) => setUnits(Object.fromEntries(m.map((x) => [x.metricCode, x.unit])))).catch(() => {});
+  }, []);
   // Doi khu vuc/chi so/khoang: bo duong cu ngay, de loi hoac tai cham khong hien so cu duoi nhan moi.
   useEffect(() => {
     setPoints(null);
@@ -127,66 +135,93 @@ export default function HistoryPage() {
   }, [subscribe, houseId, loadFlow, gate]);
 
   const noZones = zones?.length === 0;
+  const withUnit = (m: Metric) => (units[m] ? `${METRIC_LABELS[m]} (${units[m]})` : METRIC_LABELS[m]);
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
       <Banner error={error} onRetry={reloadAll} />
-      <Card title="Số đo môi trường">
-        <div className="mb-3 flex flex-wrap items-end gap-2 text-sm">
-          <select aria-label="Khu vực" className={inputCls} value={zoneId ?? ''} onChange={(e) => setZoneId(Number(e.target.value))}>
-            {zones?.map((z) => <option key={z.zoneId} value={z.zoneId}>{z.name}</option>)}
-          </select>
-          <select aria-label="Chỉ số" className={inputCls} value={metric} onChange={(e) => setMetric(e.target.value as Metric)}>
-            {METRICS.map((m) => <option key={m} value={m}>{METRIC_LABELS[m]}</option>)}
-          </select>
-          <label className="flex flex-col">Từ (giờ VN)<input type="datetime-local" className={inputCls} value={from} onChange={(e) => setFrom(e.target.value)} /></label>
-          <label className="flex flex-col">Đến (giờ VN)<input type="datetime-local" className={inputCls} value={to} onChange={(e) => setTo(e.target.value)} /></label>
-          <select aria-label="Gom theo" className={inputCls} value={bucket} onChange={(e) => setBucket(Number(e.target.value))}>
-            {BUCKETS.map((b) => <option key={b} value={b}>{b} phút</option>)}
-          </select>
+      <Card dense title="Số đo môi trường">
+        <div className="mb-4 grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap">
+          <label className={labelCls}>Khu vực
+            <select aria-label="Khu vực" className={inputCls} value={zoneId ?? ''} onChange={(e) => setZoneId(Number(e.target.value))}>
+              {zones?.map((z) => <option key={z.zoneId} value={z.zoneId}>{z.name}</option>)}
+            </select>
+          </label>
+          <label className={labelCls}>Chỉ số
+            <select aria-label="Chỉ số" className={inputCls} value={metric} onChange={(e) => setMetric(e.target.value as Metric)}>
+              {METRICS.map((m) => <option key={m} value={m}>{METRIC_LABELS[m]}</option>)}
+            </select>
+          </label>
+          <label className={`${labelCls} col-span-2 sm:col-auto`}>Từ (giờ VN)<input type="datetime-local" className={inputCls} value={from} onChange={(e) => setFrom(e.target.value)} /></label>
+          <label className={`${labelCls} col-span-2 sm:col-auto`}>Đến (giờ VN)<input type="datetime-local" className={inputCls} value={to} onChange={(e) => setTo(e.target.value)} /></label>
+          <label className={labelCls}>Gom theo
+            <select aria-label="Gom theo" className={inputCls} value={bucket} onChange={(e) => setBucket(Number(e.target.value))}>
+              {BUCKETS.map((b) => <option key={b} value={b}>{b} phút</option>)}
+            </select>
+          </label>
           <button className={btnCls} onClick={reloadAll}>Xem</button>
         </div>
         {noZones ? <Empty>Chưa có khu vực</Empty> : points === null ? (error ? null : <Loading />) : points.length === 0 ? <Empty>Không có dữ liệu</Empty> : (
-          <div className="h-72">
+          <div className="h-80">
             <ResponsiveContainer>
-              <LineChart data={points}>
+              <LineChart data={points} margin={{ top: 8, right: 16, bottom: 4, left: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="t" type="number" domain={['dataMin', 'dataMax']} tickFormatter={formatVnTime} />
-                <YAxis domain={['auto', 'auto']} />
+                <XAxis dataKey="t" type="number" domain={['dataMin', 'dataMax']} tickFormatter={formatVnTime} tick={tick} />
+                <YAxis domain={['auto', 'auto']} tick={tick} width={64} label={{ value: withUnit(metric), angle: -90, position: 'insideLeft', fill: '#1e293b', fontSize: 14, style: { textAnchor: 'middle' } }} />
                 <Tooltip labelFormatter={(t) => formatVnTime(Number(t))} />
-                <Line dataKey="value" name={METRIC_LABELS[metric]} stroke="#047857" dot={false} isAnimationActive={false} />
+                <Line dataKey="value" name={withUnit(metric)} stroke="#047857" strokeWidth={2} dot={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
       </Card>
-      <Card title="Thống kê theo ngày (7 ngày)">
+      <Card dense title="Thống kê theo ngày (7 ngày)">
         <Banner error={statsError} onRetry={loadStats} />
         {noZones ? <Empty>Chưa có khu vực</Empty> : stats === null ? (statsError ? null : <Loading />) : stats.length === 0 ? <Empty>Không có dữ liệu</Empty> : (
-          <table className="w-full text-sm">
-            <thead><tr className="text-left"><th>Ngày</th><th>Chỉ số</th><th>TB</th><th>Thấp nhất</th><th>Cao nhất</th><th>Số mẫu</th></tr></thead>
-            <tbody>
-              {stats.map((s) => (
-                <tr key={`${s.dayVn}-${s.metric}`} className="border-t">
-                  <td>{s.dayVn}</td><td>{METRIC_LABELS[s.metric]}</td><td>{s.avgValue}</td><td>{s.minValue}</td><td>{s.maxValue}</td><td>{s.samples}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <p id="giai-thich-o" className="sticky left-0 mb-2 text-base text-slate-700">Mỗi ô: TB, dòng dưới là thấp nhất – cao nhất.</p>
+            <table aria-describedby="giai-thich-o" className="w-full min-w-[40rem] text-left text-base">
+              <thead className="text-slate-800">
+                <tr><th className="py-2 pr-4 font-semibold">Ngày</th>{METRICS.map((m) => <th key={m} className="py-2 pr-4 font-semibold">{withUnit(m)}</th>)}</tr>
+              </thead>
+              <tbody className="text-slate-900">
+                {pivotDaily(stats, METRICS).map((row) => (
+                  <tr key={row.dayVn} className="border-t border-slate-200">
+                    <th scope="row" className="py-2 pr-4 font-medium whitespace-nowrap tabular-nums">{row.dayVn}</th>
+                    {METRICS.map((m) => {
+                      const c = row.cells[m];
+                      return (
+                        <td key={m} className="py-2 pr-4 tabular-nums">
+                          {c ? <><span className="block font-semibold">TB {c.avgValue ?? '—'}</span><span className="block text-slate-700">{c.minValue ?? '—'} – {c.maxValue ?? '—'}</span></> : '—'}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
-      <Card title="Chim ra/vào theo ngày (14 ngày)">
+      <Card dense title="Chim ra/vào theo ngày (14 ngày)">
         <Banner error={flowError} onRetry={loadFlow} />
         {flow === null ? (flowError ? null : <Loading />) : flow.length === 0 ? <Empty>Không có dữ liệu</Empty> : (
-          <div className="h-64">
+          <div className="h-72">
             <ResponsiveContainer>
-              <BarChart data={flow}>
+              <BarChart data={flow} margin={{ top: 8, right: 16, bottom: 4, left: 8 }}>
+                {/* Ra: cot soc cheo, Vao: cot dac -> phan biet duoc ca khi khong nhin ra mau. */}
+                <defs>
+                  <pattern id="soc-ra" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <rect width="8" height="8" fill="#fef3c7" />
+                    <rect width="4" height="8" fill="#b45309" />
+                  </pattern>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="dayVn" />
-                <YAxis />
+                <XAxis dataKey="dayVn" tick={tick} />
+                <YAxis tick={tick} />
                 <Tooltip />
-                <Legend />
-                <Bar dataKey="inTotal" name="Vào" fill="#047857" />
-                <Bar dataKey="outTotal" name="Ra" fill="#b45309" />
+                <Legend verticalAlign="top" height={36} wrapperStyle={{ color: '#1e293b', fontSize: 16 }} />
+                <Bar dataKey="inTotal" name="Vào (cột đặc)" fill="#047857" isAnimationActive={false} />
+                <Bar dataKey="outTotal" name="Ra (cột sọc)" fill="url(#soc-ra)" stroke="#b45309" isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
