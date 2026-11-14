@@ -35,3 +35,10 @@ web/node_modules/
 web/.next/
 web/next-env.d.ts
 web/*.tsbuildinfo
+
+# mobile
+mobile/.env
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/expo-env.d.ts
