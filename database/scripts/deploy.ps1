@@ -1,4 +1,4 @@
-
+﻿
 param(
     [Parameter(Mandatory = $true)][string]$Database,
     [switch]$Reset,
@@ -57,7 +57,7 @@ try {
     Pop-Location
 }
 
-foreach ($dir in '00-schema-extras', '01-views', '02-functions-procs', '03-triggers') {
+foreach ($dir in '00-schema-extras', '01-views', '02-functions-procs', '03-triggers', '04-security') {
     $path = Join-Path $Root "sql\$dir"
 
     if (Test-Path $path) {
@@ -81,3 +81,4 @@ if (-not $SkipSeed) {
 
 Write-Host "Trien khai xong: $Database"
 exit 0
+

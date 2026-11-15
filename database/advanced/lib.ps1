@@ -34,7 +34,7 @@ function Invoke-SqlWin {
     }
 
     $sqlArgs = @(
-        '-S', 'localhost,1433',
+        '-S', 'tcp:127.0.0.1,1433',
         '-E', '-b', '-I', '-C', '-f', '65001',
         '-d', $Database
     )
@@ -77,14 +77,15 @@ function Invoke-SqlAs {
     try {
         $env:SQLCMDPASSWORD = $Password
 
-        & sqlcmd `
-            -S 'localhost,1433' `
+                & sqlcmd `
+            -S 'tcp:127.0.0.1,1433' `
             -U $Login `
             -d $Database `
             -b -I -C `
-            -Q $Query
+            -Q $Query | Out-Host
 
-        return $LASTEXITCODE
+        $SqlExitCode = $LASTEXITCODE
+        return $SqlExitCode
     }
     finally {
         if ($null -eq $previousPassword) {
