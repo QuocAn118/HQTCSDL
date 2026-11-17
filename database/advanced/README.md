@@ -520,3 +520,23 @@ Thử nghiệm cho thấy cách cập nhật không có cơ chế khóa phù h�
 Khi sử dụng cơ chế khóa trong giao dịch, các thao tác được tuần tự hóa và trạng thái cập nhật sau cùng được giữ lại theo thứ tự thực thi.
 
 Kết quả này minh họa vai trò của kiểm soát tương tranh trong hệ thống quản lý thiết bị. Stored procedure sản phẩm `dbo.sp_SetActuator` được giữ nguyên trong quá trình thực hiện bài demo.
+
+## Task 6 – Kiểm thử Deadlock
+
+Task này sử dụng bảng demo độc lập `dbo.DeadlockDemoRows` trong `SwiftletCare_Perf`, không thay đổi dữ liệu thiết bị của hệ thống.
+
+Chạy ba kịch bản từ thư mục gốc repository:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\database\advanced\tests\run-deadlock.ps1" -Scenario deadlock
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\database\advanced\tests\run-deadlock.ps1" -Scenario deadlock-fixed
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\database\advanced\tests\run-deadlock.ps1" -Scenario deadlock-retry
+```
+
+- `deadlock`: hai session cập nhật hai dòng theo thứ tự ngược nhau; kỳ vọng một session bị chọn làm deadlock victim với lỗi 1205.
+- `deadlock-fixed`: hai session cập nhật theo cùng thứ tự khóa 1 rồi 2.
+- `deadlock-retry`: stored procedure rollback và thử lại khi bắt được lỗi 1205.
+
+Bằng chứng và kết quả thực tế được ghi trong `results/deadlock/task-6-deadlock.md`.
