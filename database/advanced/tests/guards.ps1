@@ -95,6 +95,90 @@ else {
     }
 }
 
+# Task 8: Point-in-Time Recovery (PITR)
+$BackupDir = Join-Path $AdvancedRoot 'backup'
+$PitrDemo = Join-Path $BackupDir 'pitr-demo.ps1'
+$RestorePitr = Join-Path $BackupDir 'restore-pitr.ps1'
+$BackupReport = Join-Path $AdvancedRoot 'results\backup.md'
+$Readme = Join-Path $AdvancedRoot 'README.md'
+
+foreach ($path in @(
+    $PitrDemo,
+    $RestorePitr,
+    $BackupReport
+)) {
+    if (Test-Path $path) {
+        Write-Host "PASS: $(Split-Path $path -Leaf)"
+    }
+    else {
+        Write-Host "FAIL: thieu $path"
+        $failed++
+    }
+}
+
+if (Test-Path $Readme) {
+    $readmeContent = Get-Content $Readme -Raw
+
+    if ($readmeContent -match '(?m)^## 12\.\s+Point-in-Time Recovery \(PITR\)') {
+        Write-Host 'PASS: README Task 8'
+    }
+    else {
+        Write-Host 'FAIL: README thieu muc Task 8'
+        $failed++
+    }
+}
+else {
+    Write-Host 'FAIL: thieu README.md'
+    $failed++
+}
+
+# Task 8: Database suffix guards
+if (Test-Path $PitrDemo) {
+    $null = & powershell.exe -NoProfile -ExecutionPolicy Bypass `
+        -File $PitrDemo -Target SwiftletCare 2>&1
+    $actual = $LASTEXITCODE
+
+    if ($actual -eq 2) {
+        Write-Host 'PASS: PITR target suffix guard'
+    }
+    else {
+        Write-Host "FAIL: PITR target suffix guard (expected 2, got $actual)"
+        $failed++
+    }
+
+    $null = & powershell.exe -NoProfile -ExecutionPolicy Bypass `
+        -File $PitrDemo `
+        -Source SwiftletCare `
+        -Target SwiftletCare_Restore 2>&1
+    $actual = $LASTEXITCODE
+
+    if ($actual -eq 2) {
+        Write-Host 'PASS: PITR source suffix guard'
+    }
+    else {
+        Write-Host "FAIL: PITR source suffix guard (expected 2, got $actual)"
+        $failed++
+    }
+}
+
+if (Test-Path $RestorePitr) {
+    $null = & powershell.exe -NoProfile -ExecutionPolicy Bypass `
+        -File $RestorePitr `
+        -Target SwiftletCare_Dev `
+        -Full 'C:\dummy.bak' `
+        -Log 'C:\dummy.trn' `
+        -StopAtLocal '2026-11-17T17:08:02.810' 2>&1
+    $actual = $LASTEXITCODE
+
+    if ($actual -eq 2) {
+        Write-Host 'PASS: restore target suffix guard'
+    }
+    else {
+        Write-Host "FAIL: restore target suffix guard (expected 2, got $actual)"
+        $failed++
+    }
+}
+
 if ($failed -gt 0) {
     Write-Host "guards: FAIL ($failed)"
     exit 1

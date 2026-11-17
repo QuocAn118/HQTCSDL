@@ -540,3 +540,78 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\database\advanced\tes
 - `deadlock-retry`: stored procedure rollback và thử lại khi bắt được lỗi 1205.
 
 Bằng chứng và kết quả thực tế được ghi trong `results/deadlock/task-6-deadlock.md`.
+
+
+## 12. Point-in-Time Recovery (PITR)
+
+Task 8 thực hành backup và restore database bằng FULL, DIFFERENTIAL và TRANSACTION LOG backup.
+
+### 12.1. Yêu cầu
+
+- SQL Server Express đang hoạt động.
+- Source database: `SwiftletCare_Bk_Dev`.
+- Target database: `SwiftletCare_Restore`.
+- Thư mục backup: `C:\SwiftletBackup`.
+- SQL Server service account có quyền Modify trên thư mục backup.
+
+Cấp quyền nếu chưa có:
+
+```powershell
+icacls C:\SwiftletBackup /grant 'NT Service\MSSQL$SQLEXPRESS:(OI)(CI)M'
+```
+
+### 12.2. Chạy demo
+
+Từ thư mục gốc repository:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\database\advanced\backup\pitr-demo.ps1
+```
+
+Không sử dụng `-ResetSourceAfter` nếu muốn giữ source ở trạng thái sau mô phỏng sự cố để đối chiếu với target.
+
+### 12.3. Restore thủ công
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\database\advanced\backup\restore-pitr.ps1 `
+  -Target SwiftletCare_Restore `
+  -Full C:\SwiftletBackup\Bk_full.bak `
+  -Diff C:\SwiftletBackup\Bk_diff.bak `
+  -Log C:\SwiftletBackup\Bk_log1.trn `
+  -StopAtLocal "yyyy-MM-ddTHH:mm:ss.fff"
+```
+
+`StopAtLocal` sử dụng thời gian local của máy SQL Server và bắt buộc có đủ mili giây theo định dạng `yyyy-MM-ddTHH:mm:ss.fff`.
+
+### 12.4. Kết quả kiểm thử
+
+Kết quả thực tế ngày 17/11/2026:
+
+| Hạng mục | Kết quả |
+|---|---|
+| FULL backup | PASS |
+| DIFFERENTIAL backup | PASS |
+| TRANSACTION LOG backup | PASS |
+| RESTORE VERIFYONLY | PASS – cả 3 backup |
+| Restore FULL, DIFFERENTIAL, LOG | PASS |
+| Source Thresholds sau sự cố | 0 |
+| Target Thresholds sau PITR | 4 |
+| Target readings sau PITR | 20 |
+| Tổng readings được khôi phục | 20/20 |
+
+Thời điểm STOPAT local: `2026-11-17T17:08:02.810`.
+
+Bằng chứng chi tiết được lưu tại:
+
+```text
+database/advanced/results/backup.md
+```
+
+### 12.5. Lưu ý
+
+- Chỉ sử dụng source có hậu tố `_Bk_Dev`.
+- Target phải có hậu tố `_Restore`.
+- Không chạy demo nếu source chưa có đủ 4 Thresholds tại zone H1-F1.
+- Không dùng `WITH COMPRESSION` trên SQL Server Express.
+- Không commit các file `.bak` và `.trn`.
+- Không thao tác trên `SwiftletCare_Dev`.
