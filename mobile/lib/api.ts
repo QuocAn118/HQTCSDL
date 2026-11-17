@@ -36,13 +36,14 @@ export async function api<T>(
 
   try {
     res = await fetch(API_URL + path, {
-      method,
-      headers,
-      body:
-        body === undefined
-          ? undefined
-          : JSON.stringify(body),
-    });
+    method,
+    headers,
+    body:
+      body === undefined
+        ? undefined
+        : JSON.stringify(body),
+    signal: AbortSignal.timeout(10000),
+  });
   } catch {
     throw new ApiError(0, 'NETWORK', null);
   }

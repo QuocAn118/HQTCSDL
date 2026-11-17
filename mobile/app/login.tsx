@@ -59,33 +59,55 @@ export default function Login() {
     useState(false);
 
   async function submit() {
-    setBusy(true);
-
-    setError(null);
-
-    try {
-      const response =
-        await api<LoginResponse>(
-          '/api/auth/login',
-          'POST',
-          {
-            username,
-            password,
-          }
-        );
-
-      await login(response);
-    } catch (e) {
-      setError(
-        e instanceof ApiError &&
-          e.status === 401
-          ? 'Sai tên đăng nhập hoặc mật khẩu'
-          : errorText(e)
-      );
-
-      setBusy(false);
-    }
+  if (busy || !username.trim() || !password) {
+    return;
   }
+
+  setBusy(true);
+  setError(null);
+
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    const response = await Promise.race([
+      api<LoginResponse>(
+        '/api/auth/login',
+        'POST',
+        {
+          username: username.trim(),
+          password,
+        }
+      ),
+
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(
+            new Error(
+              'Không kết nối được máy chủ. Vui lòng kiểm tra mạng hoặc thử lại.'
+            )
+          );
+        }, 10000);
+      }),
+    ]);
+
+    await login(response);
+  } catch (e) {
+    setError(
+      e instanceof ApiError && e.status === 401
+        ? 'Sai tên đăng nhập hoặc mật khẩu'
+        : e instanceof Error &&
+            e.message.startsWith('Không kết nối')
+          ? e.message
+          : errorText(e)
+    );
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+
+    setBusy(false);
+  }
+}
 
   return (
     <KeyboardAvoidingView
