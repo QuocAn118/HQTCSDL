@@ -415,3 +415,108 @@ database/advanced/results/checks.md
 - Không sử dụng `-Reset` trên database chứa dữ liệu cần giữ.
 - Không cấp quyền rộng hơn nhu cầu thực tế của ứng dụng.
 - Kiểm tra lại role, user và quyền sau khi phục hồi database từ backup.
+## 11. Kiểm thử điều khiển tương tranh
+
+Task 5 sử dụng hai phiên SQL Server để mô phỏng tình huống Lost Update khi hai phiên cùng điều khiển một thiết bị.
+
+### 11.1. Mục tiêu
+
+Thiết bị được sử dụng trong bài kiểm thử:
+
+| Thuộc tính | Giá trị |
+|---|---|
+| DeviceCode | `H1-F1-FAN` |
+| DeviceId | `7` |
+| Database kiểm thử | `SwiftletCare_Perf` |
+| Session A | AUTO |
+| Session B | MANUAL |
+
+Tình huống cần chứng minh: Session A đọc trạng thái thiết bị trước, Session B cập nhật sang MANUAL, sau đó Session A ghi trạng thái AUTO cũ lên thiết bị. Nếu không có cơ chế bảo vệ phù hợp, cập nhật MANUAL của Session B sẽ bị ghi đè.
+
+### 11.2. Các thành phần
+
+| Thành phần | Chức năng |
+|---|---|
+| `concurrency/demo-procs.sql` | Tạo bảng DemoLog và hai stored procedure minh họa |
+| `dbo.sp_SetActuatorNaive` | Mô phỏng cập nhật không khóa phù hợp |
+| `dbo.sp_SetActuatorSafe` | Sử dụng khóa giao dịch để tuần tự hóa cập nhật |
+| `dbo.DemoLog` | Ghi lại thứ tự READ và WRITE của từng phiên |
+| `tests/run-two-sessions.ps1` | Khởi chạy hai phiên SQL độc lập |
+
+Các thủ tục demo chỉ phục vụ kiểm thử trên `SwiftletCare_Perf`; không thay thế hoặc chỉnh sửa stored procedure điều khiển thiết bị trong ứng dụng.
+
+### 11.3. Chạy kiểm thử
+
+Chạy tại thư mục gốc repository.
+
+Kiểm thử tình huống không an toàn:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\database\advanced\tests\run-two-sessions.ps1" -Scenario lost-update-naive
+```
+
+Kiểm thử tình huống có khóa an toàn:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\database\advanced\tests\run-two-sessions.ps1" -Scenario lost-update-safe
+```
+
+Runner lưu trạng thái ban đầu của thiết bị và khôi phục trạng thái sau khi hoàn thành kiểm thử.
+
+### 11.4. Kiểm tra nhật ký hai phiên
+
+```sql
+SELECT TOP 20
+    Id,
+    Scenario,
+    Sess,
+    Step,
+    Val,
+    At
+FROM dbo.DemoLog
+WHERE Scenario IN (
+    'lost-update-naive',
+    'lost-update-safe'
+)
+ORDER BY Id;
+```
+
+Cột `Sess` xác định phiên A hoặc B. Cột `Step` thể hiện thao tác READ hoặc WRITE. Cột `Val` ghi lại trạng thái Mode và IsOn tại thời điểm thao tác.
+
+### 11.5. Kết quả thực nghiệm
+
+**Trường hợp Naive**
+
+Nhật ký ghi nhận thứ tự:
+
+| Thứ tự | Phiên | Thao tác | Trạng thái |
+|---|---|---|---|
+| 1 | A | READ | AUTO, IsOn=0 |
+| 2 | B | READ | AUTO, IsOn=1 |
+| 3 | B | WRITE | MANUAL, IsOn=1 |
+| 4 | A | WRITE | AUTO, IsOn=0 |
+
+Session B đã ghi MANUAL thành công, nhưng Session A tiếp tục ghi AUTO sau đó. Đây là hiện tượng Lost Update.
+
+Trạng thái cuối của lần chạy kiểm thử là `AUTO|0`.
+
+**Trường hợp Safe**
+
+Nhật ký ghi nhận thứ tự:
+
+| Thứ tự | Phiên | Thao tác | Trạng thái |
+|---|---|---|---|
+| 1 | A | READ | AUTO, IsOn=0 |
+| 2 | A | WRITE | AUTO, IsOn=0 |
+| 3 | B | READ | AUTO, IsOn=1 |
+| 4 | B | WRITE | MANUAL, IsOn=1 |
+
+Session B chỉ đọc và cập nhật sau khi Session A hoàn tất thao tác. Kết quả cuối là `MANUAL|1`, do đó cập nhật MANUAL không bị ghi đè.
+
+### 11.6. Kết luận
+
+Thử nghiệm cho thấy cách cập nhật không có cơ chế khóa phù hợp có thể dẫn đến Lost Update khi hai phiên cùng thao tác trên một thiết bị.
+
+Khi sử dụng cơ chế khóa trong giao dịch, các thao tác được tuần tự hóa và trạng thái cập nhật sau cùng được giữ lại theo thứ tự thực thi.
+
+Kết quả này minh họa vai trò của kiểm soát tương tranh trong hệ thống quản lý thiết bị. Stored procedure sản phẩm `dbo.sp_SetActuator` được giữ nguyên trong quá trình thực hiện bài demo.
