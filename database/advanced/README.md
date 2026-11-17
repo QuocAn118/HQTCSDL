@@ -615,3 +615,169 @@ database/advanced/results/backup.md
 - Không dùng `WITH COMPRESSION` trên SQL Server Express.
 - Không commit các file `.bak` và `.trn`.
 - Không thao tác trên `SwiftletCare_Dev`.
+
+## 13. Task 10 – Đo hiệu năng trước và sau INCLUDE
+
+Task 10 đánh giá ảnh hưởng của Nonclustered Index có cột INCLUDE đối với các truy vấn đọc và ghi dữ liệu cảm biến trên database `SwiftletCare_Perf`.
+
+### 13.1. Mục tiêu
+
+So sánh hiệu năng trước và sau khi tạo index:
+
+```sql
+CREATE NONCLUSTERED INDEX IX_SensorReadings_Device_Metric_Time_Include
+ON dbo.SensorReadings (DeviceId, MetricCode, RecordedAt)
+INCLUDE (Value);
+```
+
+Index sử dụng ba cột khóa `DeviceId`, `MetricCode`, `RecordedAt` và cột INCLUDE `Value`.
+
+Mục tiêu:
+- Giảm logical reads của Q1 và Q2.
+- Kiểm tra Key Lookup trong execution plan.
+- Đánh giá ảnh hưởng đến truy vấn tổng hợp Q3.
+- Đánh giá chi phí phát sinh khi ingest dữ liệu bằng Q4.
+
+### 13.2. Các truy vấn kiểm thử
+
+| Truy vấn | Nội dung |
+|---|---|
+| Q1 | Đọc TEMP của H1-F1-SENSOR trong khoảng 24 giờ |
+| Q2 | Đọc TEMP của H1-F1-SENSOR trong khoảng 30 ngày |
+| Q3 | Truy vấn `dbo.vw_LatestReadings` |
+| Q4 | Gọi `sp_IngestReadings` với 1.000 readings trong transaction và ROLLBACK |
+
+Các file truy vấn:
+
+```text
+database/advanced/perf/queries/Q1.sql
+database/advanced/perf/queries/Q2.sql
+database/advanced/perf/queries/Q3.sql
+database/advanced/perf/queries/Q4.sql
+```
+
+### 13.3. Cách chạy đo hiệu năng
+
+Chạy từ thư mục gốc repository.
+
+Đo trước khi thêm INCLUDE:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File .\database\advanced\perf\measure.ps1 `
+    -Phase truoc -Cold -Runs 5
+```
+
+Sau khi tạo index INCLUDE, đo lại:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File .\database\advanced\perf\measure.ps1 `
+    -Phase sau -Cold -Runs 5
+```
+
+Tham số:
+- `-Phase`: xác định pha `truoc` hoặc `sau`.
+- `-Database`: database kiểm thử, mặc định `SwiftletCare_Perf`.
+- `-Cold`: yêu cầu đo cold cache nếu thỏa điều kiện kiểm tra.
+- `-Runs`: số lần chạy hot sau một lần warm-up bị loại bỏ.
+
+Mỗi truy vấn được chạy một lần cold (nếu cold guard PASS), một lần warm-up không tính kết quả và 5 lần hot.
+
+Kết quả được ghi nối tiếp vào:
+
+```text
+database/advanced/results/perf/timing.csv
+```
+
+Execution plan được lưu riêng cho từng truy vấn và từng pha:
+
+```text
+Q1-truoc.sqlplan ... Q4-truoc.sqlplan
+Q1-sau.sqlplan   ... Q4-sau.sqlplan
+```
+
+### 13.4. Kết quả đo thực tế
+
+Database kiểm thử có 5.030.784 dòng trong `SensorReadings`.
+
+Bảng dưới đây sử dụng median của 5 lần chạy hot:
+
+| Truy vấn | Logical reads trước | Logical reads sau | Elapsed trước | Elapsed sau |
+|---|---:|---:|---:|---:|
+| Q1 | 277 | 13 | 5 ms | 2 ms |
+| Q2 | 8.090 | 159 | 136 ms | 82 ms |
+| Q3 | 111 | 111 | 7 ms | 3 ms |
+| Q4 | 20.769 | 23.007 | 0 ms | 0 ms |
+
+Mức thay đổi logical reads:
+
+| Truy vấn | Mức thay đổi |
+|---|---:|
+| Q1 | Giảm 95,31% |
+| Q2 | Giảm 98,03% |
+| Q3 | Không thay đổi |
+| Q4 | Tăng 10,78% |
+
+### 13.5. Phân tích execution plan
+
+Q1 và Q2 là hai truy vấn được hưởng lợi rõ rệt từ index INCLUDE.
+
+Execution plan sau khi tạo index cho thấy SQL Server sử dụng:
+
+`IX_SensorReadings_Device_Metric_Time_Include`
+
+Các cột `RecordedAt` và `Value` được lấy trực tiếp từ index. Trong phần execution plan tương ứng với truy vấn `SensorReadings`, không còn Key Lookup.
+
+Điều này giúp giảm số trang dữ liệu phải đọc:
+- Q1 giảm từ 277 xuống 13 logical reads.
+- Q2 giảm từ 8.090 xuống 159 logical reads.
+
+Lưu ý: execution plan của file Q1 và Q2 còn có statement tra cứu `DeviceId` từ bảng `Devices`. Khi kiểm tra Key Lookup, cần phân biệt statement này với statement truy vấn `SensorReadings`.
+
+### 13.6. Đánh giá tác động
+
+**Truy vấn đọc**
+
+Q1 và Q2 giảm đáng kể logical reads sau khi bổ sung INCLUDE. Đây là kết quả phù hợp với mục tiêu tạo covering index, hạn chế việc phải truy cập thêm index hoặc bảng để lấy cột `Value`.
+
+**Truy vấn tổng hợp**
+
+Q3 giữ nguyên logical reads. Chưa có bằng chứng cho thấy index mới làm giảm lượng dữ liệu phải đọc của view `vw_LatestReadings`.
+
+**Truy vấn ghi**
+
+Q4 tăng logical reads từ 20.769 lên 23.007. Điều này phản ánh thêm chi phí duy trì index khi ingest dữ liệu.
+
+Elapsed time của Q4 hiển thị 0 ms ở cả hai pha do thời gian thực thi nhỏ hơn độ phân giải mili giây của phép đo. Không sử dụng giá trị này để kết luận hai pha có chi phí ghi giống nhau.
+
+### 13.7. Điều kiện đo cold cache
+
+Cold cache chỉ được bật khi kiểm tra quyền `sysadmin` và điều kiện session thành công.
+
+Trong môi trường kiểm thử, SQL Server CEIP sử dụng session dịch vụ `NT SERVICE\SQLTELEMETRY$SQLEXPRESS`. Session dịch vụ này được loại khỏi điều kiện kiểm tra session người dùng để không phải dừng dịch vụ hệ thống.
+
+Do đó, kết quả cold cache được ghi nhận trong điều kiện kiểm thử thực tế của máy, không nên diễn giải là môi trường hoàn toàn không có bất kỳ session dịch vụ nào.
+
+### 13.8. Kết luận
+
+Index INCLUDE cải thiện rõ rệt hiệu năng đọc dữ liệu cảm biến của Q1 và Q2, đồng thời loại bỏ Key Lookup trong execution plan tương ứng.
+
+Tuy nhiên, Q4 cho thấy logical reads tăng sau khi thêm index. Đây là sự đánh đổi giữa hiệu năng đọc và chi phí duy trì index khi ghi dữ liệu.
+
+Kết quả cho thấy INCLUDE phù hợp với các truy vấn đọc thường xuyên cần lấy `Value`, nhưng cần cân nhắc tần suất ghi dữ liệu và chi phí bảo trì index.
+
+Bằng chứng thực nghiệm được lưu tại:
+
+```text
+database/advanced/perf/queries/
+database/advanced/results/perf/timing.csv
+database/advanced/results/perf/Q1-truoc.sqlplan
+database/advanced/results/perf/Q2-truoc.sqlplan
+database/advanced/results/perf/Q3-truoc.sqlplan
+database/advanced/results/perf/Q4-truoc.sqlplan
+database/advanced/results/perf/Q1-sau.sqlplan
+database/advanced/results/perf/Q2-sau.sqlplan
+database/advanced/results/perf/Q3-sau.sqlplan
+database/advanced/results/perf/Q4-sau.sqlplan
+```

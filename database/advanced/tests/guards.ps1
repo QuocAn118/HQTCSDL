@@ -179,6 +179,123 @@ if (Test-Path $RestorePitr) {
     }
 }
 
+# Task 10: INCLUDE performance guards
+$PerfRoot = Join-Path $AdvancedRoot 'perf'
+$PerfQueries = Join-Path $PerfRoot 'queries'
+$PerfResults = Join-Path $AdvancedRoot 'results\perf'
+$MeasureScript = Join-Path $PerfRoot 'measure.ps1'
+$TimingCsv = Join-Path $PerfResults 'timing.csv'
+
+# Required measurement script and query files
+foreach ($path in @(
+    $MeasureScript,
+    (Join-Path $PerfQueries 'Q1.sql'),
+    (Join-Path $PerfQueries 'Q2.sql'),
+    (Join-Path $PerfQueries 'Q3.sql'),
+    (Join-Path $PerfQueries 'Q4.sql')
+)) {
+    if (Test-Path $path) {
+        Write-Host "PASS: Task 10 file $(Split-Path $path -Leaf)"
+    }
+    else {
+        Write-Host "FAIL: Task 10 thieu $path"
+        $failed++
+    }
+}
+
+# Required execution plans before and after INCLUDE
+foreach ($query in @('Q1', 'Q2', 'Q3', 'Q4')) {
+    foreach ($phase in @('truoc', 'sau')) {
+        $plan = Join-Path $PerfResults "$query-$phase.sqlplan"
+
+        if (Test-Path $plan) {
+            Write-Host "PASS: execution plan $query-$phase"
+        }
+        else {
+            Write-Host "FAIL: thieu execution plan $query-$phase"
+            $failed++
+        }
+    }
+}
+
+# Timing CSV structure and measurement coverage
+if (-not (Test-Path $TimingCsv)) {
+    Write-Host 'FAIL: thieu timing.csv'
+    $failed++
+}
+else {
+    try {
+        $timingRows = @(Import-Csv $TimingCsv -ErrorAction Stop)
+        $requiredColumns = @(
+            'pha',
+            'truy_van',
+            'lan',
+            'lanh_nong',
+            'logical_reads',
+            'physical_reads',
+            'cpu_ms',
+            'elapsed_ms'
+        )
+
+        $actualColumns = @($timingRows[0].PSObject.Properties.Name)
+
+        foreach ($column in $requiredColumns) {
+            if ($actualColumns -contains $column) {
+                Write-Host "PASS: timing.csv column $column"
+            }
+            else {
+                Write-Host "FAIL: timing.csv thieu cot $column"
+                $failed++
+            }
+        }
+
+        if ($timingRows.Count -eq 48) {
+            Write-Host 'PASS: timing.csv co du 48 dong do'
+        }
+        else {
+            Write-Host "FAIL: timing.csv can 48 dong, hien co $($timingRows.Count)"
+            $failed++
+        }
+
+        foreach ($phase in @('truoc', 'sau')) {
+            foreach ($query in @('Q1', 'Q2', 'Q3', 'Q4')) {
+                $group = @(
+                    $timingRows | Where-Object {
+                        $_.pha -eq $phase -and $_.truy_van -eq $query
+                    }
+                )
+
+                $coldCount = @($group | Where-Object { $_.lanh_nong -eq 'lanh' }).Count
+                $hotCount = @($group | Where-Object { $_.lanh_nong -eq 'nong' }).Count
+
+                if ($group.Count -eq 6 -and $coldCount -eq 1 -and $hotCount -eq 5) {
+                    Write-Host "PASS: $phase $query (1 cold, 5 hot)"
+                }
+                else {
+                    Write-Host "FAIL: $phase $query (tong $($group.Count), cold $coldCount, hot $hotCount)"
+                    $failed++
+                }
+            }
+        }
+    }
+    catch {
+        Write-Host "FAIL: khong doc duoc timing.csv - $($_.Exception.Message)"
+        $failed++
+    }
+}
+
+# Task 10: README documentation
+if (Test-Path $Readme) {
+    $readmeContent = Get-Content $Readme -Raw
+
+    if ($readmeContent -match '(?im)^## .*Task 10|(?im)^## .*INCLUDE') {
+        Write-Host 'PASS: README Task 10'
+    }
+    else {
+        Write-Host 'FAIL: README chua co muc Task 10 / INCLUDE'
+        $failed++
+    }
+}
 if ($failed -gt 0) {
     Write-Host "guards: FAIL ($failed)"
     exit 1
@@ -186,3 +303,4 @@ if ($failed -gt 0) {
 
 Write-Host 'guards: PASS'
 exit 0
+
