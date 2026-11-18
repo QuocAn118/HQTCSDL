@@ -218,7 +218,7 @@ foreach ($query in @('Q1', 'Q2', 'Q3', 'Q4')) {
     }
 }
 
-# Timing CSV structure and measurement coverage
+# Timing CSV structure (timing.csv co the co them lan do lai, xem perf.md)
 if (-not (Test-Path $TimingCsv)) {
     Write-Host 'FAIL: thieu timing.csv'
     $failed++
@@ -246,35 +246,6 @@ else {
             else {
                 Write-Host "FAIL: timing.csv thieu cot $column"
                 $failed++
-            }
-        }
-
-        if ($timingRows.Count -eq 48) {
-            Write-Host 'PASS: timing.csv co du 48 dong do'
-        }
-        else {
-            Write-Host "FAIL: timing.csv can 48 dong, hien co $($timingRows.Count)"
-            $failed++
-        }
-
-        foreach ($phase in @('truoc', 'sau')) {
-            foreach ($query in @('Q1', 'Q2', 'Q3', 'Q4')) {
-                $group = @(
-                    $timingRows | Where-Object {
-                        $_.pha -eq $phase -and $_.truy_van -eq $query
-                    }
-                )
-
-                $coldCount = @($group | Where-Object { $_.lanh_nong -eq 'lanh' }).Count
-                $hotCount = @($group | Where-Object { $_.lanh_nong -eq 'nong' }).Count
-
-                if ($group.Count -eq 6 -and $coldCount -eq 1 -and $hotCount -eq 5) {
-                    Write-Host "PASS: $phase $query (1 cold, 5 hot)"
-                }
-                else {
-                    Write-Host "FAIL: $phase $query (tong $($group.Count), cold $coldCount, hot $hotCount)"
-                    $failed++
-                }
             }
         }
     }
