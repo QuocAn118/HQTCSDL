@@ -24,7 +24,7 @@ function Read-DotEnv {
 }
 
 function Get-DatabaseUrl($Cfg, [string]$Database) {
-    "sqlserver://$($Cfg.DB_SERVER):$($Cfg.DB_PORT);database=$Database;user=$($Cfg.DB_USER);password={$($Cfg.DB_PASSWORD)};trustServerCertificate=true"
+    "sqlserver://$($Cfg.DB_SERVER):$($Cfg.DB_PORT);database=$Database;user=$($Cfg.DB_USER);password={$($Cfg.DB_PASSWORD)};encrypt=true;trustServerCertificate=true"
 }
 
 function Invoke-Sql {
