@@ -193,6 +193,7 @@ Script tạo role nếu chưa tồn tại, tạo database user tương ứng v�
 | `Harvests` | SELECT, INSERT | Không cấp |
 | `Metrics` | SELECT | Không cấp |
 | `Alerts` | SELECT | Không cấp |
+| `AlertHistory` | SELECT (`GET /api/alerts/:id` trả lịch sử cảnh báo; cấp ngày 18/11) | Không cấp |
 | `ControlLogs` | SELECT | Không cấp |
 | `BirdCounts` | SELECT | Không cấp |
 | `SensorReadings` | SELECT | Không cấp |
@@ -315,12 +316,13 @@ security: PASS
 | CA2 | Kiểm tra trigger tạo cảnh báo khi thiết bị OFFLINE |
 | CA3 | Backend và report đọc được `vw_OpenAlerts` |
 | CA4 | Backend đọc được `Users`, report bị từ chối |
+| CA4b | Backend đọc được `AlertHistory` |
 | CA5 | Report bị từ chối EXECUTE `sp_GetReadingHistory` |
 | CA6 | Backend và report bị từ chối DELETE |
 | CA7 | Backend và report bị từ chối DROP TABLE |
 | CA8 | Backend và report bị từ chối CREATE TABLE |
 
-Kết quả kiểm thử thực tế trên `SwiftletCare_Test`: **8/8 PASS**.
+Kết quả kiểm thử thực tế trên `SwiftletCare_Test`: **9/9 PASS** (CA1–CA8 và CA4b).
 
 ### 7.3. Smoke test
 
@@ -416,7 +418,7 @@ Lưu ý: lỗi 3701 có thể xuất hiện khi object không tồn tại hoặc
 | Tạo role `role_backend`, `role_report` | PASS |
 | Ánh xạ database user với login | PASS |
 | Kiểm tra orphan user | PASS – 0 dòng |
-| Kiểm thử CA1–CA8 | PASS – 8/8 |
+| Kiểm thử CA1–CA8, CA4b | PASS – 9/9 |
 | Smoke test `app_backend` | PASS |
 | Smoke test `app_report` | PASS |
 | Kiểm tra 39 dòng quyền trên `SwiftletCare` | PASS |

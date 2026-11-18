@@ -46,12 +46,13 @@ Bộ kiểm thử được thực hiện trên `SwiftletCare_Test`.
 | CA2 | Kiểm tra trigger tạo cảnh báo khi thiết bị OFFLINE | PASS |
 | CA3 | Backend và report đọc được `vw_OpenAlerts` | PASS |
 | CA4 | Backend đọc được `Users`, report bị từ chối | PASS |
+| CA4b | Backend đọc được `AlertHistory` (thêm 18/11) | PASS |
 | CA5 | Report bị từ chối EXECUTE `sp_GetReadingHistory` | PASS |
 | CA6 | Backend và report bị từ chối DELETE | PASS |
 | CA7 | Backend và report bị từ chối DROP TABLE | PASS |
 | CA8 | Backend và report bị từ chối CREATE TABLE | PASS |
 
-**Kết quả: 8/8 kiểm thử PASS.**
+**Kết quả: 9/9 kiểm thử PASS** (CA4b thêm ngày 18/11 sau khi phát hiện `GET /api/alerts/:id` lỗi 229 khi backend chạy bằng `app_backend`).
 
 ## 5. Kiểm tra deploy và database user
 

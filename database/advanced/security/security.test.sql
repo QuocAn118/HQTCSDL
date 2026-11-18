@@ -219,6 +219,22 @@ BEGIN CATCH
     THROW;
 END CATCH;
 
+-- CA4b: app_backend doc AlertHistory duoc (GET /api/alerts/:id tra lich su canh bao).
+BEGIN TRY
+    BEGIN TRANSACTION;
+    EXECUTE AS USER = 'app_backend';
+    SELECT TOP 1 HistoryId FROM dbo.AlertHistory;
+    REVERT;
+    ROLLBACK TRANSACTION;
+    PRINT 'PASS: ca4b-doc-alerthistory-app_backend';
+END TRY
+BEGIN CATCH
+    IF USER_NAME() = 'app_backend' OR USER_NAME() = 'app_report'
+        REVERT;
+    IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
+    THROW;
+END CATCH;
+
 BEGIN TRY
     BEGIN TRANSACTION;
     EXECUTE AS USER = 'app_report';

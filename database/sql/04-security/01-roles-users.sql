@@ -57,6 +57,7 @@ VALUES
     (N'Harvests',       'SELECT, INSERT',          N'role_backend'),
     (N'Metrics',        'SELECT',                  N'role_backend'),
     (N'Alerts',         'SELECT',                  N'role_backend'),
+    (N'AlertHistory',   'SELECT',                  N'role_backend'),
     (N'ControlLogs',    'SELECT',                  N'role_backend'),
     (N'BirdCounts',     'SELECT',                  N'role_backend'),
     (N'SensorReadings', 'SELECT',                  N'role_backend');
