@@ -885,3 +885,79 @@ Kết quả kiểm thử Task 12 được ghi tại:
 ```text
 database/advanced/results/backup.md
 ```
+
+## 15. Thuyết trình và trình diễn
+
+### 15.1. Mục tiêu
+
+Trình bày các kết quả kiểm thử nâng cao của SwiftletCare, tập trung vào bảo mật, điều khiển tương tranh, phục hồi dữ liệu và tối ưu truy vấn.
+
+### 15.2. Kịch bản demo trực tiếp
+
+**Demo 1 – Phân quyền và bảo mật**
+
+```powershell
+.\database\advanced\security\run-security-test.ps1
+```
+
+Trình bày:
+- Kiểm tra quyền của các tài khoản ứng dụng.
+- Chứng minh tài khoản không đủ quyền không thể DROP TABLE.
+- Kiểm tra quyền đọc, ghi và thực thi procedure.
+- Smoke test cho `app_backend` và `app_report`.
+
+**Demo 2 – Lost Update và Isolation Level**
+
+```powershell
+.\database\advanced\tests\run-two-sessions.ps1 -Scenario lost-update-naive
+.\database\advanced\tests\run-two-sessions.ps1 -Scenario lost-update-safe
+.\database\advanced\tests\run-two-sessions.ps1 -Scenario isolation-rc
+.\database\advanced\tests\run-two-sessions.ps1 -Scenario isolation-rr
+.\database\advanced\tests\run-two-sessions.ps1 -Scenario isolation-snapshot
+```
+
+Giải thích sự khác nhau giữa Lost Update không an toàn và cách xử lý an toàn; so sánh hành vi đọc dữ liệu của READ COMMITTED, REPEATABLE READ và SNAPSHOT.
+
+**Demo 3 – Deadlock**
+
+```powershell
+.\database\advanced\tests\run-deadlock.ps1
+```
+
+Trình bày tình huống deadlock, cách xử lý và cơ chế retry.
+
+**Demo 4 – Point-in-Time Recovery**
+
+```powershell
+.\database\advanced\backup\pitr-demo.ps1
+```
+
+Trình bày chuỗi FULL, DIFFERENTIAL, LOG backup; mô phỏng xóa dữ liệu; phục hồi bằng `STOPAT` sang database đích.
+
+Lưu ý: script PITR ghi đè database `SwiftletCare_Restore`. Chỉ chạy demo khi database đích được phép sử dụng lại.
+
+### 15.3. Số liệu tối ưu truy vấn
+
+| Query | Logical reads trước | Logical reads sau | Thay đổi |
+|---|---:|---:|---:|
+| Q1 | 277 | 13 | Giảm 95.31% |
+| Q2 | 8090 | 158 | Giảm 98.05% |
+| Q3 | 111 | 111 | Không đổi |
+| Q4 | 20769 | 22679.5 | Tăng 9.20% |
+
+Kết luận: INCLUDE giúp giảm đáng kể logical reads cho Q1 và Q2. Q4 cho thấy cần cân nhắc chi phí ghi và bảo trì index khi tối ưu truy vấn.
+
+### 15.4. Phạm vi chưa hoàn thành
+
+**Task 13 – Partitioning chưa được thực hiện do không đủ thời gian triển khai và kiểm thử.** Nhóm không có kết quả thực nghiệm về Partitioning để trình bày và không tính đây là hạng mục đã hoàn thành.
+
+### 15.5. Thứ tự trình bày đề xuất
+
+1. Giới thiệu mục tiêu Database Advanced.
+2. Trình diễn phân quyền và bảo mật.
+3. So sánh Lost Update và các mức Isolation.
+4. Trình diễn Deadlock.
+5. Trình diễn Point-in-Time Recovery.
+6. Trình bày số liệu tối ưu INCLUDE.
+7. Nêu giới hạn phạm vi: Task 13 chưa thực hiện do không đủ thời gian.
+8. Tổng kết kết quả và bài học.

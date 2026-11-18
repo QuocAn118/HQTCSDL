@@ -1,4 +1,4 @@
-﻿# Task 6 – Deadlock
+# Task 6 – Deadlock
 
 ## 1. Mục tiêu
 
@@ -11,7 +11,7 @@ Mô phỏng deadlock giữa hai transaction trên SQL Server, sau đó kiểm th
 | Thành phần | Giá trị |
 |---|---|
 | Database | `SwiftletCare_Perf` |
-| SQL Server | `152607-DMQUANG\SQLEXPRESS` |
+| SQL Server | `<may>\SQLEXPRESS` |
 | Bảng demo | `dbo.DeadlockDemoRows` |
 | Stored procedure | `dbo.sp_DemoDeadlockRetry` |
 | Deadlock error | `1205` |
