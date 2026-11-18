@@ -335,6 +335,30 @@ FROM dbo.vw_OpenAlerts;
 
 Hai login `app_backend` và `app_report` đều thực hiện truy vấn thành công trên `SwiftletCare`.
 
+### 7.4. Chạy test hợp đồng backend bằng `app_backend`
+
+`npm run test:contract` (trong `backend/`) chạy backend bằng login `app_backend`. Mỗi chuỗi test khôi phục `SwiftletCare_Test` từ `SwiftletCare_Test_seed.bak`, nên bản sao lưu phải được tạo **sau** khi CSDL đã có user `app_backend`. Bản `.bak` tạo trước Task 3 không có user này, và backend sẽ không đăng nhập được.
+
+1. Điền `APP_BACKEND_PASSWORD` và `APP_REPORT_PASSWORD` vào `database/.env`, rồi chạy `create-logins.ps1` (mục 4).
+2. Điền vào `backend/.env.test` (mật khẩu trùng với `APP_BACKEND_PASSWORD` trong `database/.env`):
+
+   ```env
+   APP_BACKEND_USER=app_backend
+   APP_BACKEND_PASSWORD=<mat_khau_backend>
+   ```
+
+3. Triển khai lại `SwiftletCare_Test` rồi tạo lại bản sao lưu seed (ghi đè bản cũ):
+
+   ```powershell
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\database\scripts\deploy.ps1" -Database SwiftletCare_Test -Reset
+   $env:SQLCMDPASSWORD = '<DB_PASSWORD>'   # mat khau DB_USER trong database/.env
+   sqlcmd -S "<DB_SERVER>,<DB_PORT>" -U <DB_USER> -C -I -f 65001 -b -d master -Q "BACKUP DATABASE SwiftletCare_Test TO DISK = N'SwiftletCare_Test_seed.bak' WITH INIT, FORMAT; RESTORE VERIFYONLY FROM DISK = N'SwiftletCare_Test_seed.bak';"
+   ```
+
+   Thành công khi có dòng `The backup set on file 1 is valid.` File nằm trong thư mục Backup mặc định của SQL Server.
+
+4. Bật Mosquitto, dừng backend đang chạy ở cổng `PORT` của `.env.test`, rồi chạy `npm run test:contract` trong `backend/`.
+
 ## 8. Demo phân quyền
 
 ### 8.1. Backend được phép đọc view
