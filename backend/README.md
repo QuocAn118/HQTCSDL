@@ -7,7 +7,8 @@ NestJS 11 + Prisma 7.10.0 (SQL Server) + MQTT + Socket.IO. Spec: [backend](../do
 1. Node.js theo bảng phiên bản trong `CLAUDE.md`/`AGENTS.md` gốc.
 2. `npm ci` (trong `backend/`).
 3. Chép `.env.example` → `.env` và `.env.test.example` → `.env.test`, điền giá trị của máy mình. Hai file này **không commit**.
-   - `DB_PASSWORD`: mật khẩu tài khoản SQL `swiftlet_dev` (xem `database/README.md`).
+   - `.env`: `DB_USER=app_backend`, `DB_PASSWORD` = `APP_BACKEND_PASSWORD` trong `database/.env` (login quyền hẹp, tạo bằng `database/advanced/security/create-logins.ps1`, xem `database/advanced/README.md` mục 4). Máy chưa tạo login thì tạm dùng `swiftlet_dev`.
+   - `.env.test`: `DB_USER`/`DB_PASSWORD` là `swiftlet_dev` (để nạp fixture và `RESTORE`); `APP_BACKEND_USER`/`APP_BACKEND_PASSWORD` là login mà backend dùng khi chạy dưới test.
    - `MQTT_PASSWORD`: mật khẩu tài khoản `backend` đã tạo bằng `mosquitto_passwd` (xem `infra/mosquitto/README.md`).
    - `JWT_SECRET`, `AI_SERVICE_KEY`: mỗi khóa tự tạo một chuỗi ngẫu nhiên bằng
      `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
@@ -31,7 +32,7 @@ node dist/main.js          # doc .env; cong 3000
 - `npm test`: Jest đơn vị, không cần CSDL/MQTT. **Phải chạy qua `npm test`** (lệnh có `node --experimental-vm-modules`): `@nestjs/jwt`/`jose` và Prisma 7 nạp module ESM động; gọi thẳng `npx jest` làm vài bộ test lỗi.
 - `npm run test:e2e`: khởi tạo app Nest trong tiến trình test (không cần CSDL thật).
 - `npm run test:contract` (Task 22): chạy fixture hợp đồng trên `SwiftletCare_Test`. **Tắt backend dev và simulator trước. Không chạy lúc đang demo hay tập demo** (spec backend 2.4, 7.4): test dùng chung broker MQTT. Mosquitto phải đang chạy.
-  - **Mỗi máy tự tạo file backup dữ liệu mẫu một lần** (file nằm trong thư mục Backup của SQL Server, ngoài repo, không commit):
+  - **Mỗi máy tự tạo file backup dữ liệu mẫu một lần**, **sau khi** đã chạy `create-logins.ps1` (để bản backup có user `app_backend`; xem `database/advanced/README.md` mục 7.4). File nằm trong thư mục Backup của SQL Server, ngoài repo, không commit:
     ```powershell
     cd ..\database
     powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy.ps1 -Database SwiftletCare_Test -Reset
