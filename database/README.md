@@ -122,3 +122,7 @@ Các bài kiểm thử bao gồm:
 - `spikes/RESULTS.md`: kết quả kiểm chứng kỹ thuật.
 - `../docs/superpowers/plans/2026-10-14-swiftletcare-database-core.md`: kế hoạch triển khai.
 - `../docs/superpowers/specs/2026-10-12-swiftletcare-database-core-design.md`: đặc tả thiết kế.
+
+## Quy ước thay đổi schema
+
+Từ 18/11/2026: không dùng `prisma migrate dev` (R2, chỉ mục INCLUDE ở `00-schema-extras`); thay đổi schema dùng `prisma migrate diff`.

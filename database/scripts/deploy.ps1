@@ -1,4 +1,4 @@
-﻿
+
 param(
     [Parameter(Mandatory = $true)][string]$Database,
     [switch]$Reset,
@@ -13,9 +13,9 @@ if ($Database -notmatch '^[A-Za-z0-9_]+$') {
     exit 3
 }
 
-# Chi cho phep reset database ket thuc bang _Test hoac _Dev.
-if ($Reset -and ($Database -notmatch '(?i)_(Test|Dev)$')) {
-    Write-Host "Tu choi -Reset: '$Database' khong ket thuc bang _Test hoac _Dev."
+# Chi cho phep reset database ket thuc bang _Test, _Dev hoac _Perf.
+if ($Reset -and ($Database -notmatch '(?i)_(Test|Dev|Perf)$')) {
+    Write-Host "Tu choi -Reset: '$Database' khong ket thuc bang _Test, _Dev hoac _Perf."
     exit 2
 }
 
@@ -81,4 +81,3 @@ if (-not $SkipSeed) {
 
 Write-Host "Trien khai xong: $Database"
 exit 0
-
