@@ -781,3 +781,107 @@ database/advanced/results/perf/Q2-sau.sqlplan
 database/advanced/results/perf/Q3-sau.sqlplan
 database/advanced/results/perf/Q4-sau.sqlplan
 ```
+
+## 14. Task 12 – Lịch sao lưu tự động bằng Task Scheduler
+
+Task 12 xây dựng hai script để thực hiện và lập lịch sao lưu SQL Server bằng Windows Authentication.
+
+### 14.1. Các thành phần
+
+| File | Chức năng |
+|---|---|
+| `backup/backup.ps1` | Thực hiện FULL hoặc LOG backup |
+| `backup/schedule.ps1` | Cài đặt hoặc gỡ lịch Task Scheduler |
+
+### 14.2. Thực hiện backup thủ công
+
+FULL backup:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File .\database\advanced\backup\backup.ps1 `
+    -Database SwiftletCare_Bk_Dev -Type Full
+```
+
+LOG backup:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File .\database\advanced\backup\backup.ps1 `
+    -Database SwiftletCare_Bk_Dev -Type Log
+```
+
+Có thể chỉ định thư mục lưu backup bằng tham số `-Dir`. Mặc định là `C:\SwiftletBackup`.
+
+### 14.3. Cơ chế backup và kiểm tra
+
+Script sử dụng `sqlcmd -E`, tức Windows Authentication, không truyền SQL password.
+
+Tên file được tạo theo định dạng:
+
+```text
+<Database>_<FULL|LOG>_<yyyyMMdd_HHmmss>.<bak|trn>
+```
+
+Quy trình thực hiện:
+
+1. Kiểm tra database đang ONLINE.
+2. Với LOG backup, kiểm tra Recovery Model phải là FULL và đã có FULL backup.
+3. Thực hiện backup với tùy chọn `CHECKSUM`.
+4. Chạy `RESTORE VERIFYONLY ... WITH CHECKSUM`.
+5. Ghi kết quả PASS hoặc FAIL vào `backup.log`.
+
+Nếu yêu cầu LOG backup không hợp lệ, script trả về exit code `3`.
+
+### 14.4. Cài đặt lịch
+
+Cài đặt lịch cho `SwiftletCare`:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File .\database\advanced\backup\schedule.ps1 `
+    -Action Install -Database SwiftletCare
+```
+
+Hai lịch được tạo:
+
+| Task | Lịch chạy |
+|---|---|
+| `SwiftletCare-Full` | Hằng ngày lúc 02:00 |
+| `SwiftletCare-Log` | Mỗi 15 phút |
+
+Task chạy bằng tài khoản Windows cài đặt lịch, không cấu hình SQL password hoặc mật khẩu tài khoản Windows trong script.
+
+Kiểm tra trạng thái:
+
+```powershell
+schtasks.exe /Query /TN SwiftletCare-Full /V /FO LIST
+schtasks.exe /Query /TN SwiftletCare-Log /V /FO LIST
+```
+
+### 14.5. Gỡ lịch
+
+Sau khi hoàn thành kiểm thử:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File .\database\advanced\backup\schedule.ps1 `
+    -Action Remove -Database SwiftletCare
+```
+
+Lệnh này chỉ xóa hai Scheduled Tasks, không xóa các file backup.
+
+### 14.6. Lưu ý vận hành
+
+- Máy tính phải đang bật và tài khoản Windows cài đặt lịch phải đăng nhập.
+- Cấu hình kiểm thử hiện tại không cho task khởi chạy khi dùng pin và sẽ dừng nếu chuyển sang dùng pin.
+- `StartWhenAvailable` đang tắt, do đó không bật cơ chế tự chạy bù khi bỏ lỡ thời điểm chạy.
+- Cần bảo đảm SQL Server service account có quyền ghi vào thư mục backup.
+- Cần sao lưu hoặc luân chuyển `backup.log` định kỳ để tránh file log tăng kích thước liên tục.
+- Cần duy trì chuỗi FULL và LOG backup phù hợp để có thể phục hồi database.
+
+Kết quả kiểm thử Task 12 được ghi tại:
+
+```text
+database/advanced/results/backup.md
+```
