@@ -37,3 +37,7 @@ web/next-env.d.ts
 web/*.tsbuildinfo
 picture/
 web/.impeccable/
+# Local Postman workspace
+.postman/
+postman/
+
