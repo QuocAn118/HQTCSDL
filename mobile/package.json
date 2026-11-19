@@ -1,0 +1,33 @@
+{
+  "name": "swiftletcare-mobile",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "expo": "58.0.24",
+    "expo-constants": "58.0.16",
+    "expo-linking": "58.0.17",
+    "expo-router": "58.0.31",
+    "expo-secure-store": "58.0.3",
+    "expo-splash-screen": "58.0.14",
+    "expo-status-bar": "58.0.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "5.11.1",
+    "react-native-screens": "4.30.1",
+    "socket.io-client": "4.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "test": "node scripts/check-copies.mjs && vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "private": true
+}

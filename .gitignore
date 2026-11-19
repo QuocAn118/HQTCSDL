@@ -41,3 +41,10 @@ web/.impeccable/
 .postman/
 postman/
 
+
+# mobile
+mobile/.env
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/expo-env.d.ts
