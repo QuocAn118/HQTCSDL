@@ -26,7 +26,7 @@ import {
 
 import {
   api,
-  snapshotSource,
+  fetchSnapshot,
 } from '@/lib/api';
 
 import {
@@ -56,9 +56,27 @@ function Snapshot({
   alertId: number;
 }) {
   const [
+    uri,
+    setUri,
+  ] = useState<string | null>(null);
+
+  const [
     failed,
     setFailed,
   ] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    setUri(null);
+    setFailed(false);
+    fetchSnapshot(alertId).then(
+      (u) => alive && setUri(u),
+      () => alive && setFailed(true)
+    );
+    return () => {
+      alive = false;
+    };
+  }, [alertId]);
 
   if (failed) {
     return (
@@ -70,9 +88,7 @@ function Snapshot({
 
   return (
     <Image
-      source={snapshotSource(
-        alertId
-      )}
+      source={uri ? { uri } : undefined}
       onError={() =>
         setFailed(true)
       }

@@ -64,13 +64,18 @@ export async function api<T>(
   throw toApiError(res.status, data);
 }
 
-export function snapshotSource(alertId: number) {
-  return {
-    uri: `${API_URL}/api/alerts/${alertId}/snapshot`,
-    headers: {
-      Authorization: `Bearer ${token ?? ''}`,
-    },
-  };
+// Android <Image> bo qua source.headers (backend tra 401), nen tai anh bang fetch roi dua data URI cho <Image>.
+export async function fetchSnapshot(alertId: number): Promise<string> {
+  const res = await fetch(`${API_URL}/api/alerts/${alertId}/snapshot`, {
+    headers: { Authorization: `Bearer ${token ?? ''}` },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return `data:image/jpeg;base64,${btoa(bin)}`;
 }
 
 export const qs = (
